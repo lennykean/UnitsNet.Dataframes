@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>HondataDotNet.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>HondataDotNet.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+</Project>
