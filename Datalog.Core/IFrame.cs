@@ -22,10 +22,9 @@ namespace HondataDotNet.Datalog.Core
         int Gear { get; }
     }
 
-    public interface IFrame<TFaultCodeCollection, TFaultCode> : IFrame
-        where TFaultCodeCollection : IReadOnlyCollection<TFaultCode>
+    public interface IFrame<TFaultCode> : IFrame
         where TFaultCode : IFaultCode
     {
-        TFaultCodeCollection FaultCodes { get; }
+        IReadOnlyCollection<TFaultCode> FaultCodes { get; }
     }
 }

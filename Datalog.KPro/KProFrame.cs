@@ -7,7 +7,7 @@ using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed partial class KProFrame : IOBDIIFrame<KProFaultCodeCollection, KProFaultCode, KProReadinessCodeDictionary, KProReadinessTests, IReadinessCode<KProReadinessTests>>
+    public sealed partial class KProFrame : IOBDIIFrame<KProFaultCode, KProReadinessTests, KProReadinessCode>
     {
         private readonly Lazy<KProReadinessCodeDictionary> _lazyReadinessCodes;
         private readonly Lazy<KProFaultCodeCollection> _lazyFaultCodes;
@@ -69,8 +69,8 @@ namespace HondataDotNet.Datalog.KPro
         public bool N2OOn2 => _frame.N2OOn2;
         public bool N2OArm3 => _frame.N2OArm3;
         public bool N2OOn3 => _frame.N2OOn3;
-        public KProReadinessCodeDictionary ReadinessCodes => _lazyReadinessCodes.Value;
-        public KProFaultCodeCollection FaultCodes => _lazyFaultCodes.Value;
+        public IReadOnlyDictionary<KProReadinessTests, KProReadinessCode> ReadinessCodes => _lazyReadinessCodes.Value;
+        public IReadOnlyCollection<KProFaultCode> FaultCodes => _lazyFaultCodes.Value;
         public int Gear => _frame.Gear;
         public double ELDV => _frame.ELDV;
         public bool Data => _frame.Data;

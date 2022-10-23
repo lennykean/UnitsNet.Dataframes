@@ -5,12 +5,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 using HondataDotNet.Datalog.Core;
-using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed partial class KProDatalog : IOBDIIDatalog<KProFrameCollection, KProFrame, KProFaultCodeCollection, KProFaultCode, KProReadinessCodeDictionary, KProReadinessTests, IReadinessCode<KProReadinessTests>>
+    public sealed partial class KProDatalog : IKProDatalog
     {
+        private readonly Lazy<KProCommentCollection> _lazyComments;
+
         private Header _header;
         private byte[] _footer;
         private KProFrameCollection _frames;
@@ -19,13 +20,18 @@ namespace HondataDotNet.Datalog.KPro
         private KProDatalog()
 #pragma warning restore CS8618
         {
+            _lazyComments = new(() => KProCommentCollection.FromFooter(_footer, _header.CommentLength));
         }
 
         public double StoichiometricRatio { get; set; } = 14.7;
 
-        public KProFrameCollection Frames => _frames;
+        public IReadWriteCollection<KProFrame> Frames => _frames;
 
         IReadOnlyCollection<IFrame> IDatalog.Frames => Frames;
+
+        public IReadWriteCollection<KProComment> Comments => _lazyComments.Value;
+
+        IReadOnlyCollection<IComment> IDatalog.Comments => Comments;
 
         public TimeSpan Duration => TimeSpan.FromMilliseconds(_header.Duration);
 
@@ -37,14 +43,13 @@ namespace HondataDotNet.Datalog.KPro
 
         public ushort SerialNumber => _header.SerialNumber;
 
-
         public void Save(Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
             _header.TypeIdentifier = Encoding.ASCII.GetBytes(TYPE_IDENTIFIER);
-            _header.FrameCount = Frames.Count;
+            _header.FrameCount = _frames.Count;
 
             var ptr = Marshal.AllocHGlobal(StructSize);
             try
@@ -58,7 +63,7 @@ namespace HondataDotNet.Datalog.KPro
             {
                 Marshal.FreeHGlobal(ptr);
             }
-            Frames.Save(stream, _header.FrameSize);
+            _frames.Save(stream, _header.FrameSize);
 
             stream.Write(_footer);
         }

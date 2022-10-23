@@ -2,7 +2,7 @@
 
 namespace HondataDotNet.Datalog.KPro
 {
-    internal class KProReadinessCode : IReadinessCode<KProReadinessTests>
+    public sealed class KProReadinessCode : IReadinessCode<KProReadinessTests>
     {
         public KProReadinessCode(KProReadinessTests readinessTest, bool supported, bool? ready)
         {

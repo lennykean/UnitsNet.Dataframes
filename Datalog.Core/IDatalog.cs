@@ -10,16 +10,18 @@ namespace HondataDotNet.Datalog.Core
         Version Version { get; }
 
         IReadOnlyCollection<IFrame> Frames { get; }
+        
+        IReadOnlyCollection<IComment> Comments { get; }
 
         void Save(Stream stream);
     }
 
-    public interface IDatalog<TFrameCollection, TFrame, TFaultCodeCollection, TFaultCode> : IDatalog
-        where TFrameCollection : IReadOnlyCollection<TFrame>
-        where TFrame : IFrame<TFaultCodeCollection, TFaultCode>
-        where TFaultCodeCollection : IReadOnlyCollection<TFaultCode>
+    public interface IDatalog<TFrame, TFaultCode, TComment> : IDatalog
+        where TFrame : IFrame<TFaultCode>
         where TFaultCode : IFaultCode
+        where TComment : IComment
     {
-        new TFrameCollection Frames { get; }
+        new IReadWriteCollection<TFrame> Frames { get; }
+        new IReadWriteCollection<TComment> Comments { get; }
     }
 }

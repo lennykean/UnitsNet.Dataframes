@@ -5,14 +5,12 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.OBDII
 {
-    public interface IOBDIIFrame<TOBDIIFaultCodeCollection, TOBDIIFaultCode, TReadinessCodeDictionary, TReadinessTest, TReadinessCode> : IFrame<TOBDIIFaultCodeCollection, TOBDIIFaultCode>
-        where TOBDIIFaultCodeCollection : IReadOnlyCollection<TOBDIIFaultCode>
-        where TOBDIIFaultCode : IOBDIIFaultCode
-        where TReadinessCodeDictionary : IReadOnlyDictionary<TReadinessTest, TReadinessCode>
+    public interface IOBDIIFrame<TFaultCode, TReadinessTest, TReadinessCode> : IFrame<TFaultCode>
+        where TFaultCode : IOBDIIFaultCode
         where TReadinessTest : struct, Enum
         where TReadinessCode : IReadinessCode<TReadinessTest>
     {
         byte FuelStatus { get; }
-        TReadinessCodeDictionary ReadinessCodes { get; }
+        IReadOnlyDictionary<TReadinessTest, TReadinessCode> ReadinessCodes { get; }
     }
 }

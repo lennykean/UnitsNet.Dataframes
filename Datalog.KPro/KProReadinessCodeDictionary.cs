@@ -2,7 +2,7 @@
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed class KProReadinessCodeDictionary : ReadinessCodeDictionary<KProReadinessTests, IReadinessCode<KProReadinessTests>>
+    public sealed class KProReadinessCodeDictionary : ReadinessCodeDictionary<KProReadinessTests, KProReadinessCode>
     {
         private readonly KProReadinessTests _supportFlags;
         private readonly KProReadinessTests _statusFlags;
@@ -13,6 +13,6 @@ namespace HondataDotNet.Datalog.KPro
             _supportFlags = supportFlags;
         }
 
-        public override IReadinessCode<KProReadinessTests> this[KProReadinessTests key] => new KProReadinessCode(key, _supportFlags.HasFlag(key), _statusFlags.HasFlag(key));
+        public override KProReadinessCode this[KProReadinessTests key] => new KProReadinessCode(key, _supportFlags.HasFlag(key), _statusFlags.HasFlag(key));
     }
 }

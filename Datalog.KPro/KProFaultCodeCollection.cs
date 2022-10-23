@@ -7,7 +7,7 @@ using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed class KProFaultCodeCollection : IOBDIIFaultCodeCollection<KProFaultCode>
+    public sealed class KProFaultCodeCollection : IReadOnlyCollection<KProFaultCode>
     {
         private readonly BigInteger _faultCodeFlags;
 

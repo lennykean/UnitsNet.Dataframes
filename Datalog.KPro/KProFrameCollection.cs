@@ -7,7 +7,7 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed class KProFrameCollection : IReadOnlyCollection<KProFrame>
+    public sealed class KProFrameCollection : IReadWriteCollection<KProFrame>
     {
         private readonly SortedSet<KProFrame> _frames;
         private readonly KProDatalog _datalog;
@@ -19,6 +19,8 @@ namespace HondataDotNet.Datalog.KPro
         }
 
         public int Count => _frames.Count;
+
+        public bool IsReadOnly => false;
 
         public void Add(KProFrame item)
         {
