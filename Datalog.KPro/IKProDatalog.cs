@@ -2,7 +2,7 @@
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public interface IKProDatalog : IOBDIIDatalog<KProFrame, KProFaultCode, KProReadinessTests, KProReadinessCode, KProComment>
+    public interface IKProDatalog : IOBDIIDatalog<KProDatalogFrame, KProFaultCode, KProReadinessTests, KProReadinessCode, KProDatalogComment>
     {
     }
 }

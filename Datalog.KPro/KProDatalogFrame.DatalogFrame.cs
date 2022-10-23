@@ -2,13 +2,13 @@
 
 namespace HondataDotNet.Datalog.KPro
 {
-    partial class KProFrame
+    partial class KProDatalogFrame
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct Frame
+        private struct DatalogFrame
         {
             public int FrameNumber;
-            public int FrameOffset;
+            public int Offset;
             public int RPM;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] Unknown;
@@ -111,6 +111,6 @@ namespace HondataDotNet.Datalog.KPro
             public bool RevLimit;
         }
 
-        private static readonly int StructSize = Marshal.SizeOf<Frame>();
+        private static readonly int StructSize = Marshal.SizeOf<DatalogFrame>();
     }
 }

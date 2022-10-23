@@ -7,14 +7,14 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed class KProFrameCollection : IReadWriteCollection<KProFrame>
+    public sealed class KProDatalogFrameCollection : IReadWriteCollection<KProDatalogFrame>
     {
-        private readonly SortedSet<KProFrame> _frames;
+        private readonly SortedSet<KProDatalogFrame> _frames;
         private readonly KProDatalog _datalog;
 
-        internal KProFrameCollection(KProDatalog datalog)
+        internal KProDatalogFrameCollection(KProDatalog datalog)
         {
-            _frames = new(new FrameComparer());
+            _frames = new(new TimeSeriesComparer());
             _datalog = datalog;
         }
 
@@ -22,14 +22,14 @@ namespace HondataDotNet.Datalog.KPro
 
         public bool IsReadOnly => false;
 
-        public void Add(KProFrame item)
+        public void Add(KProDatalogFrame item)
         {
             _frames.Add(item);
 
             item.Datalog = _datalog;
         }
 
-        public bool Remove(KProFrame item)
+        public bool Remove(KProDatalogFrame item)
         {
             var removed = _frames.Remove(item);
             if (removed)
@@ -47,17 +47,17 @@ namespace HondataDotNet.Datalog.KPro
             _frames.Clear();
         }
 
-        public bool Contains(KProFrame item)
+        public bool Contains(KProDatalogFrame item)
         {
             return _frames.Contains(item);
         }
 
-        public void CopyTo(KProFrame[] array, int arrayIndex)
+        public void CopyTo(KProDatalogFrame[] array, int arrayIndex)
         {
             _frames.CopyTo(array, arrayIndex);
         }
 
-        public IEnumerator<KProFrame> GetEnumerator()
+        public IEnumerator<KProDatalogFrame> GetEnumerator()
         {
             return _frames.GetEnumerator();
         }
@@ -67,23 +67,23 @@ namespace HondataDotNet.Datalog.KPro
             return GetEnumerator();
         }
 
+        internal static KProDatalogFrameCollection ReadFromStream(Stream stream, KProDatalog datalog, int frameCount, int frameSize)
+        {
+            var frames = new KProDatalogFrameCollection(datalog);
+
+            for (var i = 0; i < frameCount; i++)
+            {
+                frames.Add(KProDatalogFrame.ReadFromStream(stream, frameSize));
+            }
+            return frames;
+        }
+
         internal void Save(Stream stream, int frameSize)
         {
             foreach (var (frame, frameNumber) in _frames.Select((frame, frameNumber) => (frame, frameNumber)))
             {
                 frame.Save(stream, frameNumber, frameSize);
             }
-        }
-
-        internal static KProFrameCollection ReadFramesFromStream(Stream stream, KProDatalog datalog, int frameCount, int frameSize)
-        {
-            var frames = new KProFrameCollection(datalog);
-
-            for (var i = 0; i < frameCount; i++)
-            {
-                frames.Add(KProFrame.ReadFromStream(stream, frameSize));
-            }
-            return frames;
         }
     }
 }

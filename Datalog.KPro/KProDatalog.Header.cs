@@ -19,7 +19,7 @@ namespace HondataDotNet.Datalog.KPro
             public ushort SerialNumber;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
             public byte[] Unknown3;
-            public short CommentLength;
+            public short CommentCount;
             public short Version;
         }
 

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace HondataDotNet.Datalog.Core
 {
-    public interface IFrame
+    public interface IDatalogFrame : ITimeSeriesElement
     {
-        TimeSpan FrameOffset { get; }
         int RPM { get; }
         double VSS { get; }
         double INJ { get; }
@@ -20,11 +18,13 @@ namespace HondataDotNet.Datalog.Core
         double PA { get; }
         double BAT { get; }
         int Gear { get; }
+
+        IReadOnlyCollection<IFaultCode> FaultCodes { get; }
     }
 
-    public interface IFrame<TFaultCode> : IFrame
+    public interface IDatalogFrame<TFaultCode> : IDatalogFrame
         where TFaultCode : IFaultCode
     {
-        IReadOnlyCollection<TFaultCode> FaultCodes { get; }
+        new IReadOnlyCollection<TFaultCode> FaultCodes { get; }
     }
 }

@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
+using HondataDotNet.Datalog.Core;
 using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed partial class KProFrame : IOBDIIFrame<KProFaultCode, KProReadinessTests, KProReadinessCode>
+    public sealed partial class KProDatalogFrame : IOBDIIDatalogFrame<KProFaultCode, KProReadinessTests, KProReadinessCode>
     {
         private readonly Lazy<KProReadinessCodeDictionary> _lazyReadinessCodes;
         private readonly Lazy<KProFaultCodeCollection> _lazyFaultCodes;
         private readonly Lazy<TimeSpan> _lazyFrameOffset;
 
-        private Frame _frame;
+        private DatalogFrame _frame;
 
-        private KProFrame()
+        public KProDatalogFrame()
         {
             _lazyReadinessCodes = new(() => new(_frame.ReadinessCodeSupportFlags, _frame.ReadinessCodeStatusFlags));
             _lazyFaultCodes = new(() => new(_frame.FaultCodeFlags));
-            _lazyFrameOffset = new(() => TimeSpan.FromMilliseconds(_frame.FrameOffset));
+            _lazyFrameOffset = new(() => TimeSpan.FromMilliseconds(_frame.Offset));
         }
 
         public KProDatalog? Datalog { get; internal set; }
-        public TimeSpan FrameOffset => _lazyFrameOffset.Value;
+        public TimeSpan Offset => _lazyFrameOffset.Value;
         public int RPM => _frame.RPM;
         public double VSS => _frame.VSS;
         public double MAP => _frame.MAP;
@@ -71,6 +72,7 @@ namespace HondataDotNet.Datalog.KPro
         public bool N2OOn3 => _frame.N2OOn3;
         public IReadOnlyDictionary<KProReadinessTests, KProReadinessCode> ReadinessCodes => _lazyReadinessCodes.Value;
         public IReadOnlyCollection<KProFaultCode> FaultCodes => _lazyFaultCodes.Value;
+        IReadOnlyCollection<IFaultCode> IDatalogFrame.FaultCodes => FaultCodes;
         public int Gear => _frame.Gear;
         public double ELDV => _frame.ELDV;
         public bool Data => _frame.Data;
@@ -87,7 +89,7 @@ namespace HondataDotNet.Datalog.KPro
         public double AFCMD => LambdaCMD * Datalog?.StoichiometricRatio ?? 0;
         public double DUTY => RPM * INJ / 1200;
 
-        internal static KProFrame ReadFromStream(Stream stream, int frameSize)
+        internal static KProDatalogFrame ReadFromStream(Stream stream, int frameSize)
         {
             var ptr = Marshal.AllocHGlobal(StructSize);
             try
@@ -98,7 +100,7 @@ namespace HondataDotNet.Datalog.KPro
                 Marshal.Copy(buffer, 0, ptr, StructSize);
                 return new()
                 {
-                    _frame = Marshal.PtrToStructure<Frame>(ptr)
+                    _frame = Marshal.PtrToStructure<DatalogFrame>(ptr)
                 };
             }
             finally

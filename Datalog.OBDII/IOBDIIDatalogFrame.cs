@@ -5,7 +5,7 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.OBDII
 {
-    public interface IOBDIIFrame<TFaultCode, TReadinessTest, TReadinessCode> : IFrame<TFaultCode>
+    public interface IOBDIIDatalogFrame<TFaultCode, TReadinessTest, TReadinessCode> : IDatalogFrame<TFaultCode>
         where TFaultCode : IOBDIIFaultCode
         where TReadinessTest : struct, Enum
         where TReadinessCode : IReadinessCode<TReadinessTest>

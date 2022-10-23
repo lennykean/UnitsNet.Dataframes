@@ -10,30 +10,28 @@ namespace HondataDotNet.Datalog.KPro
 {
     public sealed partial class KProDatalog : IKProDatalog
     {
-        private readonly Lazy<KProCommentCollection> _lazyComments;
-
         private Header _header;
         private byte[] _footer;
-        private KProFrameCollection _frames;
+        private KProDatalogFrameCollection _frames;
+        private KProDatalogCommentCollection _comments;
 
 #pragma warning disable CS8618
         private KProDatalog()
 #pragma warning restore CS8618
         {
-            _lazyComments = new(() => KProCommentCollection.FromFooter(_footer, _header.CommentLength));
         }
 
         public double StoichiometricRatio { get; set; } = 14.7;
 
-        public IReadWriteCollection<KProFrame> Frames => _frames;
+        public IReadWriteCollection<KProDatalogFrame> Frames => _frames;
 
-        IReadOnlyCollection<IFrame> IDatalog.Frames => Frames;
+        IReadOnlyCollection<IDatalogFrame> IDatalog.Frames => Frames;
 
-        public IReadWriteCollection<KProComment> Comments => _lazyComments.Value;
+        public IReadWriteCollection<KProDatalogComment> Comments => _comments;
 
-        IReadOnlyCollection<IComment> IDatalog.Comments => Comments;
+        IReadOnlyCollection<IDatalogComment> IDatalog.Comments => Comments;
 
-        public TimeSpan Duration => TimeSpan.FromMilliseconds(_header.Duration);
+        public TimeSpan Duration { get => TimeSpan.FromMilliseconds(_header.Duration); set => _header.Duration = (int)value.TotalMilliseconds; }
 
         public Version Version => new(
             _header.Version >> 12,
@@ -50,6 +48,7 @@ namespace HondataDotNet.Datalog.KPro
 
             _header.TypeIdentifier = Encoding.ASCII.GetBytes(TYPE_IDENTIFIER);
             _header.FrameCount = _frames.Count;
+            _header.CommentCount = (short)_comments.Count;
 
             var ptr = Marshal.AllocHGlobal(StructSize);
             try
@@ -64,6 +63,7 @@ namespace HondataDotNet.Datalog.KPro
                 Marshal.FreeHGlobal(ptr);
             }
             _frames.Save(stream, _header.FrameSize);
+            _comments.Save(stream);
 
             stream.Write(_footer);
         }
@@ -91,9 +91,11 @@ namespace HondataDotNet.Datalog.KPro
                 Marshal.FreeHGlobal(ptr);
             }
 
-            datalog._frames = KProFrameCollection.ReadFramesFromStream(stream, datalog, datalog._header.FrameCount, datalog._header.FrameSize);
+            datalog._frames = KProDatalogFrameCollection.ReadFromStream(stream, datalog, datalog._header.FrameCount, datalog._header.FrameSize);
 
-            var footer = new MemoryStream();
+            datalog._comments = KProDatalogCommentCollection.ReadFromStream(stream, datalog._header.CommentCount);
+
+            using var footer = new MemoryStream();
             stream.CopyTo(footer);
             datalog._footer = footer.ToArray();
 

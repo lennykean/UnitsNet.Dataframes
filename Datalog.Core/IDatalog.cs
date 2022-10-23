@@ -9,19 +9,19 @@ namespace HondataDotNet.Datalog.Core
         TimeSpan Duration { get; }
         Version Version { get; }
 
-        IReadOnlyCollection<IFrame> Frames { get; }
+        IReadOnlyCollection<IDatalogFrame> Frames { get; }
         
-        IReadOnlyCollection<IComment> Comments { get; }
+        IReadOnlyCollection<IDatalogComment> Comments { get; }
 
         void Save(Stream stream);
     }
 
-    public interface IDatalog<TFrame, TFaultCode, TComment> : IDatalog
-        where TFrame : IFrame<TFaultCode>
+    public interface IDatalog<TDatalogFrame, TFaultCode, TDatalogComment> : IDatalog
+        where TDatalogFrame : IDatalogFrame<TFaultCode>
         where TFaultCode : IFaultCode
-        where TComment : IComment
+        where TDatalogComment : IDatalogComment
     {
-        new IReadWriteCollection<TFrame> Frames { get; }
-        new IReadWriteCollection<TComment> Comments { get; }
+        new IReadWriteCollection<TDatalogFrame> Frames { get; }
+        new IReadWriteCollection<TDatalogComment> Comments { get; }
     }
 }
