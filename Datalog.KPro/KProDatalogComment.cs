@@ -17,9 +17,9 @@ namespace HondataDotNet.Datalog.KPro
             Comment = comment ?? throw new ArgumentNullException(nameof(comment));
         }
 
-#pragma warning disable CS8618
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private KProDatalogComment()
-#pragma warning restore CS8618
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
         }
 
