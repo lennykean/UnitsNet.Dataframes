@@ -91,22 +91,10 @@ namespace HondataDotNet.Datalog.KPro
 
         internal static KProDatalogFrame ReadFromStream(Stream stream, int frameSize)
         {
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
+            return new()
             {
-                var buffer = new byte[frameSize];
-                stream.Read(buffer, 0, frameSize);
-
-                Marshal.Copy(buffer, 0, ptr, StructSize);
-                return new()
-                {
-                    _frame = Marshal.PtrToStructure<DatalogFrame>(ptr)
-                };
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+                _frame = stream.ReadStruct<DatalogFrame>(0, frameSize)
+            };
         }
 
         internal void Save(Stream stream, int frameNumber, int frameSize)

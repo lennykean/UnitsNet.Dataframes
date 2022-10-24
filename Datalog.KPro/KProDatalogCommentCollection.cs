@@ -12,7 +12,9 @@ namespace HondataDotNet.Datalog.KPro
 
         private byte[] _header;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         internal KProDatalogCommentCollection()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             _comments = new(new TimeSeriesComparer());
         }

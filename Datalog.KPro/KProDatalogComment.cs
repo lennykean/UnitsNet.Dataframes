@@ -34,22 +34,10 @@ namespace HondataDotNet.Datalog.KPro
 
         internal static KProDatalogComment ReadFromStream(Stream stream)
         {
-            var datalogComment = new KProDatalogComment();
-
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
+            var datalogComment = new KProDatalogComment
             {
-                var buffer = new byte[StructSize];
-                stream.Read(buffer, 0, StructSize);
-
-                Marshal.Copy(buffer, 0, ptr, StructSize);
-
-                datalogComment._metadata = Marshal.PtrToStructure<Metadata>(ptr);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+                _metadata = stream.ReadStruct<Metadata>()
+            };
 
             var comment = new byte[datalogComment._metadata.Length];
             stream.Read(comment, 0, comment.Length);

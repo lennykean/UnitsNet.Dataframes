@@ -75,24 +75,11 @@ namespace HondataDotNet.Datalog.KPro
             if (preValidate)
                 ValidateIdentifier(stream);
 
-            var datalog = new KProDatalog();
-
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
+            var datalog = new KProDatalog
             {
-                var buffer = new byte[StructSize];
-                stream.Read(buffer, TYPE_IDENTIFIER.Length, StructSize - TYPE_IDENTIFIER.Length);
-
-                Marshal.Copy(buffer, 0, ptr, StructSize);
-                datalog._header = Marshal.PtrToStructure<Header>(ptr);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
-
+                _header = stream.ReadStruct<Header>(TYPE_IDENTIFIER.Length)
+            };
             datalog._frames = KProDatalogFrameCollection.ReadFromStream(stream, datalog, datalog._header.FrameCount, datalog._header.FrameSize);
-
             datalog._comments = KProDatalogCommentCollection.ReadFromStream(stream, datalog._header.CommentCount);
 
             using var footer = new MemoryStream();
