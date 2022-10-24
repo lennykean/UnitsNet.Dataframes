@@ -10,6 +10,8 @@ namespace HondataDotNet.Datalog.KPro
 {
     public sealed partial class KProDatalog : IKProDatalog
     {
+        private const string TYPE_IDENTIFIER = "KFLASH";
+        
         private Header _header;
         private byte[] _footer;
         private KProDatalogFrameCollection _frames;
@@ -50,21 +52,10 @@ namespace HondataDotNet.Datalog.KPro
             _header.FrameCount = _frames.Count;
             _header.CommentCount = (short)_comments.Count;
 
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
-            {
-                var buffer = new byte[StructSize];
-                Marshal.StructureToPtr(_header, ptr, false);
-                Marshal.Copy(ptr, buffer, 0, StructSize);
-                stream.Write(buffer);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+            stream.WriteStruct(_header);
+
             _frames.Save(stream, _header.FrameSize);
             _comments.Save(stream);
-
             stream.Write(_footer);
         }
 

@@ -50,18 +50,7 @@ namespace HondataDotNet.Datalog.KPro
         {
             _metadata.Length = Comment.Length;
 
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
-            {
-                var buffer = new byte[StructSize];
-                Marshal.StructureToPtr(_metadata, ptr, false);
-                Marshal.Copy(ptr, buffer, 0, StructSize);
-                stream.Write(buffer);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+            stream.WriteStruct(_metadata);
             stream.Write(Encoding.ASCII.GetBytes(Comment));
         }
     }

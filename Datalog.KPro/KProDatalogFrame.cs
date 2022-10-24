@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 
 using HondataDotNet.Datalog.Core;
 using HondataDotNet.Datalog.OBDII;
@@ -10,6 +9,8 @@ namespace HondataDotNet.Datalog.KPro
 {
     public sealed partial class KProDatalogFrame : IOBDIIDatalogFrame<KProFaultCode, KProReadinessTests, KProReadinessCode>
     {
+        private const string TYPE_IDENTIFIER = "KFLASH";
+        
         private readonly Lazy<KProReadinessCodeDictionary> _lazyReadinessCodes;
         private readonly Lazy<KProFaultCodeCollection> _lazyFaultCodes;
         private readonly Lazy<TimeSpan> _lazyFrameOffset;
@@ -101,18 +102,7 @@ namespace HondataDotNet.Datalog.KPro
         {
             _frame.FrameNumber = frameNumber;
 
-            var ptr = Marshal.AllocHGlobal(StructSize);
-            try
-            {
-                var buffer = new byte[frameSize];
-                Marshal.StructureToPtr(_frame, ptr, false);
-                Marshal.Copy(ptr, buffer, 0, StructSize);
-                stream.Write(buffer);
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+            stream.WriteStruct(_frame, 0, frameSize);
         }
     }
 }

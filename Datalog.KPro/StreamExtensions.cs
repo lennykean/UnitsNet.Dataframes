@@ -23,5 +23,22 @@ namespace HondataDotNet.Datalog.KPro
                 Marshal.FreeHGlobal(ptr);
             }
         }
+
+        public static void WriteStruct<TStruct>(this Stream stream, TStruct @struct, int? offset = null, int? length = null) where TStruct : struct
+        {
+            var structSize = Marshal.SizeOf<TStruct>();
+            var ptr = Marshal.AllocHGlobal(structSize);
+            try
+            {
+                var buffer = new byte[structSize];
+                Marshal.StructureToPtr(@struct, ptr, false);
+                Marshal.Copy(ptr, buffer, offset ?? 0, length ?? structSize);
+                stream.Write(buffer);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
     }
 }

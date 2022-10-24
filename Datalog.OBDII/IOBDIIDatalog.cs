@@ -4,12 +4,12 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.OBDII
 {
-    public interface IOBDIIDatalog<TDatalogFrame, TFaultCode, TReadinessTest, TReadinessCode, TDatalogComment> : IDatalog<TDatalogFrame, TFaultCode, TDatalogComment>
+    public interface IOBDIIDatalog<TDatalogFrame, TFaultCode, TDatalogComment, TReadinessTest, TReadinessCode> : IDatalog<TDatalogFrame, TFaultCode, TDatalogComment>
         where TDatalogFrame : IOBDIIDatalogFrame<TFaultCode, TReadinessTest, TReadinessCode>
         where TFaultCode : IOBDIIFaultCode
+        where TDatalogComment : IDatalogComment
         where TReadinessTest : struct, Enum
         where TReadinessCode : IReadinessCode<TReadinessTest>
-        where TDatalogComment : IDatalogComment
     {
     }
 }

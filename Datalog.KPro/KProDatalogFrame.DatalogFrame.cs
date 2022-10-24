@@ -110,7 +110,5 @@ namespace HondataDotNet.Datalog.KPro
             [MarshalAs(UnmanagedType.I1)]
             public bool RevLimit;
         }
-
-        private static readonly int StructSize = Marshal.SizeOf<DatalogFrame>();
     }
 }

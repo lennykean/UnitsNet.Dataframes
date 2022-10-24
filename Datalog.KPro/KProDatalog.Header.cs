@@ -22,9 +22,5 @@ namespace HondataDotNet.Datalog.KPro
             public short CommentCount;
             public short Version;
         }
-
-        private const string TYPE_IDENTIFIER = "KFLASH";
-
-        private static readonly int StructSize = Marshal.SizeOf<Header>();
     }
 }

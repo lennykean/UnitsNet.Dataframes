@@ -12,7 +12,5 @@ namespace HondataDotNet.Datalog.KPro
             public double Offset;
             public int Length;
         }
-
-        public readonly static int StructSize = Marshal.SizeOf<Metadata>();
     }
 }
