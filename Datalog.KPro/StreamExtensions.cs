@@ -30,9 +30,9 @@ namespace HondataDotNet.Datalog.KPro
             var ptr = Marshal.AllocHGlobal(structSize);
             try
             {
-                var buffer = new byte[structSize];
+                var buffer = new byte[length ?? structSize];
                 Marshal.StructureToPtr(@struct, ptr, false);
-                Marshal.Copy(ptr, buffer, offset ?? 0, length ?? structSize);
+                Marshal.Copy(ptr, buffer, offset ?? 0, structSize - (offset ?? 0));
                 stream.Write(buffer);
             }
             finally
