@@ -102,7 +102,7 @@ namespace HondataDotNet.Datalog.KPro
         {
             _frame.FrameNumber = frameNumber;
 
-            stream.WriteStruct(_frame, 0, frameSize);
+            stream.WriteStruct(_frame, offset: 0, length: frameSize);
         }
     }
 }

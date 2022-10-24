@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 
 using HondataDotNet.Datalog.Core;
@@ -15,7 +14,7 @@ namespace HondataDotNet.Datalog.KPro
         private Header _header;
         private byte[] _footer;
         private KProDatalogFrameCollection _frames;
-        private KProDatalogCommentCollection _comments;
+        private KProDatalogFrameCommentCollection _comments;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private KProDatalog()
@@ -29,9 +28,9 @@ namespace HondataDotNet.Datalog.KPro
 
         IReadOnlyCollection<IDatalogFrame> IDatalog.Frames => Frames;
 
-        public IReadWriteCollection<KProDatalogComment> Comments => _comments;
+        public IReadWriteCollection<KProDatalogFrameComment> Comments => _comments;
 
-        IReadOnlyCollection<IDatalogComment> IDatalog.Comments => Comments;
+        IReadOnlyCollection<IDatalogFrameComment> IDatalog.Comments => Comments;
 
         public TimeSpan Duration { get => TimeSpan.FromMilliseconds(_header.Duration); set => _header.Duration = (int)value.TotalMilliseconds; }
 
@@ -68,10 +67,10 @@ namespace HondataDotNet.Datalog.KPro
 
             var datalog = new KProDatalog
             {
-                _header = stream.ReadStruct<Header>(TYPE_IDENTIFIER.Length)
+                _header = stream.ReadStruct<Header>(offset: TYPE_IDENTIFIER.Length)
             };
             datalog._frames = KProDatalogFrameCollection.ReadFromStream(stream, datalog, datalog._header.FrameCount, datalog._header.FrameSize);
-            datalog._comments = KProDatalogCommentCollection.ReadFromStream(stream, datalog._header.CommentCount);
+            datalog._comments = KProDatalogFrameCommentCollection.ReadFromStream(stream, datalog._header.CommentCount);
 
             using var footer = new MemoryStream();
             stream.CopyTo(footer);

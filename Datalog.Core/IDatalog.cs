@@ -11,7 +11,7 @@ namespace HondataDotNet.Datalog.Core
 
         IReadOnlyCollection<IDatalogFrame> Frames { get; }
         
-        IReadOnlyCollection<IDatalogComment> Comments { get; }
+        IReadOnlyCollection<IDatalogFrameComment> Comments { get; }
 
         void Save(Stream stream);
     }
@@ -19,7 +19,7 @@ namespace HondataDotNet.Datalog.Core
     public interface IDatalog<TDatalogFrame, TFaultCode, TDatalogComment> : IDatalog
         where TDatalogFrame : IDatalogFrame<TFaultCode>
         where TFaultCode : IFaultCode
-        where TDatalogComment : IDatalogComment
+        where TDatalogComment : IDatalogFrameComment
     {
         new IReadWriteCollection<TDatalogFrame> Frames { get; }
         new IReadWriteCollection<TDatalogComment> Comments { get; }

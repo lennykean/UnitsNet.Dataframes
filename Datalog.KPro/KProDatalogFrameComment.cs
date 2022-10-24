@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,18 +7,18 @@ using HondataDotNet.Datalog.Core;
 
 namespace HondataDotNet.Datalog.KPro
 {
-    public sealed partial class KProDatalogComment : IDatalogComment
+    public sealed partial class KProDatalogFrameComment : IDatalogFrameComment
     {
         private Metadata _metadata;
 
-        public KProDatalogComment(TimeSpan offset, string comment)
+        public KProDatalogFrameComment(TimeSpan offset, string comment)
         {
             _metadata.Offset = offset.TotalSeconds;
             Comment = comment ?? throw new ArgumentNullException(nameof(comment));
         }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private KProDatalogComment()
+        private KProDatalogFrameComment()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
         }
@@ -29,12 +29,12 @@ namespace HondataDotNet.Datalog.KPro
 
         public override string ToString()
         {
-            return $"{nameof(KProDatalogComment)}({Offset}, \"{Comment}\")";
+            return $"{nameof(KProDatalogFrameComment)}({Offset}, \"{Comment}\")";
         }
 
-        internal static KProDatalogComment ReadFromStream(Stream stream)
+        internal static KProDatalogFrameComment ReadFromStream(Stream stream)
         {
-            var datalogComment = new KProDatalogComment
+            var datalogComment = new KProDatalogFrameComment
             {
                 _metadata = stream.ReadStruct<Metadata>()
             };
