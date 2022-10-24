@@ -52,7 +52,6 @@ namespace HondataDotNet.Datalog.KPro
             _header.CommentCount = (short)_comments.Count;
 
             stream.WriteStruct(_header);
-
             _frames.Save(stream, _header.FrameSize);
             _comments.Save(stream);
             stream.Write(_footer);

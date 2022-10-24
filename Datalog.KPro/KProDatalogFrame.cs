@@ -9,8 +9,6 @@ namespace HondataDotNet.Datalog.KPro
 {
     public sealed partial class KProDatalogFrame : IOBDIIDatalogFrame<KProFaultCode, KProReadinessTests, KProReadinessCode>
     {
-        private const string TYPE_IDENTIFIER = "KFLASH";
-        
         private readonly Lazy<KProReadinessCodeDictionary> _lazyReadinessCodes;
         private readonly Lazy<KProFaultCodeCollection> _lazyFaultCodes;
         private readonly Lazy<TimeSpan> _lazyFrameOffset;
