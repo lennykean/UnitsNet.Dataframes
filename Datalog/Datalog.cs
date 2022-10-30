@@ -1,6 +1,7 @@
 ﻿using System.IO;
 
 using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.FlashPro;
 using HondataDotNet.Datalog.KPro;
 
 namespace HondataDotNet.Datalog
@@ -16,6 +17,8 @@ namespace HondataDotNet.Datalog
 
             if (KProDatalog.IsValidIdentifier(buffer))
                 return KProDatalog.FromStream(stream, preValidate: false);
+            if (FlashProDatalog.HasValidIdentifier(buffer))
+                return FlashProDatalog.FromStream(stream, preValidate: false);
 
             throw new InvalidDatalogFormatException($"Identifier \"{buffer}\" does not indicate a valid datalog");
         }
