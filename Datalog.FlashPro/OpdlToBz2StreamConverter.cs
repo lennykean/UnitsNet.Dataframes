@@ -14,7 +14,7 @@ namespace HondataDotNet.Datalog.FlashPro
 
         private readonly MemoryStream _bZipHeaderStream;
         private readonly MemoryStream _bZipFooterStream;
-        private readonly MemoryStream _readAheadBuffer;
+        private readonly MemoryStream _readAheadStream;
         private readonly Stream _opdlStream;
 
         public OpdlToBz2StreamConverter(Stream opdlStream)
@@ -22,7 +22,7 @@ namespace HondataDotNet.Datalog.FlashPro
             _opdlStream = opdlStream;
             _bZipHeaderStream = new MemoryStream(_magicHeader);
             _bZipFooterStream = new MemoryStream(); 
-            _readAheadBuffer = new MemoryStream();
+            _readAheadStream = new MemoryStream();
         }
 
         public override bool CanRead => _opdlStream.CanRead;
@@ -61,31 +61,31 @@ namespace HondataDotNet.Datalog.FlashPro
 
             while (read < count)
             {
-                var bufferRead = _readAheadBuffer.Read(buffer, offset + read, count - read);
-                read += bufferRead;
+                var readAheadRead = _readAheadStream.Read(buffer, offset + read, count - read);
+                read += readAheadRead;
 
-                var bufferBytes = bufferRead;
-                if (_readAheadBuffer.Length == 0)
-                    bufferBytes = READ_AHEAD;
+                var refill = readAheadRead;
+                if (_readAheadStream.Length == 0)
+                    refill = READ_AHEAD;
 
-                if (bufferBytes == 0)
+                if (refill == 0)
                     break;
 
-                var opdlBuffer = new byte[bufferBytes];
+                var opdlBuffer = new byte[refill];
                 var opdlRead = _opdlStream.Read(opdlBuffer);
                 if (opdlRead == 0)
                 {
                     BuildFooter();
-                    _readAheadBuffer.Seek(0, SeekOrigin.End);
+                    _readAheadStream.Seek(0, SeekOrigin.End);
                     continue;
                 }
 
-                var readAheadBufferBuffer = new byte[_readAheadBuffer.Length - _readAheadBuffer.Position];
-                _readAheadBuffer.Read(readAheadBufferBuffer);
-                _readAheadBuffer.Seek(0, SeekOrigin.Begin);
-                _readAheadBuffer.Write(readAheadBufferBuffer);
-                _readAheadBuffer.Write(opdlBuffer, 0, opdlRead);
-                _readAheadBuffer.Seek(0, SeekOrigin.Begin);                
+                var readAheadBuffer = new byte[_readAheadStream.Length - _readAheadStream.Position];
+                _readAheadStream.Read(readAheadBuffer);
+                _readAheadStream.Seek(0, SeekOrigin.Begin);
+                _readAheadStream.Write(readAheadBuffer);
+                _readAheadStream.Write(opdlBuffer, 0, opdlRead);
+                _readAheadStream.Seek(0, SeekOrigin.Begin);                
             }
             if (read < count)
             {
@@ -99,7 +99,7 @@ namespace HondataDotNet.Datalog.FlashPro
             if (_bZipFooterStream.Length > 0)
                 return;
 
-            var originalFooter = new BigInteger(_readAheadBuffer.ToArray(), isUnsigned: true, isBigEndian: true);
+            var originalFooter = new BigInteger(_readAheadStream.ToArray(), isUnsigned: true, isBigEndian: true);
 
             var offset = FindFooterOffset(originalFooter);
             var byteAlignedOriginalfooter = originalFooter << offset;
