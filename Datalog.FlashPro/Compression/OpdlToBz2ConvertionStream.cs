@@ -13,19 +13,18 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
         const string TYPE_IDENTIFIER = "OPDL";
         const int READ_AHEAD = 6;
 
-        private static readonly byte[] _magicHeader = new byte[] { 0x42, 0x5a, 0x68, 0x38 };
-        private static readonly byte[] _magicFooter = new byte[] { 0x17, 0x72, 0x45, 0x38, 0x50, 0x90 };
+        private static readonly byte[] _bz2Header = new byte[] { 0x42, 0x5a, 0x68, 0x38 };
+        private static readonly byte[] _eosMagic = new byte[] { 0x17, 0x72, 0x45, 0x38, 0x50, 0x90 };
 
+        private readonly Stream _opdlStream;
         private readonly MemoryStream _bZipHeaderStream;
         private readonly MemoryStream _bZipFooterStream;
         private readonly MemoryStream _readAheadStream;
-        private readonly Stream _opdlStream;
-
 
         public OpdlToBz2ConvertionStream(Stream opdlStream)
         {
             _opdlStream = opdlStream ?? throw new ArgumentNullException(nameof(opdlStream));
-            _bZipHeaderStream = new MemoryStream(_magicHeader);
+            _bZipHeaderStream = new MemoryStream(_bz2Header);
             _bZipFooterStream = new MemoryStream();
             _readAheadStream = new MemoryStream();
         }
@@ -59,7 +58,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_opdlStream.Position == 0)
-                ReadHeader();
+                ReadOpdlHeader();
 
             var read = _bZipHeaderStream.Read(buffer, offset, count);
 
@@ -105,7 +104,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
             for (var offset = 0; offset < 8; offset++)
             {
-                if ((originalFooter >> startBit - offset & 0xFF) == _magicFooter[0])
+                if ((originalFooter >> startBit - offset & 0xFF) == _eosMagic[0])
                 {
                     return offset;
                 }
@@ -113,7 +112,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
             return 8;
         }
 
-        private void ReadHeader()
+        private void ReadOpdlHeader()
         {
             var header = new byte[13];
             _opdlStream.Read(header);
@@ -122,7 +121,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
             if (typeIdentifier != TYPE_IDENTIFIER)
                 throw new InvalidDatalogFormatException($"Identifier \"{typeIdentifier}\" does not indicate a valid compressed FlashPro datalog");
 
-            var storedDataSize = new BigInteger(header.AsSpan().Slice(8, 4), isUnsigned: true, isBigEndian: true);
+            var storedDataSize = new BigInteger(header.AsSpan().Slice(9, 3), isUnsigned: true, isBigEndian: true);
             StoredDataSize = (uint)storedDataSize;
         }
 
@@ -142,7 +141,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 var crcBytes = byteAlignedOriginalFooterBytes.AsSpan().Slice(byteAlignedOriginalFooterBytes.Length - 5);
 
                 byteAlignedBz2FooterStream.Write(byteAlignedOriginalFooterBytes.AsSpan().Slice(0, 1));
-                byteAlignedBz2FooterStream.Write(_magicFooter);
+                byteAlignedBz2FooterStream.Write(_eosMagic);
                 byteAlignedBz2FooterStream.Write(crcBytes);
 
                 var byteAlignedBz2FooterBytes = byteAlignedBz2FooterStream.ToArray();
