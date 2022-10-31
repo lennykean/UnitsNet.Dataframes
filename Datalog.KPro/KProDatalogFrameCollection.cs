@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.Core.Utils;
 
 namespace HondataDotNet.Datalog.KPro
 {

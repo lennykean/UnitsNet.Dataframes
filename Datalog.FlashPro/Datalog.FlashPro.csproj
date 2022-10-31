@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -6,6 +6,10 @@
     <AssemblyName>HondataDotNet.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>HondataDotNet.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpZipLib" Version="1.4.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Datalog.OBDII\Datalog.OBDII.csproj" />

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HondataDotNet.Datalog.Core
+namespace HondataDotNet.Datalog.Core.Utils
 {
     public class TimeSeriesComparer : IComparer<ITimeSeriesElement>
     {

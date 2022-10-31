@@ -2,11 +2,15 @@
 using System;
 using System.IO;
 using System.Numerics;
+using System.Text;
 
-namespace HondataDotNet.Datalog.FlashPro
+using HondataDotNet.Datalog.Core;
+
+namespace HondataDotNet.Datalog.FlashPro.Compression
 {
     public class OpdlToBz2ConvertionStream : Stream
     {
+        const string TYPE_IDENTIFIER = "OPDL";
         const int READ_AHEAD = 6;
 
         private static readonly byte[] _magicHeader = new byte[] { 0x42, 0x5a, 0x68, 0x38 };
@@ -17,13 +21,16 @@ namespace HondataDotNet.Datalog.FlashPro
         private readonly MemoryStream _readAheadStream;
         private readonly Stream _opdlStream;
 
+
         public OpdlToBz2ConvertionStream(Stream opdlStream)
         {
-            _opdlStream = opdlStream;
+            _opdlStream = opdlStream ?? throw new ArgumentNullException(nameof(opdlStream));
             _bZipHeaderStream = new MemoryStream(_magicHeader);
-            _bZipFooterStream = new MemoryStream(); 
+            _bZipFooterStream = new MemoryStream();
             _readAheadStream = new MemoryStream();
         }
+
+        internal uint StoredDataSize { get; private set; }
 
         public override bool CanRead => _opdlStream.CanRead;
 
@@ -52,11 +59,8 @@ namespace HondataDotNet.Datalog.FlashPro
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_opdlStream.Position == 0)
-            {
-                var opdlHeader = new byte[13];
-                 _opdlStream.Read(opdlHeader);
-            }
-            
+                ReadHeader();
+
             var read = _bZipHeaderStream.Read(buffer, offset, count);
 
             while (read < count)
@@ -95,6 +99,33 @@ namespace HondataDotNet.Datalog.FlashPro
             return read;
         }
 
+        private static int FindFooterOffset(BigInteger originalFooter)
+        {
+            var startBit = (originalFooter.GetByteCount(isUnsigned: true) - 1) * 8;
+
+            for (var offset = 0; offset < 8; offset++)
+            {
+                if ((originalFooter >> startBit - offset & 0xFF) == _magicFooter[0])
+                {
+                    return offset;
+                }
+            }
+            return 8;
+        }
+
+        private void ReadHeader()
+        {
+            var header = new byte[13];
+            _opdlStream.Read(header);
+
+            var typeIdentifier = Encoding.ASCII.GetString(header, 0, 4);
+            if (typeIdentifier != TYPE_IDENTIFIER)
+                throw new InvalidDatalogFormatException($"Identifier \"{typeIdentifier}\" does not indicate a valid compressed FlashPro datalog");
+
+            var storedDataSize = new BigInteger(header.AsSpan().Slice(8, 4), isUnsigned: true, isBigEndian: true);
+            StoredDataSize = (uint)storedDataSize;
+        }
+
         private void BuildBz2Footer(ReadOnlySpan<byte> originalFooterBytes)
         {
             if (_bZipFooterStream.Length > 0)
@@ -122,20 +153,6 @@ namespace HondataDotNet.Datalog.FlashPro
                 _bZipFooterStream.Write(bz2FooterBytes.AsSpan().Slice(1));
                 _bZipFooterStream.Seek(0, SeekOrigin.Begin);
             }
-        }
-
-        private static int FindFooterOffset(BigInteger originalFooter)
-        {
-            var startBit = (originalFooter.GetByteCount(isUnsigned: true) - 1) * 8;
-
-            for (var offset = 0; offset < 8; offset++)
-            {
-                if (((originalFooter >> (startBit - offset)) & 0xFF) == _magicFooter[0])
-                {
-                    return offset;
-                }
-            }
-            return 8;
         }
     }
 }

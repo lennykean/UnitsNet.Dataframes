@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 
 using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.Core.Utils;
 
 namespace HondataDotNet.Datalog.KPro
 {

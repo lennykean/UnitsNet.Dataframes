@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.Core.Utils;
 using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.KPro

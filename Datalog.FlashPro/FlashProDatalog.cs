@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.Core.Utils;
 
 namespace HondataDotNet.Datalog.FlashPro
 {
@@ -14,7 +15,6 @@ namespace HondataDotNet.Datalog.FlashPro
         IReadOnlyCollection<IDatalogFrame> IDatalog.Frames => throw new NotImplementedException();
         public IReadWriteCollection<FlashProDatalogFrameComment> Comments => throw new NotImplementedException();
         IReadOnlyCollection<IDatalogFrameComment> IDatalog.Comments => throw new NotImplementedException();
-
 
         public static FlashProDatalog FromStream(Stream stream, bool preValidate = true)
         {
