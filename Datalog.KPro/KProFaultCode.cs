@@ -13,7 +13,7 @@ namespace HondataDotNet.Datalog.KPro
             CELCode = celCode;
             Description = description ?? throw new ArgumentNullException(nameof(description));
 
-            var celCodeParts = celCode?.Split("-", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var celCodeParts = celCode?.Split("-", StringSplitOptions.RemoveEmptyEntries);
             CELMainCode = celCodeParts?.FirstOrDefault();
             CELSubCode = celCodeParts?.Skip(1).FirstOrDefault();
         }

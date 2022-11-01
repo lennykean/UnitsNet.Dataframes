@@ -191,7 +191,9 @@ namespace HondataDotNet.Datalog.KPro
 
         public bool ContainsKey(BigInteger key) => LazyTable.Value.ContainsKey(key);
 
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
         public bool TryGetValue(BigInteger key, [MaybeNullWhen(false)] out KProFaultCode value)
+#pragma warning restore CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
         {
             if (LazyTable.Value.TryGetValue(key, out var lazyValue))
             {
@@ -232,7 +234,7 @@ namespace HondataDotNet.Datalog.KPro
             if (celCode == null)
                 throw new ArgumentNullException(nameof(celCode));
 
-            string[] splitCode = celCode.Split("-", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            string[] splitCode = celCode.Split("-", StringSplitOptions.RemoveEmptyEntries);
 
             if (splitCode?.Length == 2)
             {

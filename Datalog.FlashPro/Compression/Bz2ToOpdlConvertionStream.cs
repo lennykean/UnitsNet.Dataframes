@@ -126,7 +126,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
             var version = Encoding.ASCII.GetString(header, 2, 1);
             if (version != "h")
-                throw new InvalidDatalogFormatException($"Invalid bzip2 version \"{signature}\"");
+                throw new InvalidDatalogFormatException($"Invalid bzip2 version \"{version}\"");
 
             var blockSize = Encoding.ASCII.GetChars(header, 3, 1);
             if (blockSize[0] < '1' || blockSize[0] > '5')

@@ -12,7 +12,7 @@ namespace HondataDotNet.Datalog.OBDII
     {
         public abstract TReadinessCode this[TReadinessTest key] { get; }
 
-        public virtual IEnumerable<TReadinessTest> Keys => Enum.GetValues<TReadinessTest>();
+        public virtual IEnumerable<TReadinessTest> Keys => Enum.GetValues(typeof(TReadinessTest)).Cast<TReadinessTest>();
 
         public virtual IEnumerable<TReadinessCode> Values
         {
@@ -39,7 +39,9 @@ namespace HondataDotNet.Datalog.OBDII
             }
         }
 
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
         public virtual bool TryGetValue(TReadinessTest key, [MaybeNullWhen(false)] out TReadinessCode value)
+#pragma warning restore CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
         {
             if (!ContainsKey(key))
             {
