@@ -152,13 +152,13 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 _innerStream.Seek(position, SeekOrigin.Begin);
         }
 
-        private static int FindFooterOffset(BigInteger originalFooter)
+        private static int FindFooterOffset(BigInteger bz2Footer)
         {
-            var startBit = (originalFooter.GetByteCount(isUnsigned: true) - 1) * 8;
+            var startBit = (bz2Footer.GetByteCount(isUnsigned: true) - 1) * 8;
 
             for (var offset = 0; offset < 8; offset++)
             {
-                if ((originalFooter >> startBit - offset & 0xFF) == 0x17)
+                if ((bz2Footer >> startBit - offset & 0xFF) == 0x17)
                 {
                     return offset;
                 }
@@ -168,10 +168,10 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
         private void WriteOpdlFooter()
         {
-            var originalFooter = new BigInteger(_writeBuffer.ToArray(), isUnsigned: true, isBigEndian: true);
+            var bz2Footer = new BigInteger(_writeBuffer.ToArray(), isUnsigned: true, isBigEndian: true);
 
-            var offset = FindFooterOffset(originalFooter);
-            var byteAlignedBz2footer = originalFooter << offset;
+            var offset = FindFooterOffset(bz2Footer);
+            var byteAlignedBz2footer = bz2Footer << offset;
             var byteAlignedBz2FooterBytes = byteAlignedBz2footer.ToByteArray(isUnsigned: true, isBigEndian: true).AsSpan();
 
             using (var byteAlignedOpdlFooterStream = new MemoryStream())
