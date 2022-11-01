@@ -79,7 +79,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 if (opdlRead == 0)
                 {
                     var readAheadBytes = _readAheadStream.ToArray();
-                    BuildBz2Footer(readAheadBytes.AsSpan().Slice(readAheadBytes.Length - READ_AHEAD));
+                    BuildBz2Footer(readAheadBytes.AsSpan()[^READ_AHEAD..]);
                     _readAheadStream.Seek(0, SeekOrigin.End);
                     continue;
                 }
@@ -133,14 +133,14 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
             var originalFooter = new BigInteger(originalFooterBytes, isUnsigned: true, isBigEndian: true);
 
             var offset = FindFooterOffset(originalFooter);
-            var byteAlignedOriginalfooter = originalFooter << offset;
-            var byteAlignedOriginalFooterBytes = byteAlignedOriginalfooter.ToByteArray(isUnsigned: true, isBigEndian: true);
+            var byteAlignedOpdlfooter = originalFooter << offset;
+            var byteAlignedOpdlFooterBytes = byteAlignedOpdlfooter.ToByteArray(isUnsigned: true, isBigEndian: true);
 
             using (var byteAlignedBz2FooterStream = new MemoryStream())
             {
-                var crcBytes = byteAlignedOriginalFooterBytes.AsSpan().Slice(byteAlignedOriginalFooterBytes.Length - 5);
+                var crcBytes = byteAlignedOpdlFooterBytes.AsSpan()[^5..];
 
-                byteAlignedBz2FooterStream.Write(byteAlignedOriginalFooterBytes.AsSpan().Slice(0, 1));
+                byteAlignedBz2FooterStream.Write(byteAlignedOpdlFooterBytes.AsSpan()[..1]);
                 byteAlignedBz2FooterStream.Write(_eosMagic);
                 byteAlignedBz2FooterStream.Write(crcBytes);
 
@@ -149,7 +149,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 var bz2Footer = byteAlignedBz2Footer >> offset;
                 var bz2FooterBytes = bz2Footer.ToByteArray(isUnsigned: true, isBigEndian: true);
 
-                _bZipFooterStream.Write(bz2FooterBytes.AsSpan().Slice(1));
+                _bZipFooterStream.Write(bz2FooterBytes.AsSpan()[1..]);
                 _bZipFooterStream.Seek(0, SeekOrigin.Begin);
             }
         }

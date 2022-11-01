@@ -130,7 +130,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
             var blockSize = Encoding.ASCII.GetChars(header, 3, 1);
             if (blockSize[0] < '1' || blockSize[0] > '5')
-                throw new InvalidDatalogFormatException($"Invalid block size \"{blockSize[0]}\"");
+                throw new InvalidDatalogFormatException($"Unsupported block size \"{blockSize[0]}\"");
         }
 
         public void WriteOpdlHeader(uint uncompressedDataSize)
@@ -152,31 +152,6 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 _innerStream.Seek(position, SeekOrigin.Begin);
         }
 
-        private void WriteOpdlFooter()
-        {
-            var originalFooter = new BigInteger(_writeBuffer.ToArray(), isUnsigned: true, isBigEndian: true);
-
-            var offset = FindFooterOffset(originalFooter);
-            var byteAlignedOriginalfooter = originalFooter << offset;
-            var byteAlignedOriginalFooterBytes = byteAlignedOriginalfooter.ToByteArray(isUnsigned: true, isBigEndian: true);
-
-            using (var byteAlignedOpdlFooterStream = new MemoryStream())
-            {
-                var crcBytes = byteAlignedOriginalFooterBytes.AsSpan().Slice(byteAlignedOriginalFooterBytes.Length - 5);
-
-                byteAlignedOpdlFooterStream.Write(byteAlignedOriginalFooterBytes.AsSpan().Slice(0, 1));
-                byteAlignedOpdlFooterStream.WriteByte(0x17);
-                byteAlignedOpdlFooterStream.Write(crcBytes);
-
-                var byteAlignedOpdlFooterBytes = byteAlignedOpdlFooterStream.ToArray();
-                var byteAlignedOpdlFooter = new BigInteger(byteAlignedOpdlFooterBytes, isUnsigned: true, isBigEndian: true);
-                var opdlFooter = byteAlignedOpdlFooter >> offset;
-                var opdlFooterBytes = opdlFooter.ToByteArray(isUnsigned: true, isBigEndian: true);
-
-                _innerStream.Write(opdlFooterBytes.AsSpan().Slice(1));
-            }
-        }
-
         private static int FindFooterOffset(BigInteger originalFooter)
         {
             var startBit = (originalFooter.GetByteCount(isUnsigned: true) - 1) * 8;
@@ -189,6 +164,31 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 }
             }
             return 8;
+        }
+
+        private void WriteOpdlFooter()
+        {
+            var originalFooter = new BigInteger(_writeBuffer.ToArray(), isUnsigned: true, isBigEndian: true);
+
+            var offset = FindFooterOffset(originalFooter);
+            var byteAlignedBz2footer = originalFooter << offset;
+            var byteAlignedBz2FooterBytes = byteAlignedBz2footer.ToByteArray(isUnsigned: true, isBigEndian: true);
+
+            using (var byteAlignedOpdlFooterStream = new MemoryStream())
+            {
+                var crcBytes = byteAlignedBz2FooterBytes.AsSpan()[^5..];
+
+                byteAlignedOpdlFooterStream.Write(byteAlignedBz2FooterBytes.AsSpan()[..1]);
+                byteAlignedOpdlFooterStream.WriteByte(0x17);
+                byteAlignedOpdlFooterStream.Write(crcBytes);
+
+                var byteAlignedOpdlFooterBytes = byteAlignedOpdlFooterStream.ToArray();
+                var byteAlignedOpdlFooter = new BigInteger(byteAlignedOpdlFooterBytes, isUnsigned: true, isBigEndian: true);
+                var opdlFooter = byteAlignedOpdlFooter >> offset;
+                var opdlFooterBytes = opdlFooter.ToByteArray(isUnsigned: true, isBigEndian: true);
+
+                _innerStream.Write(opdlFooterBytes);
+            }
         }
     }
 }
