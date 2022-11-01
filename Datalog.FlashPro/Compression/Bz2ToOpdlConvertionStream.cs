@@ -172,13 +172,13 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
             var offset = FindFooterOffset(originalFooter);
             var byteAlignedBz2footer = originalFooter << offset;
-            var byteAlignedBz2FooterBytes = byteAlignedBz2footer.ToByteArray(isUnsigned: true, isBigEndian: true);
+            var byteAlignedBz2FooterBytes = byteAlignedBz2footer.ToByteArray(isUnsigned: true, isBigEndian: true).AsSpan();
 
             using (var byteAlignedOpdlFooterStream = new MemoryStream())
             {
-                var crcBytes = byteAlignedBz2FooterBytes.AsSpan()[^5..];
+                var crcBytes = byteAlignedBz2FooterBytes[^5..];
 
-                byteAlignedOpdlFooterStream.Write(byteAlignedBz2FooterBytes.AsSpan()[..1]);
+                byteAlignedOpdlFooterStream.Write(byteAlignedBz2FooterBytes[..1]);
                 byteAlignedOpdlFooterStream.WriteByte(0x17);
                 byteAlignedOpdlFooterStream.Write(crcBytes);
 

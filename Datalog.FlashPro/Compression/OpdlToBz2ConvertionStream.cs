@@ -19,7 +19,8 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
         private readonly Stream _opdlStream;
         private readonly MemoryStream _bZipHeaderStream;
         private readonly MemoryStream _bZipFooterStream;
-        private readonly MemoryStream _readAheadStream;
+        
+        private MemoryStream _readAheadStream;
 
         public OpdlToBz2ConvertionStream(Stream opdlStream)
         {
@@ -74,21 +75,22 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
                 if (refill == 0)
                     break;
 
-                var opdlBuffer = new byte[refill];
+                var opdlBuffer = new byte[refill].AsSpan();
                 var opdlRead = _opdlStream.Read(opdlBuffer);
                 if (opdlRead == 0)
                 {
-                    var readAheadBytes = _readAheadStream.ToArray();
-                    BuildBz2Footer(readAheadBytes.AsSpan()[^READ_AHEAD..]);
+                    var readAheadBytes = _readAheadStream.ToArray().AsSpan();
+                    BuildBz2Footer(readAheadBytes[^READ_AHEAD..]);
                     _readAheadStream.Seek(0, SeekOrigin.End);
                     continue;
                 }
 
                 var readAheadBuffer = new byte[_readAheadStream.Length - _readAheadStream.Position];
                 _readAheadStream.Read(readAheadBuffer);
-                _readAheadStream.Seek(0, SeekOrigin.Begin);
+
+                _readAheadStream = new MemoryStream();
                 _readAheadStream.Write(readAheadBuffer);
-                _readAheadStream.Write(opdlBuffer, 0, opdlRead);
+                _readAheadStream.Write(opdlBuffer[..opdlRead]);
                 _readAheadStream.Seek(0, SeekOrigin.Begin);
             }
             if (read < count)
@@ -114,14 +116,14 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
         private void ReadOpdlHeader()
         {
-            var header = new byte[13];
+            var header = new byte[13].AsSpan();
             _opdlStream.Read(header);
 
-            var typeIdentifier = Encoding.ASCII.GetString(header, 0, 4);
+            var typeIdentifier = Encoding.ASCII.GetString(header[..4]);
             if (typeIdentifier != TYPE_IDENTIFIER)
                 throw new InvalidDatalogFormatException($"Identifier \"{typeIdentifier}\" does not indicate a valid compressed FlashPro datalog");
 
-            var storedDataSize = new BigInteger(header.AsSpan().Slice(9, 3), isUnsigned: true, isBigEndian: true);
+            var storedDataSize = new BigInteger(header[9..12], isUnsigned: true, isBigEndian: true);
             StoredDataSize = (uint)storedDataSize;
         }
 
@@ -134,22 +136,22 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
             var offset = FindFooterOffset(originalFooter);
             var byteAlignedOpdlfooter = originalFooter << offset;
-            var byteAlignedOpdlFooterBytes = byteAlignedOpdlfooter.ToByteArray(isUnsigned: true, isBigEndian: true);
+            var byteAlignedOpdlFooterBytes = byteAlignedOpdlfooter.ToByteArray(isUnsigned: true, isBigEndian: true).AsSpan();
 
             using (var byteAlignedBz2FooterStream = new MemoryStream())
             {
-                var crcBytes = byteAlignedOpdlFooterBytes.AsSpan()[^5..];
+                var crcBytes = byteAlignedOpdlFooterBytes[^5..];
 
-                byteAlignedBz2FooterStream.Write(byteAlignedOpdlFooterBytes.AsSpan()[..1]);
+                byteAlignedBz2FooterStream.Write(byteAlignedOpdlFooterBytes[..1]);
                 byteAlignedBz2FooterStream.Write(_eosMagic);
                 byteAlignedBz2FooterStream.Write(crcBytes);
 
                 var byteAlignedBz2FooterBytes = byteAlignedBz2FooterStream.ToArray();
                 var byteAlignedBz2Footer = new BigInteger(byteAlignedBz2FooterBytes, isUnsigned: true, isBigEndian: true);
                 var bz2Footer = byteAlignedBz2Footer >> offset;
-                var bz2FooterBytes = bz2Footer.ToByteArray(isUnsigned: true, isBigEndian: true);
+                var bz2FooterBytes = bz2Footer.ToByteArray(isUnsigned: true, isBigEndian: true).AsSpan();
 
-                _bZipFooterStream.Write(bz2FooterBytes.AsSpan()[1..]);
+                _bZipFooterStream.Write(bz2FooterBytes[1..]);
                 _bZipFooterStream.Seek(0, SeekOrigin.Begin);
             }
         }
