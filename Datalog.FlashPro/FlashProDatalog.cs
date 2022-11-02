@@ -7,7 +7,7 @@ using HondataDotNet.Datalog.Core.Utils;
 
 namespace HondataDotNet.Datalog.FlashPro
 {
-    public class FlashProDatalog : IFlashProDatalog
+    public sealed partial class FlashProDatalog : IFlashProDatalog
     {
         public TimeSpan Duration => throw new NotImplementedException();
         public Version Version => throw new NotImplementedException();

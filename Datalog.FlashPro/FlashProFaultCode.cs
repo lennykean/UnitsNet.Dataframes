@@ -2,7 +2,7 @@
 
 namespace HondataDotNet.Datalog.FlashPro
 {
-    public class FlashProFaultCode : IOBDIIFaultCode
+    public sealed class FlashProFaultCode : IOBDIIFaultCode
     {
         public string Description => throw new System.NotImplementedException();
         public DTC DTC => throw new System.NotImplementedException();

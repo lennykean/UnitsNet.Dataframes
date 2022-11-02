@@ -6,7 +6,7 @@ using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.FlashPro
 {
-    public class FlashProDatalogFrame : IOBDIIDatalogFrame<FlashProFaultCode, FlashProReadinessTests, FlashProReadinessCode>
+    public sealed class FlashProDatalogFrame : IOBDIIDatalogFrame<FlashProFaultCode, FlashProReadinessTests, FlashProReadinessCode>
     {
         public TimeSpan Offset => throw new NotImplementedException();
         public int RPM => throw new NotImplementedException();
