@@ -16,15 +16,17 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
         private static readonly byte[] _bz2Header = new byte[] { 0x42, 0x5a, 0x68, 0x38 };
         private static readonly byte[] _eosMagic = new byte[] { 0x17, 0x72, 0x45, 0x38, 0x50, 0x90 };
 
+        private readonly bool _preValidate;
         private readonly Stream _opdlStream;
         private readonly MemoryStream _bZipHeaderStream;
         private readonly MemoryStream _bZipFooterStream;
         
         private MemoryStream _readAheadStream;
 
-        public OpdlToBz2ConvertionStream(Stream opdlStream)
+        public OpdlToBz2ConvertionStream(Stream opdlStream, bool preValidate = true)
         {
             _opdlStream = opdlStream ?? throw new ArgumentNullException(nameof(opdlStream));
+            _preValidate = preValidate;
             _bZipHeaderStream = new MemoryStream(_bz2Header);
             _bZipFooterStream = new MemoryStream();
             _readAheadStream = new MemoryStream();
@@ -58,7 +60,7 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (_opdlStream.Position == 0)
+            if (_opdlStream.Position == 0 || (!_preValidate && _opdlStream.Position == 6))
                 ReadOpdlHeader();
 
             var read = _bZipHeaderStream.Read(buffer, offset, count);
@@ -116,14 +118,14 @@ namespace HondataDotNet.Datalog.FlashPro.Compression
 
         private void ReadOpdlHeader()
         {
-            var header = new byte[13].AsSpan();
+            var header = new byte[13 - (_preValidate ? 0 : 6)].AsSpan();
             _opdlStream.Read(header);
 
-            var typeIdentifier = Encoding.ASCII.GetString(header[..4]);
-            if (typeIdentifier != TYPE_IDENTIFIER)
+            var typeIdentifier = _preValidate ? Encoding.ASCII.GetString(header[..4]) : null;
+            if (_preValidate && typeIdentifier != TYPE_IDENTIFIER)
                 throw new InvalidDatalogFormatException($"Identifier \"{typeIdentifier}\" does not indicate a valid compressed FlashPro datalog");
 
-            var storedDataSize = new BigInteger(header[9..12], isUnsigned: true, isBigEndian: true);
+            var storedDataSize = new BigInteger(header.Slice(_preValidate ? 9 : 3, 3), isUnsigned: true, isBigEndian: true);
             StoredDataSize = (uint)storedDataSize;
         }
 

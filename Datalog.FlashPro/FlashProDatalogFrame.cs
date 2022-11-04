@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 using HondataDotNet.Datalog.Core;
+using HondataDotNet.Datalog.Core.Utils;
 using HondataDotNet.Datalog.OBDII;
 
 namespace HondataDotNet.Datalog.FlashPro
 {
-    public sealed class FlashProDatalogFrame : IOBDIIDatalogFrame<FlashProFaultCode, FlashProReadinessTests, FlashProReadinessCode>
+    public sealed partial class FlashProDatalogFrame : IOBDIIDatalogFrame<FlashProFaultCode, FlashProReadinessTests, FlashProReadinessCode>
     {
-        public TimeSpan Offset => throw new NotImplementedException();
+        private DatalogFrame _frame;
+
+        public FlashProDatalog? Datalog { get; internal set; }
+        public TimeSpan Offset => TimeSpan.FromMilliseconds(_frame.Offset);
         public int RPM => throw new NotImplementedException();
         public double VSS => throw new NotImplementedException();
         public double INJ => throw new NotImplementedException();
@@ -28,5 +33,13 @@ namespace HondataDotNet.Datalog.FlashPro
         public IReadOnlyDictionary<FlashProReadinessTests, FlashProReadinessCode> ReadinessCodes => throw new NotImplementedException();
         public IReadOnlyCollection<FlashProFaultCode> FaultCodes => throw new NotImplementedException();
         IReadOnlyCollection<IFaultCode> IDatalogFrame.FaultCodes => throw new NotImplementedException();
+
+        internal static FlashProDatalogFrame ReadFromStream(Stream stream, int frameSize)
+        {
+            return new()
+            {
+                _frame = stream.ReadStruct<DatalogFrame>(0, frameSize)
+            };
+        }
     }
 }

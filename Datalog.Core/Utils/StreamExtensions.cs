@@ -6,7 +6,7 @@ namespace HondataDotNet.Datalog.Core.Utils
 {
     public static class StreamExtensions
     {
-        public static TStruct ReadStruct<TStruct>(this Stream stream, int? offset = null, int? length = null, bool bigEndian = false) where TStruct : struct
+        public static TStruct ReadStruct<TStruct>(this Stream stream, int? offset = null, int? length = null) where TStruct : struct
         {
             var structSize = Marshal.SizeOf<TStruct>();
             var ptr = Marshal.AllocHGlobal(structSize);
@@ -14,9 +14,6 @@ namespace HondataDotNet.Datalog.Core.Utils
             {
                 var buffer = new byte[length ?? structSize];
                 stream.Read(buffer, offset ?? 0, (length ?? structSize) - (offset ?? 0));
-
-                if (bigEndian)
-                    buffer = buffer.Reverse().ToArray();
 
                 Marshal.Copy(buffer, 0, ptr, structSize);
 
@@ -26,11 +23,6 @@ namespace HondataDotNet.Datalog.Core.Utils
             {
                 Marshal.FreeHGlobal(ptr);
             }
-        }
-
-        public static TStruct ReadBigEndianStruct<TStruct>(this Stream stream, int? offset = null, int? length = null) where TStruct : struct
-        {
-            return stream.ReadStruct<TStruct>(offset, length, true);
         }
 
         public static void WriteStruct<TStruct>(this Stream stream, TStruct @struct, int? offset = null, int? length = null) where TStruct : struct

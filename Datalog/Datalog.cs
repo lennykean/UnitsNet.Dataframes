@@ -17,8 +17,8 @@ namespace HondataDotNet.Datalog
 
             if (KProDatalog.IsValidIdentifier(buffer))
                 return KProDatalog.FromStream(stream, preValidate: false);
-            if (FlashProDatalog.HasValidIdentifier(buffer))
-                return FlashProDatalog.FromStream(stream, preValidate: false);
+            if (FlashProDatalog.IsValidIdentifier(buffer, out _, out var isCompressed))
+                return FlashProDatalog.FromStream(stream, preValidate: false, isCompressed);
 
             throw new InvalidDatalogFormatException($"Identifier \"{buffer}\" does not indicate a valid datalog");
         }

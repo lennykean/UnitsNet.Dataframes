@@ -13,6 +13,22 @@ namespace HondataDotNet.Datalog.FlashPro
             public byte[] Unknown;
             public short Version;
             public ushort SerialNumber;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 23)]
+            public byte[] Unknown2;
+            public byte RecordedDay;
+            public byte RecordedMonth;
+            public ushort RecordedYear;
+            public byte RecordedHour;
+            public byte RecordedMinute;
+            public byte RecordedSecond;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+            public byte[] Unknown3;
+            public ushort FrameCount;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 26)]
+            public byte[] Unknown4;
+            public int FrameSize;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 288)]
+            public byte[] Unknown5;
         }
     }
 }
