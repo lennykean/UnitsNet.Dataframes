@@ -41,5 +41,12 @@ namespace HondataDotNet.Datalog.FlashPro
                 _frame = stream.ReadStruct<DatalogFrame>(0, frameSize)
             };
         }
+
+        internal int Save(Stream stream, int frameNumber, int frameSize)
+        {
+            _frame.FrameNumber = frameNumber;
+
+            return stream.WriteStruct(_frame, offset: 0, length: frameSize);
+        }
     }
 }

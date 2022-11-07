@@ -69,6 +69,13 @@ namespace HondataDotNet.Datalog.FlashPro
             }
         }
 
+        public static bool IsValidIdentifier(byte[] buffer, out string identifier, out bool isCompressed)
+        {
+            identifier = Encoding.ASCII.GetString(buffer, 0, TYPE_IDENTIFIER.Length);
+            isCompressed = identifier.Equals(COMPRESSED_TYPE_IDENTIFIER);
+            return isCompressed || identifier.Equals(TYPE_IDENTIFIER);
+        }
+
         private static FlashProDatalog ReadfromUncompressedStream(Stream stream, bool preValidate)
         {
             if (preValidate)
@@ -95,18 +102,6 @@ namespace HondataDotNet.Datalog.FlashPro
             return ReadfromUncompressedStream(fpdlStream, preValidate: true);
         }
 
-        public void Save(Stream stream)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static bool IsValidIdentifier(byte[] buffer, out string identifier, out bool isCompressed)
-        {
-            identifier = Encoding.ASCII.GetString(buffer, 0, TYPE_IDENTIFIER.Length);
-            isCompressed = identifier.Equals(COMPRESSED_TYPE_IDENTIFIER);
-            return isCompressed || identifier.Equals(TYPE_IDENTIFIER);
-        }
-
         private static void ValidateIdentifier(Stream stream, out bool isCompressed)
         {
             var buffer = new byte[6];
@@ -114,6 +109,48 @@ namespace HondataDotNet.Datalog.FlashPro
 
             if (!IsValidIdentifier(buffer, out var identifier, out isCompressed))
                 throw new InvalidDatalogFormatException($"Identifier \"{identifier}\" does not indicate a valid FlashPro datalog");
+        }
+
+        public void Save(Stream stream, bool compress)
+        {
+            if (!compress)
+            {
+                Save(stream);
+                return;
+            }
+
+            using (var opdlStream = new Bz2ToOpdlConvertionStream(stream))
+            {
+                int bytesSaved;
+                using (var bz2Stream = new BZip2OutputStream(opdlStream, 5))
+                {
+                    bytesSaved = Save(bz2Stream);
+                    bz2Stream.Flush();
+                }
+                opdlStream.WriteOpdlHeader((uint)bytesSaved);
+            }
+        }
+
+        public int Save(Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            _header.TypeIdentifier = new byte[6];
+            Encoding.ASCII.GetBytes(TYPE_IDENTIFIER, _header.TypeIdentifier);
+            _header.FrameCount = (short)_frames.Count;
+
+            var bytesSaved = stream.WriteStruct(_header);
+            bytesSaved += _frames.Save(stream, _header.FrameSize);
+            stream.Write(_footer);
+            bytesSaved += _footer.Length;
+
+            return bytesSaved;
+        }
+
+        void IDatalog.Save(Stream stream)
+        {
+            Save(stream);
         }
     }
 }

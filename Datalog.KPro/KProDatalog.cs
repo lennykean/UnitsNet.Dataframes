@@ -43,21 +43,6 @@ namespace HondataDotNet.Datalog.KPro
 
         public ushort SerialNumber => _header.SerialNumber;
 
-        public void Save(Stream stream)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            _header.TypeIdentifier = Encoding.ASCII.GetBytes(TYPE_IDENTIFIER);
-            _header.FrameCount = _frames.Count;
-            _header.CommentCount = (short)_comments.Count;
-
-            stream.WriteStruct(_header);
-            _frames.Save(stream, _header.FrameSize);
-            _comments.Save(stream);
-            stream.Write(_footer);
-        }
-
         public static KProDatalog FromStream(Stream stream, bool preValidate = true)
         {
             if (stream == null)
@@ -107,6 +92,21 @@ namespace HondataDotNet.Datalog.KPro
 
             if (!IsValidIdentifier(buffer))
                 throw new InvalidDatalogFormatException($"Identifier \"{buffer}\" does not indicate a valid KPro datalog");
+        }
+
+        public void Save(Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            _header.TypeIdentifier = Encoding.ASCII.GetBytes(TYPE_IDENTIFIER);
+            _header.FrameCount = _frames.Count;
+            _header.CommentCount = (short)_comments.Count;
+
+            stream.WriteStruct(_header);
+            _frames.Save(stream, _header.FrameSize);
+            _comments.Save(stream);
+            stream.Write(_footer);
         }
     }
 }

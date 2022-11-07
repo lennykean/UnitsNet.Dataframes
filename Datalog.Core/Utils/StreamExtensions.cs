@@ -25,7 +25,7 @@ namespace HondataDotNet.Datalog.Core.Utils
             }
         }
 
-        public static void WriteStruct<TStruct>(this Stream stream, TStruct @struct, int? offset = null, int? length = null) where TStruct : struct
+        public static int WriteStruct<TStruct>(this Stream stream, TStruct @struct, int? offset = null, int? length = null) where TStruct : struct
         {
             var structSize = Marshal.SizeOf<TStruct>();
             var ptr = Marshal.AllocHGlobal(structSize);
@@ -35,6 +35,8 @@ namespace HondataDotNet.Datalog.Core.Utils
                 Marshal.StructureToPtr(@struct, ptr, false);
                 Marshal.Copy(ptr, buffer, offset ?? 0, structSize - (offset ?? 0));
                 stream.Write(buffer);
+
+                return buffer.Length;
             }
             finally
             {

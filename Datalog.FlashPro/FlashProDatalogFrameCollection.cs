@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 using HondataDotNet.Datalog.Core.Utils;
 
@@ -78,9 +79,14 @@ namespace HondataDotNet.Datalog.FlashPro
             return frames;
         }
 
-        internal void Save(Stream stream, int frameSize)
+        internal int Save(Stream stream, int frameSize)
         {
-            throw new NotImplementedException();
+            var bytesSaved = 0;
+            foreach (var (frame, frameNumber) in _frames.Select((frame, frameNumber) => (frame, frameNumber)))
+            {
+                bytesSaved += frame.Save(stream, frameNumber, frameSize);
+            }
+            return bytesSaved;
         }
     }
 }
