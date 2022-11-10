@@ -23,8 +23,6 @@ namespace HondataDotNet.Datalog.KPro
         {
         }
 
-        public double StoichiometricRatio { get; set; } = 14.7;
-
         public IReadWriteCollection<KProDatalogFrame> Frames => _frames;
 
         IReadOnlyCollection<IDatalogFrame> IDatalog.Frames => Frames;

@@ -85,8 +85,8 @@ namespace HondataDotNet.Datalog.KPro
         public double VSSInput => _frame.VSSInput;
         public bool RevLimit => _frame.RevLimit;
 
-        public double AF => Lambda * Datalog?.StoichiometricRatio ?? 0;
-        public double AFCMD => LambdaCMD * Datalog?.StoichiometricRatio ?? 0;
+        public double AF => Lambda * 14.7;
+        public double AFCMD => LambdaCMD * 14.7;
         public double DUTY => RPM * INJ / 1200;
 
         internal static KProDatalogFrame ReadFromStream(Stream stream, int frameSize)

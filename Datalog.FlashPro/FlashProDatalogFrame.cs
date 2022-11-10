@@ -14,21 +14,22 @@ namespace HondataDotNet.Datalog.FlashPro
 
         public FlashProDatalog? Datalog { get; internal set; }
         public TimeSpan Offset => TimeSpan.FromMilliseconds(_frame.Offset);
-        public int RPM => throw new NotImplementedException();
-        public double VSS => throw new NotImplementedException();
-        public double INJ => throw new NotImplementedException();
-        public double IGN => throw new NotImplementedException();
-        public double IAT => throw new NotImplementedException();
-        public double ECT => throw new NotImplementedException();
+        public double RPM => _frame.RPM;
+        int IDatalogFrame.RPM => (int)RPM;
+        public double VSS => _frame.VSS;
+        public double INJ => _frame.INJ;
+        public double IGN => _frame.IGN;
+        public double IAT => _frame.IAT;
+        public double ECT => _frame.IAT;
         public bool VTP => throw new NotImplementedException();
-        public double Lambda => throw new NotImplementedException();
-        public double STRIM => throw new NotImplementedException();
-        public double LTRIM => throw new NotImplementedException();
-        public double KLevel => throw new NotImplementedException();
+        public double Lambda => _frame.Lambda;
+        public double STRIM => _frame.STRIM;
+        public double LTRIM => _frame.LTRIM;
+        public double KLevel => _frame.KLevel;
         public double PA => throw new NotImplementedException();
-        public double BAT => throw new NotImplementedException();
-        public int Gear => throw new NotImplementedException();
-        public byte FuelStatus => throw new NotImplementedException();
+        public double BAT => _frame.BAT;
+        public int Gear => (int)_frame.Gear;
+        public byte FuelStatus => (byte)_frame.FuelStatus;
 
         public IReadOnlyDictionary<FlashProReadinessTests, FlashProReadinessCode> ReadinessCodes => throw new NotImplementedException();
         public IReadOnlyCollection<FlashProFaultCode> FaultCodes => throw new NotImplementedException();
