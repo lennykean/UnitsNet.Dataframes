@@ -6,4 +6,10 @@
     <AssemblyName>HondataDotNet.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>HondataDotNet.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IsExternalInit.cs" Visible="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="UnitsNet" Version="4.148.0" />
+  </ItemGroup>
 </Project>

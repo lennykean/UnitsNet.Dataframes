@@ -51,8 +51,8 @@ namespace HondataDotNet.Datalog.KPro
             public double O2;
             public double O2C;
             public double S02;
-            public double Lambda;
-            public double LambdaCMD;
+            public double AF;
+            public double AFCMD;
             public double STRIM;
             public double LTRIM;
             public byte FuelStatus;

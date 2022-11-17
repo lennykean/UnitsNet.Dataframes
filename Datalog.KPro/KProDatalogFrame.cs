@@ -51,11 +51,11 @@ namespace HondataDotNet.Datalog.KPro
         public double O2 => _frame.O2;
         public double O2C => _frame.O2C;
         public double S02 => _frame.S02;
-        public double Lambda => _frame.Lambda;
-        public double LambdaCMD => _frame.LambdaCMD;
+        public double AF => _frame.AF;
+        public double AFCMD => _frame.AFCMD;
         public double STRIM => _frame.STRIM;
         public double LTRIM => _frame.LTRIM;
-        public byte FuelStatus => _frame.FuelStatus;
+        public int FuelStatus => _frame.FuelStatus;
         public double KRetard => _frame.KRetard;
         public double KLevel => _frame.KLevel;
         public double KThres => _frame.KThres;
@@ -85,8 +85,6 @@ namespace HondataDotNet.Datalog.KPro
         public double VSSInput => _frame.VSSInput;
         public bool RevLimit => _frame.RevLimit;
 
-        public double AF => Lambda * 14.7;
-        public double AFCMD => LambdaCMD * 14.7;
         public double DUTY => RPM * INJ / 1200;
 
         internal static KProDatalogFrame ReadFromStream(Stream stream, int frameSize)

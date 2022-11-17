@@ -10,7 +10,7 @@ namespace HondataDotNet.Datalog.OBDII
         where TReadinessTest : struct, Enum
         where TReadinessCode : IReadinessCode<TReadinessTest>
     {
-        byte FuelStatus { get; }
+        int FuelStatus { get; }
         IReadOnlyDictionary<TReadinessTest, TReadinessCode> ReadinessCodes { get; }
     }
 }
