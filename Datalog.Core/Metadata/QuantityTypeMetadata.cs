@@ -18,12 +18,12 @@ namespace HondataDotNet.Datalog.Core.Metadata
             BaseUnit = MetadataCache.Instance.GetOrCreate(quantityInfo.BaseUnitInfo.Value, () => new UnitMetadata(quantityInfo.BaseUnitInfo, quantityInfo, culture));
             Units = quantityInfo.UnitInfos.ToDictionary(
                 k => Convert.ToInt32(k.Value), 
-                v => MetadataCache.Instance.GetOrCreate(v.Value, () => new UnitMetadata(v, quantityInfo, culture)));
+                v => MetadataCache.Instance.GetOrCreate(v.Value, () => new UnitMetadata(v, quantityInfo, culture))!);
         }
 
         public string Name { get; }
         public string DisplayName { get; }
-        public UnitMetadata BaseUnit { get; }
+        public UnitMetadata? BaseUnit { get; }
         public IReadOnlyDictionary<int, UnitMetadata> Units { get; }
     }
 }

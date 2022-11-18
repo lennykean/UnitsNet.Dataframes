@@ -4,7 +4,6 @@ using System.IO;
 
 using HondataDotNet.Datalog.Core;
 using HondataDotNet.Datalog.Core.Metadata;
-using HondataDotNet.Datalog.Core.Units;
 using HondataDotNet.Datalog.Core.Utils;
 using HondataDotNet.Datalog.OBDII;
 

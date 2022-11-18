@@ -39,7 +39,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public string DisplayName { get; }
         public Enum? Unit { get; }
-        public string? Description { get; init; }
+        public string? Description { get; set; }
         public QuantityInfo? QuantityInfo => _lazyQuantityInfo?.Value;
         public UnitInfo? UnitInfo => _lazyUnitInfo?.Value;
     }
