@@ -15,10 +15,10 @@ namespace HondataDotNet.Datalog.Core.Metadata
         {
             Name = quantityInfo.Name;
             DisplayName = quantityInfo.Name.Humanize(LetterCasing.LowerCase);
-            BaseUnit = MetadataCache.Instance.GetOrCreate(quantityInfo.BaseUnitInfo.Value, () => new UnitMetadata(quantityInfo.BaseUnitInfo, quantityInfo, culture));
+            BaseUnit = MetadataCache<Enum, UnitMetadata>.Instance.GetOrCreate(quantityInfo.BaseUnitInfo.Value, () => new(quantityInfo.BaseUnitInfo, quantityInfo, culture));
             Units = quantityInfo.UnitInfos.ToDictionary(
                 k => Convert.ToInt32(k.Value), 
-                v => MetadataCache.Instance.GetOrCreate(v.Value, () => new UnitMetadata(v, quantityInfo, culture))!);
+                v => MetadataCache<Enum, UnitMetadata>.Instance.GetOrCreate(v.Value, () => new(v, quantityInfo, culture))!);
         }
 
         public string Name { get; }

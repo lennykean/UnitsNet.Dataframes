@@ -1,54 +1,29 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 
 namespace HondataDotNet.Datalog.Core.Metadata
 {
-    public class MetadataCache
+    public class MetadataCache<TKey, TValue>
     {
-        private static readonly Lazy<MetadataCache> _lazyInstance = new(() => new());
-        
-        private readonly ConcurrentDictionary<PropertyInfo, SensorMetadata?> _sensorMetadataCache;
-        private readonly ConcurrentDictionary<Type, QuantityTypeMetadata?> _quantityTypeMetadataCache;
-        private readonly ConcurrentDictionary<Enum, UnitMetadataFull?> _unitMetadataFullCache;
-        private readonly ConcurrentDictionary<Enum, UnitMetadata?> _unitMetadataCache;
+        private static readonly Lazy<MetadataCache<TKey, TValue>> _lazyInstance = new(() => new());
+
+        private readonly ConcurrentDictionary<TKey, TValue?> _cache;
 
         private MetadataCache()
         {
-            _sensorMetadataCache = new();
-            _quantityTypeMetadataCache = new();
-            _unitMetadataFullCache = new();
-            _unitMetadataCache = new();
+            _cache = new();
         }
 
-        public static MetadataCache Instance => _lazyInstance.Value;
+        public static MetadataCache<TKey, TValue> Instance => _lazyInstance.Value;
 
-        public SensorMetadata? GetOrCreate(PropertyInfo property, Func<SensorMetadata?> getter)
+        public TValue? GetOrCreate(TKey key, Func<TValue?> getter)
         {
-            return _sensorMetadataCache.GetOrAdd(property, _ => getter());
-        }
-
-        public QuantityTypeMetadata? GetOrCreate(Type type, Func<QuantityTypeMetadata?> getter)
-        {
-            return _quantityTypeMetadataCache.GetOrAdd(type, _ => getter());
-        }
-
-        public UnitMetadataFull? GetOrCreate(Enum value, Func<UnitMetadataFull> getter)
-        {
-            return _unitMetadataFullCache.GetOrAdd(value, _ => getter());
-        }
-
-        public UnitMetadata? GetOrCreate(Enum value, Func<UnitMetadata> getter)
-        {
-            return _unitMetadataCache.GetOrAdd(value, _ => getter());
+            return _cache.GetOrAdd(key, _ => getter());
         }
 
         public void Purge()
         {
-            _sensorMetadataCache.Clear();
-            _quantityTypeMetadataCache.Clear();
-            _unitMetadataFullCache.Clear();
-            _unitMetadataCache.Clear();
+            _cache.Clear();
         }
     }
 }

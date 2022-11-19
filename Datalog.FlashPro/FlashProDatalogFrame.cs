@@ -4,6 +4,7 @@ using System.IO;
 
 using HondataDotNet.Datalog.Core;
 using HondataDotNet.Datalog.Core.Metadata;
+using HondataDotNet.Datalog.Core.Units;
 using HondataDotNet.Datalog.Core.Utils;
 using HondataDotNet.Datalog.OBDII;
 
@@ -90,24 +91,24 @@ namespace HondataDotNet.Datalog.FlashPro
         [SensorMetadata("CAMCMD", AngleUnit.Degree, Description = "Commanded VTC cam angle")]
         public double CAMCMD => _frame.CAMCMD;
         /// <summary>
-        /// Air / fuel ratio in lambda.
+        /// Air / fuel ratio lambda.
         /// </summary>
-        [SensorMetadata("A / F", RatioUnit.DecimalFraction, Description = "Air / fuel ratio")]
+        [SensorMetadata("A / F", AirFuelRatioUnit.Lambda, Description = "Air / fuel ratio")]
         public double AF => _frame.AF;
         /// <summary>
-        /// Target air / fuel ratio in lambda.
+        /// Target air / fuel ratio lambda.
         /// </summary>
-        [SensorMetadata("A / F.CMD", RatioUnit.DecimalFraction, Description = "Target air / fuel ratio")]
+        [SensorMetadata("A / F.CMD", AirFuelRatioUnit.Lambda, Description = "Target air / fuel ratio")]
         public double AFCMD => _frame.AFCMD;
         /// <summary>
-        /// Short term fuel trim in lambda.
+        /// Short term fuel trim lambda.
         /// </summary>
-        [SensorMetadata("S.TRIM", RatioUnit.DecimalFraction, Description = "Short term fuel trim")]
+        [SensorMetadata("S.TRIM", AirFuelRatioUnit.Lambda, Description = "Short term fuel trim")]
         public double STRIM => _frame.STRIM;
         /// <summary>
-        /// Long term fuel trim in lambda.
+        /// Long term fuel trim lambda.
         /// </summary>
-        [SensorMetadata("L.TRIM", RatioUnit.DecimalFraction, Description = "Long term fuel trim")]
+        [SensorMetadata("L.TRIM", AirFuelRatioUnit.Lambda, Description = "Long term fuel trim")]
         public double LTRIM => _frame.LTRIM;
         /// <summary>
         /// Fuel system status.
@@ -160,9 +161,9 @@ namespace HondataDotNet.Datalog.FlashPro
         [SensorMetadata("Fuel Used", VolumeUnit.CubicCentimeter, Description = "Fuel Used")]
         public double FuelUsed => _frame.FuelUsed;
         /// <summary>
-        /// Wideband input in lambda.
+        /// Wideband input lambda.
         /// </summary>
-        [SensorMetadata("Wideband", RatioUnit.DecimalFraction, Description = "Wideband input")]
+        [SensorMetadata("Wideband", AirFuelRatioUnit.Lambda, Description = "Wideband input")]
         public double Wide => _frame.Wide;
         /// <summary>
         /// Wideband voltage in volts.
@@ -285,24 +286,24 @@ namespace HondataDotNet.Datalog.FlashPro
         [SensorMetadata("Purge", RatioUnit.DecimalFraction, Description = "Purge duty cycle")]
         public double Purge => _frame.Purge;
         /// <summary>
-        /// Air / fuel ratio in lambda.
+        /// Air / fuel ratio lambda.
         /// </summary>
-        [SensorMetadata("A / F #2", RatioUnit.DecimalFraction, Description = "Air / fuel ratio")]
+        [SensorMetadata("A / F #2", AirFuelRatioUnit.Lambda, Description = "Air / fuel ratio")]
         public double AFBank2 => _frame.AFBank2;
         /// <summary>
-        /// Target air / fuel ratio in lambda.
+        /// Target air / fuel ratio lambda.
         /// </summary>
-        [SensorMetadata("A / F.CMD #2", RatioUnit.DecimalFraction, Description = "Target air / fuel ratio")]
+        [SensorMetadata("A / F.CMD #2", AirFuelRatioUnit.Lambda, Description = "Target air / fuel ratio")]
         public double AFCMDBank2 => _frame.AFCMDBank2;
         /// <summary>
-        /// Short term fuel trim in lambda.
+        /// Short term fuel trim lambda.
         /// </summary>
-        [SensorMetadata("S.TRIM #2", RatioUnit.DecimalFraction, Description = "Short term fuel trim")]
+        [SensorMetadata("S.TRIM #2", AirFuelRatioUnit.Lambda, Description = "Short term fuel trim")]
         public double STRIMBank2 => _frame.STRIMBank2;
         /// <summary>
-        /// Long term fuel trim in lambda.
+        /// Long term fuel trim lambda.
         /// </summary>
-        [SensorMetadata("L.TRIM #2", RatioUnit.DecimalFraction, Description = "Long term fuel trim")]
+        [SensorMetadata("L.TRIM #2", AirFuelRatioUnit.Lambda, Description = "Long term fuel trim")]
         public double LTRIMBank2 => _frame.LTRIMBank2;
         /// <summary>
         /// Fuel system status in .
@@ -492,7 +493,7 @@ namespace HondataDotNet.Datalog.FlashPro
         /// <summary>
         /// Total fuel trim in lambda.
         /// </summary>
-        [SensorMetadata("Use", RatioUnit.DecimalFraction, Description = "Total fuel trim")]
+        [SensorMetadata("Trim", AirFuelRatioUnit.Lambda, Description = "Total fuel trim")]
         public double Trim => LTRIM + STRIM;
 
         public IReadOnlyDictionary<FlashProReadinessTests, FlashProReadinessCode> ReadinessCodes => throw new NotImplementedException();
