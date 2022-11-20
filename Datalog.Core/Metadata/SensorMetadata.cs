@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
-using System.Reflection;
+
+using HondataDotNet.Datalog.Core.Annotations;
 
 namespace HondataDotNet.Datalog.Core.Metadata
 {
 
     public class SensorMetadata : QuantityMetadata
     {
-        public SensorMetadata(SensorMetadataAttribute metadataAttribute, CultureInfo? culture = null) : base(metadataAttribute, culture)
+        public SensorMetadata(SensorAttribute metadataAttribute, CultureInfo? culture = null) : base(metadataAttribute, culture)
         {
             DisplayName = metadataAttribute.DisplayName;
             Description = metadataAttribute.Description;

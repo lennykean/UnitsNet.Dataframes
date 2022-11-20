@@ -5,10 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
+using HondataDotNet.Datalog.Core.Annotations;
+
 namespace HondataDotNet.Datalog.Core.Metadata
 {
     public abstract class ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper> : ReadOnlyDictionary<string, TMetadata>
-        where TMetadataAttribute : QuantityMetadataAttribute 
+        where TMetadataAttribute : QuantityAttribute 
         where TMetadata : QuantityMetadata
         where TMapper : ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
     {
@@ -49,7 +51,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
         }
     }
 
-    public sealed class ObjectMetadata<TObject> : ObjectMetadata<TObject, QuantityMetadataAttribute, QuantityMetadata, ObjectMetadata<TObject>.Mapper>
+    public sealed class ObjectMetadata<TObject> : ObjectMetadata<TObject, QuantityAttribute, QuantityMetadata, ObjectMetadata<TObject>.Mapper>
     {
         public ObjectMetadata(CultureInfo? culture = null) : base(culture)
         {
@@ -57,7 +59,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public QuantityMetadata? Map(QuantityMetadataAttribute metadataAttribute, CultureInfo? culture)
+            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, CultureInfo? culture)
             {
                 return new QuantityMetadata(metadataAttribute, culture);
             }

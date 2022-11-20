@@ -1,8 +1,10 @@
 ﻿using System.Globalization;
 
+using HondataDotNet.Datalog.Core.Annotations;
+
 namespace HondataDotNet.Datalog.Core.Metadata
 {
-    public sealed class DatalogFrameMetadata<TObject> : ObjectMetadata<TObject, SensorMetadataAttribute, SensorMetadata, DatalogFrameMetadata<TObject>.Mapper> 
+    public sealed class DatalogFrameMetadata<TObject> : ObjectMetadata<TObject, SensorAttribute, SensorMetadata, DatalogFrameMetadata<TObject>.Mapper> 
         where TObject : IDatalogFrame
     {
         public DatalogFrameMetadata(CultureInfo? culture = null) : base(culture)
@@ -11,7 +13,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public SensorMetadata? Map(SensorMetadataAttribute metadataAttribute, CultureInfo? culture)
+            public SensorMetadata? Map(SensorAttribute metadataAttribute, CultureInfo? culture)
             {
                 return new SensorMetadata(metadataAttribute, culture);
             }

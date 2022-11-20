@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 
 using Humanizer;
 
@@ -14,7 +15,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
             Name = unitInfo.Name;
             Value = Convert.ToInt32(unitInfo.Value);
             DisplayName = unitInfo.PluralName.Humanize(LetterCasing.LowerCase);
-            Abbriviation = UnitAbbreviationsCache.Default.GetDefaultAbbreviation(quantityInfo.UnitType, Convert.ToInt32(unitInfo.Value), culture);
+            Abbriviation = UnitAbbreviationsCache.Default.GetUnitAbbreviations(quantityInfo.UnitType, Convert.ToInt32(unitInfo.Value), culture).FirstOrDefault() ?? "";
         }
 
         public string Name { get; }

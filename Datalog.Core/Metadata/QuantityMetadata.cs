@@ -2,13 +2,15 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
 
+using HondataDotNet.Datalog.Core.Annotations;
+
 using UnitsNet;
 
 namespace HondataDotNet.Datalog.Core.Metadata
 {
     public class QuantityMetadata
     {
-        public QuantityMetadata(QuantityMetadataAttribute metadataAttribute, CultureInfo? culture = null)
+        public QuantityMetadata(QuantityAttribute metadataAttribute, CultureInfo? culture = null)
         {
             UnitInfo = metadataAttribute.UnitInfo;
             QuantityInfo = metadataAttribute.QuantityInfo;

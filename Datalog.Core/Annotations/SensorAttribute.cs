@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace HondataDotNet.Datalog.Core.Annotations
 {
-
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public sealed class SensorMetadataAttribute : QuantityMetadataAttribute
+    public sealed class SensorAttribute : QuantityAttribute
     {
-        public SensorMetadataAttribute(string displayName, object? unit = null) : base(unit)
+        public SensorAttribute(string displayName, object? unit = null) : base(unit)
         {
             DisplayName = displayName;
         }

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using HondataDotNet.Datalog.Core.Units;
+using HondataDotNet.Datalog.Core.Annotations;
 
 using UnitsNet;
 
@@ -54,38 +54,50 @@ namespace HondataDotNet.Datalog.Core.Metadata
             return obj.GetQuantity(property, o => Convert.ToDouble(property.GetValue(o)));
         }
 
-        public static bool TryGetUnitInfo(this Enum unit, out UnitInfo? unitInfo, out QuantityInfo? quantityInfo)
+        public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, out UnitInfo? unitInfo)
         {
-            (unitInfo, quantityInfo) = (
+            // Check for a built-in unit type
+            unitInfo = (
                 from q in Quantity.Infos
                 from u in q.UnitInfos
                 where u.Value.Equals(unit)
-                select (u, q))
-                .FirstOrDefault();
-
-            if (unitInfo is not null && quantityInfo is not null)
+                select u).SingleOrDefault();
+            if (unitInfo is not null)
                 return true;
 
-            var quantityTypeAttribute = unit.GetType().GetCustomAttribute<QuantityTypeAttribute>();
-            if (quantityTypeAttribute is null || !typeof(IQuantity).IsAssignableFrom(quantityTypeAttribute.Type))
-                return false;
-
-            var infoProperty = quantityTypeAttribute.Type.GetProperty(quantityTypeAttribute.InfoProperty ?? nameof(IQuantity.QuantityInfo));
-            if (infoProperty is null || !typeof(QuantityInfo).IsAssignableFrom(infoProperty.PropertyType))
-                return false;
-
-            var infoGetter = infoProperty.GetGetMethod();
-            var instance = infoGetter.IsStatic ? null : quantityTypeAttribute.Type.GetConstructor(Type.EmptyTypes)?.Invoke(null) as IQuantity;
-
-            quantityInfo = infoGetter.Invoke(instance, null) as QuantityInfo;
-            if (quantityInfo is null)
-                return false;
-
-            unitInfo = quantityInfo.UnitInfos.SingleOrDefault(i => i.Value.Equals(unit));
-            if (unitInfo is null)
-                return false;
+            // Check if quantityType can be used to get a matching quantityInfo, and try to get a matching unitInfo from it. 
+            if (unit.TryGetQuantityInfo(quantityType, out var quantityInfo))
+                unitInfo = quantityInfo?.UnitInfos.SingleOrDefault(i => i.Value.Equals(unit));
+            if (unitInfo is not null)
+                return true;
 
             return true;
+        }
+
+        public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, out QuantityInfo? quantityInfo)
+        {
+            // Check for a built-in quantity type
+            quantityInfo = (
+                from q in Quantity.Infos
+                where q.UnitInfos.Any(u => u.Value.Equals(unit))
+                select q).SingleOrDefault();
+            if (quantityInfo is not null)
+                return true;
+
+            // Check for a static QuantityInfo property on quantityType and try to invoke the getter
+            var staticInfoProperty = quantityType?.GetProperties(BindingFlags.Public | BindingFlags.Static).SingleOrDefault(p => p.PropertyType == typeof(QuantityInfo));
+            var staticInfoGetter = staticInfoProperty?.GetGetMethod();
+            quantityInfo = staticInfoGetter?.Invoke(null, null) as QuantityInfo;
+            if (quantityInfo?.UnitType == unit.GetType())
+                return true;
+
+            // Check for a default public constructor, try to construct an instance of quantityType, and use the QuantityInfo instance property
+            var instance = quantityType?.GetConstructor(Type.EmptyTypes)?.Invoke(null) as IQuantity;
+            quantityInfo = instance?.QuantityInfo;
+            if (quantityInfo?.UnitType == unit.GetType())
+                return true;
+
+            return false;
         }
     }
 }

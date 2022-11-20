@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Globalization;
+using System.Linq;
 
 using UnitsNet;
 
@@ -26,7 +26,7 @@ namespace HondataDotNet.Datalog.Core.Units
                 AirFuelRatioUnit.Lambda,
                 Zero,
                 BaseDimensions.Dimensionless);
-
+            
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.Lambda, AirFuelRatioUnit.GasolineAirFuelRatio, x => new(x.Value * GasolineStoichimetricRatio, AirFuelRatioUnit.GasolineAirFuelRatio));
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.Lambda, AirFuelRatioUnit.E85AirFuelRatio, x => new(x.Value * E85StoichimetricRatio, AirFuelRatioUnit.E85AirFuelRatio));
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.GasolineAirFuelRatio, AirFuelRatioUnit.Lambda, x => new(GasolineStoichimetricRatio / x.Value, AirFuelRatioUnit.Lambda));
@@ -34,7 +34,7 @@ namespace HondataDotNet.Datalog.Core.Units
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.E85AirFuelRatio, AirFuelRatioUnit.Lambda, x => new(E85StoichimetricRatio / x.Value, AirFuelRatioUnit.Lambda));
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.E85AirFuelRatio, AirFuelRatioUnit.GasolineAirFuelRatio, x => new(x.Value * (GasolineStoichimetricRatio / E85StoichimetricRatio), AirFuelRatioUnit.GasolineAirFuelRatio));
 
-            UnitAbbreviationsCache.Default.MapUnitToDefaultAbbreviation(AirFuelRatioUnit.Lambda, "");
+            UnitAbbreviationsCache.Default.MapUnitToDefaultAbbreviation(AirFuelRatioUnit.Lambda, "λ");
             UnitAbbreviationsCache.Default.MapUnitToDefaultAbbreviation(AirFuelRatioUnit.GasolineAirFuelRatio, ":1");
             UnitAbbreviationsCache.Default.MapUnitToDefaultAbbreviation(AirFuelRatioUnit.E85AirFuelRatio, ":1 (E85)");
         }
@@ -49,7 +49,7 @@ namespace HondataDotNet.Datalog.Core.Units
         public static AirFuelRatio Zero { get; }
         public static QuantityInfo Info { get; }
 
-        [Obsolete("This method is deprecated and will be removed at a future release")]
+        [Obsolete("QuantityType will be removed in the future.")]
         public QuantityType Type => default;
 
         public BaseDimensions Dimensions => BaseDimensions;
@@ -73,9 +73,9 @@ namespace HondataDotNet.Datalog.Core.Units
 
         public string ToString(IFormatProvider? provider)
         {
-            var unitAbbriviation = UnitAbbreviationsCache.Default.GetDefaultAbbreviation(typeof(AirFuelRatioUnit), Convert.ToInt32(Unit), provider);
+            var unitAbbriviations = UnitAbbreviationsCache.Default.GetUnitAbbreviations(typeof(AirFuelRatioUnit), Convert.ToInt32(Unit), provider);
 
-            return $"{Value} {unitAbbriviation}";
+            return $"{Value} {unitAbbriviations.FirstOrDefault()}";
         }
 
         [Obsolete(@"This method is deprecated and will be removed in the future.")]
@@ -90,10 +90,9 @@ namespace HondataDotNet.Datalog.Core.Units
             return ToString(provider);
         }
 
-        [Obsolete(@"This method is deprecated and will be removed in the future.")]
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            return ToString(formatProvider);
+            return ToString();
         }
 
         public override string ToString()

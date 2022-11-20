@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 
-using HondataDotNet.Datalog.Core.Units;
+using HondataDotNet.Datalog.Core.Metadata;
 
 using UnitsNet;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace HondataDotNet.Datalog.Core.Annotations
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class QuantityMetadataAttribute : Attribute
+    public class QuantityAttribute : Attribute
     {
         private readonly Lazy<UnitInfo>? _lazyUnitInfo;
         private readonly Lazy<QuantityInfo>? _lazyQuantityInfo;
 
-        public QuantityMetadataAttribute(object? unit = null)
+        public QuantityAttribute(object? unit = null)
         {
             if (unit is null)
                 return;
@@ -25,14 +23,14 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
             _lazyUnitInfo = new(() =>
             {
-                if (!Unit.TryGetUnitInfo(out var unitInfo, out _))
+                if (!Unit.TryGetUnitInfo(QuantityType, out var unitInfo))
                     throw new ArgumentException($"{Unit.GetType()}.{Unit} is not a known unit value.");
 
                 return unitInfo!;
             });
             _lazyQuantityInfo = new(() =>
             {
-                if (!Unit.TryGetUnitInfo(out _, out var quantityInfo))
+                if (!Unit.TryGetQuantityInfo(QuantityType, out var quantityInfo))
                     throw new ArgumentException($"{Unit.GetType()} is not a known unit type.");
 
                 return quantityInfo!;
@@ -40,6 +38,8 @@ namespace HondataDotNet.Datalog.Core.Metadata
         }
 
         public Enum? Unit { get; }
+        public Type? QuantityType { get; set; }
+
         public QuantityInfo? QuantityInfo => _lazyQuantityInfo?.Value;
         public UnitInfo? UnitInfo => _lazyUnitInfo?.Value;
     }
