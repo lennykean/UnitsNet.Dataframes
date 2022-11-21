@@ -63,7 +63,7 @@ namespace HondataDotNet.Datalog.Core.Units
 
         public double As(Enum unit)
         {
-            return Convert.ToDouble(unit);
+            return UnitConverter.Default.GetConversionFunction<AirFuelRatio>(Unit, unit).Invoke(this).Value;
         }
 
         public double As(UnitSystem unitSystem)

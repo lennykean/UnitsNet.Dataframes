@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 
 using HondataDotNet.Datalog.Core.Annotations;
+using HondataDotNet.Datalog.Core.Utils;
 
 namespace HondataDotNet.Datalog.Core.Metadata
 {
@@ -27,7 +28,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public static TMetadata? GetQuantityMetadata(PropertyInfo property, CultureInfo? culture = null)
         {
-            return MetadataCache<PropertyInfo, TMetadata>.Instance.GetOrCreate(property, () =>
+            return SimpleCache<PropertyInfo, TMetadata?>.Instance.GetOrAdd(property, () =>
             {
                 if (!property.DeclaringType.IsAssignableFrom(typeof(TObject)))
                     throw new InvalidOperationException($"{property.Name} is not a member of {typeof(TObject)}");

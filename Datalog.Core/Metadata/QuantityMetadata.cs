@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 
 using HondataDotNet.Datalog.Core.Annotations;
-
+using HondataDotNet.Datalog.Core.Utils;
 using UnitsNet;
 
 namespace HondataDotNet.Datalog.Core.Metadata
@@ -14,7 +14,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
         {
             UnitInfo = metadataAttribute.UnitInfo;
             QuantityInfo = metadataAttribute.QuantityInfo;
-            Unit = UnitInfo == null || QuantityInfo == null ? null : MetadataCache<Enum, UnitMetadataFull>.Instance.GetOrCreate(UnitInfo.Value, () => new UnitMetadataFull(UnitInfo, QuantityInfo, culture));
+            Unit = UnitInfo == null || QuantityInfo == null ? null : SimpleCache<Enum, UnitMetadataFull>.Instance.GetOrAdd(UnitInfo.Value, () => new UnitMetadataFull(UnitInfo, QuantityInfo, culture));
         }
 
         [JsonIgnore]
