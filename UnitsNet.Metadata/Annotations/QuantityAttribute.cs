@@ -1,10 +1,6 @@
 ﻿using System;
 
-using HondataDotNet.Datalog.Core.Metadata;
-
-using UnitsNet;
-
-namespace HondataDotNet.Datalog.Core.Annotations
+namespace UnitsNet.Metadata.Annotations
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class QuantityAttribute : Attribute

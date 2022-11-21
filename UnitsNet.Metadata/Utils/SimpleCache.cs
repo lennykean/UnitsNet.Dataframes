@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace HondataDotNet.Datalog.Core.Utils
+namespace UnitsNet.Metadata.Utils
 {
-    public class SimpleCache<TKey, TItem>
+    internal class SimpleCache<TKey, TItem>
     {
         private static readonly Lazy<SimpleCache<TKey, TItem>> _lazyInstance = new(() => new());
 

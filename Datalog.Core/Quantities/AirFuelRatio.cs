@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
 
+using HondataDotNet.Datalog.Core.Units;
+
 using UnitsNet;
 
-namespace HondataDotNet.Datalog.Core.Units
+namespace HondataDotNet.Datalog.Core.Quantities
 {
     public struct AirFuelRatio : IQuantity
     {
@@ -26,7 +28,7 @@ namespace HondataDotNet.Datalog.Core.Units
                 AirFuelRatioUnit.Lambda,
                 Zero,
                 BaseDimensions.Dimensionless);
-            
+
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.Lambda, AirFuelRatioUnit.GasolineAirFuelRatio, x => new(x.Value * GasolineStoichimetricRatio, AirFuelRatioUnit.GasolineAirFuelRatio));
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.Lambda, AirFuelRatioUnit.E85AirFuelRatio, x => new(x.Value * E85StoichimetricRatio, AirFuelRatioUnit.E85AirFuelRatio));
             UnitConverter.Default.SetConversionFunction<AirFuelRatio>(AirFuelRatioUnit.GasolineAirFuelRatio, AirFuelRatioUnit.Lambda, x => new(GasolineStoichimetricRatio / x.Value, AirFuelRatioUnit.Lambda));
@@ -59,7 +61,7 @@ namespace HondataDotNet.Datalog.Core.Units
 
         public Enum Unit { get; }
 
-        public double Value {get; }
+        public double Value { get; }
 
         public double As(Enum unit)
         {
@@ -83,7 +85,7 @@ namespace HondataDotNet.Datalog.Core.Units
         {
             return ToString(provider);
         }
-        
+
         [Obsolete(@"This method is deprecated and will be removed in the future.")]
         public string ToString(IFormatProvider? provider, string format, params object[] args)
         {
@@ -104,7 +106,7 @@ namespace HondataDotNet.Datalog.Core.Units
         {
             if (unit is not AirFuelRatioUnit airFuelRatioUnit)
                 throw new ArgumentException($"unit must be of type {typeof(AirFuelRatioUnit)}.", nameof(unit));
-                
+
             return new AirFuelRatio(As(unit), airFuelRatioUnit);
         }
 

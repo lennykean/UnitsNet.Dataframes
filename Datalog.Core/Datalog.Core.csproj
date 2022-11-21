@@ -7,8 +7,6 @@
     <RootNamespace>HondataDotNet.$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="System.Text.Json" Version="7.0.0" />
-    <PackageReference Include="UnitsNet" Version="4.148.0" />
+    <ProjectReference Include="..\UnitsNet.Metadata\UnitsNet.Metadata.csproj" />
   </ItemGroup>
 </Project>

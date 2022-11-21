@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using HondataDotNet.Datalog.Core.Utils;
+
 using Humanizer;
 
-using UnitsNet;
+using UnitsNet.Metadata.Utils;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace UnitsNet.Metadata
 {
     public class QuantityTypeMetadata
     {
@@ -17,7 +17,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
             DisplayName = quantityInfo.Name.Humanize(LetterCasing.LowerCase);
             BaseUnit = SimpleCache<Enum, UnitMetadata>.Instance.GetOrAdd(quantityInfo.BaseUnitInfo.Value, () => new(quantityInfo.BaseUnitInfo, quantityInfo, culture));
             Units = quantityInfo.UnitInfos.ToDictionary(
-                k => Convert.ToInt32(k.Value), 
+                k => Convert.ToInt32(k.Value),
                 v => SimpleCache<Enum, UnitMetadata>.Instance.GetOrAdd(v.Value, () => new(v, quantityInfo, culture))!);
         }
 

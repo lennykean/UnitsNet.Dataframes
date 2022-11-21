@@ -2,6 +2,8 @@
 
 using HondataDotNet.Datalog.Core.Annotations;
 
+using UnitsNet.Metadata;
+
 namespace HondataDotNet.Datalog.Core.Metadata
 {
     public sealed class DatalogFrameMetadata<TObject> : ObjectMetadata<TObject, SensorAttribute, SensorMetadata, DatalogFrameMetadata<TObject>.Mapper> 

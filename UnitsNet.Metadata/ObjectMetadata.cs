@@ -5,13 +5,13 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-using HondataDotNet.Datalog.Core.Annotations;
-using HondataDotNet.Datalog.Core.Utils;
+using UnitsNet.Metadata.Annotations;
+using UnitsNet.Metadata.Utils;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace UnitsNet.Metadata
 {
     public abstract class ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper> : ReadOnlyDictionary<string, TMetadata>
-        where TMetadataAttribute : QuantityAttribute 
+        where TMetadataAttribute : QuantityAttribute
         where TMetadata : QuantityMetadata
         where TMapper : ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
     {

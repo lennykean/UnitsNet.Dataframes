@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Globalization;
-using HondataDotNet.Datalog.Core.Utils;
-using UnitsNet;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+using UnitsNet.Metadata.Utils;
+
+namespace UnitsNet.Metadata
 {
     public class UnitMetadataFull : UnitMetadata
     {

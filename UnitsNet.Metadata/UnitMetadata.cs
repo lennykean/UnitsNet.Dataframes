@@ -4,9 +4,7 @@ using System.Linq;
 
 using Humanizer;
 
-using UnitsNet;
-
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace UnitsNet.Metadata
 {
     public class UnitMetadata
     {

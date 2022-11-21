@@ -1,5 +1,7 @@
 ﻿using System;
 
+using UnitsNet.Metadata.Annotations;
+
 namespace HondataDotNet.Datalog.Core.Annotations
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]

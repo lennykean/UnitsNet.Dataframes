@@ -2,11 +2,10 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
 
-using HondataDotNet.Datalog.Core.Annotations;
-using HondataDotNet.Datalog.Core.Utils;
-using UnitsNet;
+using UnitsNet.Metadata.Annotations;
+using UnitsNet.Metadata.Utils;
 
-namespace HondataDotNet.Datalog.Core.Metadata
+namespace UnitsNet.Metadata
 {
     public class QuantityMetadata
     {
