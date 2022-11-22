@@ -9,6 +9,7 @@ using HondataDotNet.Datalog.Core.Units;
 using HondataDotNet.Datalog.Core.Utils;
 using HondataDotNet.Datalog.OBDII;
 
+using UnitsNet.Metadata.Annotations;
 using UnitsNet.Units;
 
 namespace HondataDotNet.Datalog.FlashPro
@@ -95,6 +96,7 @@ namespace HondataDotNet.Datalog.FlashPro
         /// Air / fuel ratio lambda.
         /// </summary>
         [Sensor("A / F", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Air / fuel ratio")]
+        [AllowUnitConversion(AirFuelRatioUnit.GasolineAirFuelRatio)]
         public double AF => _frame.AF;
         /// <summary>
         /// Target air / fuel ratio lambda.

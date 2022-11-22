@@ -37,14 +37,14 @@ namespace UnitsNet.Metadata
             if (expression is not MemberExpression memberExpression || memberExpression.Member is not PropertyInfo property || property.GetGetMethod()?.IsPublic != true)
                 throw new InvalidOperationException($"{{{propertySelectorExpression}}} is not a valid property accessor.");
 
-            return obj.GetQuantity(property);
+            return GetQuantity(obj, property);
         }
 
         public static IQuantity GetQuantity<T>(this T obj, string propertyName)
         {
             var property = typeof(T).GetProperty(propertyName);
 
-            return obj.GetQuantity(property);
+            return GetQuantity(obj, property);
         }
 
         public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, out UnitInfo? unitInfo)
@@ -120,14 +120,14 @@ namespace UnitsNet.Metadata
             return false;
         }
 
-        private static IQuantity GetQuantity<T>(this T obj, PropertyInfo property)
+        private static IQuantity GetQuantity<T>(T obj, PropertyInfo property)
         {
             // Get quantity metadata
             var metadata = ObjectMetadata<T>.GetQuantityMetadata(property);
             if (metadata?.UnitInfo is null || metadata.QuantityInfo is null)
                 throw new InvalidOperationException($"Unit metadata does not exist for property {property.DeclaringType}.{property.Name}.");
 
-            // Get and cache property getter
+            // Get property getter from cache, or get and add to cache
             var getter = SimpleCache<PropertyInfo, MethodInfo>.Instance.GetOrAdd(property, () =>
             {
                 var getter = property.GetGetMethod();
@@ -144,7 +144,7 @@ namespace UnitsNet.Metadata
             if (Quantity.TryFrom(value, metadata.UnitInfo.Value, out var quantity))
                 return quantity!;
 
-            // Get and cache quantity constructor for a custom unit type
+            // Get quantity constructor for a custom unit type from cache, or get and add to cache
             var quantityCtor = SimpleCache<Type, ConstructorInfo>.Instance.GetOrAdd(metadata.QuantityInfo.ValueType, () =>
             {
                 var ctor = (

@@ -17,7 +17,7 @@ namespace UnitsNet.Metadata
     {
         public interface IMetadataAttributeMapper
         {
-            TMetadata? Map(TMetadataAttribute metadataAttribute, CultureInfo? culture);
+            TMetadata? Map(TMetadataAttribute metadataAttribute, string name, CultureInfo? culture, Enum[] allowedConversions);
         }
 
         private static readonly TMapper _mapper = new();
@@ -28,16 +28,28 @@ namespace UnitsNet.Metadata
 
         public static TMetadata? GetQuantityMetadata(PropertyInfo property, CultureInfo? culture = null)
         {
+            // Get metadata from cache, or get and add to cache
             return SimpleCache<PropertyInfo, TMetadata?>.Instance.GetOrAdd(property, () =>
             {
                 if (!property.DeclaringType.IsAssignableFrom(typeof(TObject)))
                     throw new InvalidOperationException($"{property.Name} is not a member of {typeof(TObject)}");
 
                 var metadataAttribute = property.GetCustomAttribute<TMetadataAttribute>(inherit: true);
-                if (metadataAttribute == null)
+                if (metadataAttribute is null)
                     return null;
 
-                return _mapper.Map(metadataAttribute, culture);
+                var allowedConversions = (
+                    from a in property.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true) 
+                    select a.Unit!).ToArray();
+                var invalidAllowedConversions = (
+                    from c in allowedConversions
+                    let convertableUnits = metadataAttribute.QuantityInfo!.UnitInfos.Select(i => i.Value)
+                    where !convertableUnits.Contains(c)
+                    select c).ToList();
+                if (invalidAllowedConversions.Any())
+                    throw new InvalidOperationException($"Invalid unit conversion(s): from {metadataAttribute.Unit} to [{String.Join(", ", invalidAllowedConversions)}]");
+
+                return _mapper.Map(metadataAttribute, property.Name, culture, allowedConversions);
             });
         }
 
@@ -60,9 +72,9 @@ namespace UnitsNet.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, CultureInfo? culture)
+            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, string name, CultureInfo? culture, Enum[] allowedConversions)
             {
-                return new QuantityMetadata(metadataAttribute, culture);
+                return new QuantityMetadata(metadataAttribute, name, culture, allowedConversions);
             }
         }
     }

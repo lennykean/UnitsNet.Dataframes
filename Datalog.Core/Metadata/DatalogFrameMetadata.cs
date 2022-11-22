@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 using HondataDotNet.Datalog.Core.Annotations;
 
@@ -15,9 +16,9 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public SensorMetadata? Map(SensorAttribute metadataAttribute, CultureInfo? culture)
+            public SensorMetadata? Map(SensorAttribute metadataAttribute, string name, CultureInfo? culture, Enum[] allowedConversions)
             {
-                return new SensorMetadata(metadataAttribute, culture);
+                return new SensorMetadata(metadataAttribute, name, culture, allowedConversions);
             }
         }
     }

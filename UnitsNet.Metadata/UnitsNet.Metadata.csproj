@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-  </PropertyGroup>    
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
