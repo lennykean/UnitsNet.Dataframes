@@ -21,9 +21,9 @@ namespace UnitsNet.Metadata.Utils
             return _cache.TryGetValue(key, out item);
         }
 
-        public TItem GetOrAdd(TKey key, Func<TItem> getter)
+        public TItem GetOrAdd(TKey key, Func<TKey, TItem> getter)
         {
-            return _cache.GetOrAdd(key, _ => getter());
+            return _cache.GetOrAdd(key, getter);
         }
 
         public bool TryAdd(TKey key, TItem item)

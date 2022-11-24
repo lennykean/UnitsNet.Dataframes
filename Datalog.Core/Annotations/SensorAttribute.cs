@@ -7,7 +7,7 @@ namespace HondataDotNet.Datalog.Core.Annotations
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public sealed class SensorAttribute : QuantityAttribute
     {
-        public SensorAttribute(string displayName, object? unit = null) : base(unit)
+        public SensorAttribute(string displayName, object? unit = null, Type? quantityType = null) : base(unit, quantityType)
         {
             DisplayName = displayName;
         }

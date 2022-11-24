@@ -95,23 +95,23 @@ namespace HondataDotNet.Datalog.FlashPro
         /// <summary>
         /// Air / fuel ratio lambda.
         /// </summary>
-        [Sensor("A / F", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Air / fuel ratio")]
+        [Sensor("A / F", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Air / fuel ratio")]
         [AllowUnitConversion(AirFuelRatioUnit.GasolineAirFuelRatio)]
         public double AF => _frame.AF;
         /// <summary>
         /// Target air / fuel ratio lambda.
         /// </summary>
-        [Sensor("A / F.CMD", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Target air / fuel ratio")]
+        [Sensor("A / F.CMD", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Target air / fuel ratio")]
         public double AFCMD => _frame.AFCMD;
         /// <summary>
         /// Short term fuel trim lambda.
         /// </summary>
-        [Sensor("S.TRIM", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Short term fuel trim")]
+        [Sensor("S.TRIM", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Short term fuel trim")]
         public double STRIM => _frame.STRIM;
         /// <summary>
         /// Long term fuel trim lambda.
         /// </summary>
-        [Sensor("L.TRIM", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Long term fuel trim")]
+        [Sensor("L.TRIM", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Long term fuel trim")]
         public double LTRIM => _frame.LTRIM;
         /// <summary>
         /// Fuel system status.
@@ -166,7 +166,7 @@ namespace HondataDotNet.Datalog.FlashPro
         /// <summary>
         /// Wideband input lambda.
         /// </summary>
-        [Sensor("Wideband", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Wideband input")]
+        [Sensor("Wideband", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Wideband input")]
         public double Wide => _frame.Wide;
         /// <summary>
         /// Wideband voltage in volts.
@@ -291,22 +291,22 @@ namespace HondataDotNet.Datalog.FlashPro
         /// <summary>
         /// Air / fuel ratio lambda.
         /// </summary>
-        [Sensor("A / F #2", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Air / fuel ratio")]
+        [Sensor("A / F #2", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Air / fuel ratio")]
         public double AFBank2 => _frame.AFBank2;
         /// <summary>
         /// Target air / fuel ratio lambda.
         /// </summary>
-        [Sensor("A / F.CMD #2", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Target air / fuel ratio")]
+        [Sensor("A / F.CMD #2", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Target air / fuel ratio")]
         public double AFCMDBank2 => _frame.AFCMDBank2;
         /// <summary>
         /// Short term fuel trim lambda.
         /// </summary>
-        [Sensor("S.TRIM #2", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Short term fuel trim")]
+        [Sensor("S.TRIM #2", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Short term fuel trim")]
         public double STRIMBank2 => _frame.STRIMBank2;
         /// <summary>
         /// Long term fuel trim lambda.
         /// </summary>
-        [Sensor("L.TRIM #2", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Long term fuel trim")]
+        [Sensor("L.TRIM #2", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Long term fuel trim")]
         public double LTRIMBank2 => _frame.LTRIMBank2;
         /// <summary>
         /// Fuel system status in .
@@ -462,31 +462,38 @@ namespace HondataDotNet.Datalog.FlashPro
         /// Brake pressure in Bar.
         /// </summary>
         [Sensor("Brake Press", PressureUnit.Bar, Description = "Brake pressure")]
+        [AllowUnitConversion(PressureUnit.Millibar)]
+        [AllowUnitConversion(PressureUnit.PoundForcePerSquareInch)]
         public double BrakePress => _frame.BrakePress;
         /// <summary>
         /// Steering wheel angle in degrees.
         /// </summary>
         [Sensor("Steer Ang", AngleUnit.Degree, Description = "Steering wheel angle")]
+        [AllowUnitConversion(AngleUnit.Degree)]
         public double SteerAng => _frame.SteerAng;
         /// <summary>
         /// Steering wheel torque in N·m.
         /// </summary>
         [Sensor("Steer Trq", TorqueUnit.NewtonMeter, Description = "Steering wheel torque")]
+        [AllowUnitConversion(TorqueUnit.NewtonMeter)]
         public double SteerTrq => _frame.SteerTrq;
         /// <summary>
         /// Fuel pump duty cycle in percent.
         /// </summary>
         [Sensor("Fuel Pump Duty", RatioUnit.DecimalFraction, Description = "Fuel pump duty cycle")]
+        [AllowUnitConversion(RatioUnit.Percent)]
         public double FuelP => _frame.FuelP;
         /// <summary>
         /// Air flow meter frequency in Hz.
         /// </summary>
         [Sensor("AFM Hz", FrequencyUnit.Hertz, Description = "Air flow meter frequency")]
+        [AllowUnitConversion(FrequencyUnit.Hertz)]
         public double AFMHz => _frame.AFMHz;
         /// <summary>
         /// Injector duty cycle in percent.
         /// </summary>
         [Sensor("DUTY", RatioUnit.DecimalFraction, Description = "Injector duty cycle")]
+        [AllowUnitConversion(RatioUnit.Percent)]
         public double DUTY => RPM * INJ / 1200;
         /// <summary>
         /// Knock count.
@@ -496,7 +503,8 @@ namespace HondataDotNet.Datalog.FlashPro
         /// <summary>
         /// Total fuel trim in lambda.
         /// </summary>
-        [Sensor("Trim", AirFuelRatioUnit.Lambda, QuantityType = typeof(AirFuelRatio), Description = "Total fuel trim")]
+        [Sensor("Trim", AirFuelRatioUnit.Lambda, typeof(AirFuelRatio), Description = "Total fuel trim")]
+        [AllowUnitConversion(AirFuelRatioUnit.GasolineAirFuelRatio)]
         public double Trim => LTRIM + STRIM;
 
         public IReadOnlyDictionary<FlashProReadinessTests, FlashProReadinessCode> ReadinessCodes => throw new NotImplementedException();

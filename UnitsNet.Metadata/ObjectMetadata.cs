@@ -10,47 +10,42 @@ using UnitsNet.Metadata.Utils;
 
 namespace UnitsNet.Metadata
 {
-    public abstract class ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper> : ReadOnlyDictionary<string, TMetadata>
+    public abstract class ObjectMetadata<TMetadataAttribute, TMetadata, TMapper> : ReadOnlyDictionary<string, TMetadata>
         where TMetadataAttribute : QuantityAttribute
         where TMetadata : QuantityMetadata
-        where TMapper : ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
+        where TMapper : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
     {
         public interface IMetadataAttributeMapper
         {
-            TMetadata? Map(TMetadataAttribute metadataAttribute, string name, CultureInfo? culture, Enum[] allowedConversions);
+            TMetadata Map(TMetadataAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null);
         }
 
         private static readonly TMapper _mapper = new();
 
-        protected ObjectMetadata(CultureInfo? culture) : base(BuildMetadata(typeof(TObject), culture))
+        private protected ObjectMetadata(IDictionary<string, TMetadata> dictionary) : base(dictionary)
         {
         }
 
         public static TMetadata? GetQuantityMetadata(PropertyInfo property, CultureInfo? culture = null)
         {
-            // Get metadata from cache, or get and add to cache
-            return SimpleCache<PropertyInfo, TMetadata?>.Instance.GetOrAdd(property, () =>
+            return SimpleCache<PropertyInfo, TMetadata?>.Instance.GetOrAdd(property, p =>
             {
-                if (!property.DeclaringType.IsAssignableFrom(typeof(TObject)))
-                    throw new InvalidOperationException($"{property.Name} is not a member of {typeof(TObject)}");
-
-                var metadataAttribute = property.GetCustomAttribute<TMetadataAttribute>(inherit: true);
+                var metadataAttribute = p.GetCustomAttribute<TMetadataAttribute>(inherit: true);
                 if (metadataAttribute is null)
                     return null;
 
-                var allowedConversions = (
-                    from a in property.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true) 
-                    select a.Unit!).ToArray();
-                var invalidAllowedConversions = (
-                    from c in allowedConversions
-                    let convertableUnits = metadataAttribute.QuantityInfo!.UnitInfos.Select(i => i.Value)
-                    where !convertableUnits.Contains(c)
-                    select c).ToList();
-                if (invalidAllowedConversions.Any())
-                    throw new InvalidOperationException($"Invalid unit conversion(s): from {metadataAttribute.Unit} to [{String.Join(", ", invalidAllowedConversions)}]");
-
-                return _mapper.Map(metadataAttribute, property.Name, culture, allowedConversions);
+                return _mapper.Map(metadataAttribute, p.Name, p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true), culture);
             });
+        }
+    }
+
+    public abstract class ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper> : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>
+        where TMetadataAttribute : QuantityAttribute
+        where TMetadata : QuantityMetadata
+        where TMapper : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
+    {
+        protected ObjectMetadata(CultureInfo? culture) : base(BuildMetadata(typeof(TObject), culture))
+        {
         }
 
         private static IDictionary<string, TMetadata> BuildMetadata(Type type, CultureInfo? culture)
@@ -64,18 +59,25 @@ namespace UnitsNet.Metadata
         }
     }
 
-    public sealed class ObjectMetadata<TObject> : ObjectMetadata<TObject, QuantityAttribute, QuantityMetadata, ObjectMetadata<TObject>.Mapper>
+    public class ObjectMetadata : ObjectMetadata<QuantityAttribute, QuantityMetadata, ObjectMetadata.Mapper>
     {
-        public ObjectMetadata(CultureInfo? culture = null) : base(culture)
+        private protected ObjectMetadata(Dictionary<string, QuantityMetadata> dictionary) : base(dictionary)
         {
         }
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, string name, CultureInfo? culture, Enum[] allowedConversions)
+            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
             {
-                return new QuantityMetadata(metadataAttribute, name, culture, allowedConversions);
+                return QuantityMetadata.FromQuantityAttribute(metadataAttribute, name, allowedConversions, culture);
             }
+        }
+    }
+
+    public class ObjectMetadata<TObject> : ObjectMetadata<TObject, QuantityAttribute, QuantityMetadata, ObjectMetadata.Mapper>
+    {
+        public ObjectMetadata(CultureInfo? culture = null) : base(culture)
+        {
         }
     }
 }
