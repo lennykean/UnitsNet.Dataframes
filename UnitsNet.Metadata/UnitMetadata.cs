@@ -14,7 +14,7 @@ namespace UnitsNet.Metadata
     [EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class UnitMetadataBase
     {
-        private protected UnitMetadataBase(UnitInfo unitInfo, string name, Enum value, string displayName, string abbriviation)
+        private protected UnitMetadataBase(UnitInfo unitInfo, string name, int value, string displayName, string abbriviation)
         {
             UnitInfo = unitInfo;
             Name = name;
@@ -27,7 +27,7 @@ namespace UnitsNet.Metadata
         public UnitInfo UnitInfo { get; }
 
         public string Name { get; }
-        public Enum Value { get; }
+        public int Value { get; }
         public string DisplayName { get; }
         public string Abbriviation { get; }
 
@@ -44,7 +44,7 @@ namespace UnitsNet.Metadata
 
     public sealed class UnitMetadataBasic : UnitMetadataBase
     {
-        public UnitMetadataBasic(UnitInfo unitInfo, string name, Enum value, string displayName, string abbriviation, QuantityTypeMetadataBasic quantityType) 
+        public UnitMetadataBasic(UnitInfo unitInfo, string name, int value, string displayName, string abbriviation, QuantityTypeMetadataBasic quantityType) 
             : base(unitInfo, name, value, displayName, abbriviation)
         {
             QuantityType = quantityType;
@@ -57,7 +57,7 @@ namespace UnitsNet.Metadata
             return SimpleCache<Enum, UnitMetadataBasic>.Instance.GetOrAdd(quantityInfo.BaseUnitInfo.Value, _ =>
             {
                 var name = unitInfo.Name;
-                var value = unitInfo.Value;
+                var value = Convert.ToInt32(unitInfo.Value);
                 var displayName = GetDisplayName(unitInfo);
                 var abbriviation = GetAbbriviation(unitInfo, quantityInfo, culture);
                 var quantityType = QuantityTypeMetadataBasic.FromQuantityInfo(quantityInfo);
@@ -69,7 +69,7 @@ namespace UnitsNet.Metadata
 
     public sealed class UnitMetadata : UnitMetadataBase
     {
-        public UnitMetadata(UnitInfo unitInfo, string name, Enum value, string displayName, string abbriviation, QuantityTypeMetadata quantityType) 
+        public UnitMetadata(UnitInfo unitInfo, string name, int value, string displayName, string abbriviation, QuantityTypeMetadata quantityType) 
             : base(unitInfo, name, value, displayName, abbriviation)
         {
             QuantityType = quantityType;
@@ -81,7 +81,7 @@ namespace UnitsNet.Metadata
         {
             return SimpleCache<Enum, UnitMetadata>.Instance.GetOrAdd(quantityInfo.BaseUnitInfo.Value, _ =>
             {
-                var value = unitInfo.Value;
+                var value = Convert.ToInt32(unitInfo.Value);
                 var displayName = GetDisplayName(unitInfo);
                 var abbriviation = GetAbbriviation(unitInfo, quantityInfo, culture);
                 var quantityType = QuantityTypeMetadata.FromQuantityInfo(quantityInfo, culture);

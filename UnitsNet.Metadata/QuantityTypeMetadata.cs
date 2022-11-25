@@ -13,21 +13,28 @@ namespace UnitsNet.Metadata
     [EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class QuantityTypeMetadataBase
     {
-        private protected QuantityTypeMetadataBase(QuantityInfo quantityInfo, string name)
+        private protected QuantityTypeMetadataBase(QuantityInfo quantityInfo, string name, string displayName)
         {
             QuantityInfo = quantityInfo;
             Name = name;
+            DisplayName = displayName;
         }
 
         [JsonIgnore, IgnoreDataMember]
         public QuantityInfo QuantityInfo { get; }
 
         public string Name { get; }
+        public string DisplayName { get; }
+
+        private protected static string GetDisplayName(QuantityInfo quantityInfo)
+        {
+            return quantityInfo.Name.Humanize(LetterCasing.LowerCase);
+        }
     }
 
     public sealed class QuantityTypeMetadataBasic : QuantityTypeMetadataBase
     {
-        public QuantityTypeMetadataBasic(QuantityInfo quantityInfo, string name) : base(quantityInfo, name)
+        public QuantityTypeMetadataBasic(QuantityInfo quantityInfo, string name, string displayName) : base(quantityInfo, name, displayName)
         {
         }
 
@@ -36,21 +43,20 @@ namespace UnitsNet.Metadata
             return SimpleCache<Type, QuantityTypeMetadataBasic>.Instance.GetOrAdd(quantityInfo.ValueType, _ => 
             {
                 var name = quantityInfo.Name;
+                var displayName = GetDisplayName(quantityInfo);
 
-                return new(quantityInfo, name);
+                return new(quantityInfo, name, displayName);
             });
         }
     }
 
-    public class QuantityTypeMetadata : QuantityTypeMetadataBase
+    public sealed class QuantityTypeMetadata : QuantityTypeMetadataBase
     {
-        public QuantityTypeMetadata(QuantityInfo quantityInfo, string name, string displayName, UnitMetadataBasic? baseUnit) : base(quantityInfo, name)
+        public QuantityTypeMetadata(QuantityInfo quantityInfo, string name, string displayName, UnitMetadataBasic? baseUnit) : base(quantityInfo, name, displayName)
         {
-            DisplayName = displayName;
             BaseUnit = baseUnit;
         }
 
-        public string DisplayName { get; }
         public UnitMetadataBasic? BaseUnit { get; }
 
         public static QuantityTypeMetadata FromQuantityInfo(QuantityInfo quantityInfo, CultureInfo? culture = null)
@@ -58,7 +64,7 @@ namespace UnitsNet.Metadata
             return SimpleCache<Type, QuantityTypeMetadata>.Instance.GetOrAdd(quantityInfo.ValueType, _ =>
             { 
                 var name = quantityInfo.Name;
-                var displayName = quantityInfo.Name.Humanize(LetterCasing.LowerCase);
+                var displayName = GetDisplayName(quantityInfo);
                 var baseUnit = UnitMetadataBasic.FromUnitInfo(quantityInfo.BaseUnitInfo, quantityInfo, culture);
 
                 return new(quantityInfo, name, displayName, baseUnit);

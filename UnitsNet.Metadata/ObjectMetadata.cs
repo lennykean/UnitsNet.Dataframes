@@ -67,7 +67,7 @@ namespace UnitsNet.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public QuantityMetadata? Map(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+            public QuantityMetadata Map(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
             {
                 return QuantityMetadata.FromQuantityAttribute(metadataAttribute, name, allowedConversions, culture);
             }

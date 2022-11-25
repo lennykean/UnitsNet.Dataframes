@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 using HondataDotNet.Datalog.Core.Annotations;
 
-using UnitsNet;
 using UnitsNet.Metadata;
 using UnitsNet.Metadata.Annotations;
 
@@ -13,7 +13,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
     public class SensorMetadata : QuantityMetadata
     {
-        public SensorMetadata(string name, UnitMetadata? unit, Dictionary<int, UnitMetadataBasic> conversions, string displayName, string? description) : base(name, unit, conversions)
+        public SensorMetadata(string name, UnitMetadata? unit, IEnumerable<UnitMetadataBasic> conversions, string displayName, string? description) : base(name, unit, conversions.ToList())
         {
             DisplayName = displayName;
             Description = description;
@@ -32,7 +32,7 @@ namespace HondataDotNet.Datalog.Core.Metadata
             var conversions = GetConversions(metadataAttribute, allowedConversions, culture);
             var unit = unitInfo is null || quantityInfo is null ? null : UnitMetadata.FromUnitInfo(unitInfo, quantityInfo, culture);
 
-            return new(name, unit, new(conversions), metadataAttribute.DisplayName, metadataAttribute.Description);
+            return new(name, unit, conversions, metadataAttribute.DisplayName, metadataAttribute.Description);
         }
     }
 }
