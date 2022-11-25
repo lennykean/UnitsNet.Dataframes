@@ -4,9 +4,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
-using Humanizer;
-
 using UnitsNet.Metadata.Annotations;
+using UnitsNet.Metadata.Utils;
 
 namespace UnitsNet.Metadata
 {
@@ -37,14 +36,25 @@ namespace UnitsNet.Metadata
 
         protected static IEnumerable<UnitMetadataBasic> GetConversions(QuantityAttribute metadataAttribute, IEnumerable<AllowUnitConversionAttribute> allowedConversions,  CultureInfo? culture = null)
         {
+            var conversions = GetConversionsIterator(metadataAttribute, allowedConversions, culture);
+
+            return conversions.Distinct(new DelegateEqualityComparer<UnitMetadataBasic>((a, b) => a.UnitInfo.Value.Equals(b.UnitInfo.Value)));
+        }
+
+        private static IEnumerable<UnitMetadataBasic> GetConversionsIterator(QuantityAttribute metadataAttribute, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+        {
             if (metadataAttribute.UnitInfo is null || metadataAttribute.QuantityInfo is null)
                 yield break;
+
+            // Quantities are always convertable to their own unit. 
+            yield return UnitMetadataBasic.FromUnitInfo(metadataAttribute.UnitInfo, metadataAttribute.QuantityInfo, culture);
 
             if (allowedConversions.Any())
             {
                 foreach (var conversion in allowedConversions)
                 {
-                    yield return UnitMetadataBasic.FromUnitInfo(conversion.UnitInfo, GetConversionQuantityInfo(conversion, metadataAttribute), culture);
+                    var (unitInfo, quantityInfo) = GetConversionInfo(conversion, metadataAttribute);
+                    yield return UnitMetadataBasic.FromUnitInfo(unitInfo, quantityInfo, culture);
                 }
             }
             else
@@ -56,15 +66,20 @@ namespace UnitsNet.Metadata
             }
         }
 
-        private static QuantityInfo GetConversionQuantityInfo(AllowUnitConversionAttribute conversion, QuantityAttribute metadataAttribute)
+        private static (UnitInfo unitInfo, QuantityInfo quantityInfo) GetConversionInfo(AllowUnitConversionAttribute conversion, QuantityAttribute metadataAttribute)
         {
+            var unitInfo = conversion.UnitInfo;
             var quantityInfo = conversion.QuantityInfo;
+
+            if (unitInfo is not null && quantityInfo is not null)
+                return (unitInfo, quantityInfo);
+
             if (quantityInfo is null && metadataAttribute.QuantityInfo?.UnitInfos.Any(u => u.Value.Equals(metadataAttribute.Unit)) == true)
                 quantityInfo = metadataAttribute.QuantityInfo;
-            if (quantityInfo is null)
-                throw new ArgumentException($"{metadataAttribute.Unit?.GetType()} is not a known unit type.");
+            if (quantityInfo is null || (unitInfo is null && !conversion.Unit.TryGetUnitInfo(quantityInfo.ValueType, out unitInfo)))
+                throw new InvalidOperationException($"{metadataAttribute.Unit?.GetType().Name} is not a known unit type.");
 
-            return quantityInfo;
+            return (unitInfo!, quantityInfo);
         }
     }
 }

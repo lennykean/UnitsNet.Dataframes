@@ -43,14 +43,14 @@ namespace UnitsNet.Metadata
         {
             var property = ExtractProperty(propertySelectorExpression);
 
-            return GetQuantity(obj, property);
+            return ConvertQuantity(obj, property, to);
         }
 
         public static IQuantity ConvertQuantity<TObject>(this TObject obj, string propertyName, Enum to)
         {
             var property = typeof(TObject).GetProperty(propertyName);
 
-            return GetQuantity(obj, property);
+            return ConvertQuantity(obj, property, to);
         }
 
         private static PropertyInfo ExtractProperty<TObject>(Expression<Func<TObject, QuantityValue>> propertySelectorExpression)
@@ -68,17 +68,6 @@ namespace UnitsNet.Metadata
             return property;
         }
 
-        private static IQuantity GetQuantity<TObject>(TObject obj, PropertyInfo property)
-        {
-            var metadata = ObjectMetadata.GetQuantityMetadata(property);
-            if (metadata?.Unit is null)
-                throw new InvalidOperationException($"Unit metadata does not exist for property {property.DeclaringType}.{property.Name}.");
-            
-            var value = GetValue(obj, property);
-
-            return metadata.Unit.UnitInfo.Value.CreateQuantity(metadata.Unit.QuantityType.QuantityInfo.ValueType, value);
-        }
-
         private static double GetValue<TObject>(TObject obj, PropertyInfo property)
         {
             // Get property getter from cache, or get and add to cache
@@ -93,6 +82,34 @@ namespace UnitsNet.Metadata
                 return getter;
             });
             return Convert.ToDouble(getter.Invoke(obj, new object[] { }));
+        }
+
+        private static IQuantity GetQuantity<TObject>(TObject obj, PropertyInfo property)
+        {
+            var metadata = ObjectMetadata.GetQuantityMetadata(property);
+            if (metadata?.Unit is null)
+                throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
+            
+            var value = GetValue(obj, property);
+
+            return metadata.Unit.UnitInfo.Value.CreateQuantity(metadata.Unit.QuantityType.QuantityInfo.ValueType, value);
+        }
+
+        private static IQuantity ConvertQuantity<TObject>(TObject obj, PropertyInfo property, Enum to)
+        {
+            var metadata = ObjectMetadata.GetQuantityMetadata(property);
+            if (metadata?.Unit is null)
+                throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
+
+            var conversion = metadata.Conversions.SingleOrDefault(c => c.UnitInfo.Value.Equals(to));
+            if (conversion is null)
+                throw new InvalidOperationException($"Conversion to {to} is not allowed on {property.DeclaringType.Name}.{property.Name}.");
+
+            var quantity = GetQuantity(obj, property);
+            if (!UnitConverter.Default.TryGetConversionFunction(metadata.Unit.QuantityType.QuantityInfo.ValueType, metadata.Unit.UnitInfo.Value, conversion.QuantityType.QuantityInfo.ValueType, to, out var conversionFunction))
+                throw new InvalidOperationException($"Invalid unit conversion from {quantity.Unit} to {to}.");
+
+            return conversionFunction(quantity);
         }
     }
 }

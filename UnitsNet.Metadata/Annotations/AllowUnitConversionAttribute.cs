@@ -23,7 +23,7 @@ namespace UnitsNet.Metadata.Annotations
             });
             _lazyQuantityInfo = new(() =>
             {
-                Unit.TryGetQuantityInfo(QuantityType, out var quantityInfo);                
+                Unit.TryGetQuantityInfo(QuantityType, out var quantityInfo);
                 return quantityInfo!;
             });
             _lazyQuantityType = new(() =>
@@ -41,6 +41,6 @@ namespace UnitsNet.Metadata.Annotations
 
         public Type? QuantityType => _lazyQuantityType.Value;
         public QuantityInfo? QuantityInfo => _lazyQuantityInfo.Value;
-        public UnitInfo UnitInfo => _lazyUnitInfo.Value;
+        public UnitInfo? UnitInfo => _lazyUnitInfo.Value;
     }
 }

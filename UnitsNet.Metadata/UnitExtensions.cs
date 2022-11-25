@@ -65,7 +65,7 @@ namespace UnitsNet.Metadata
             }
 
             // Check for a static QuantityInfo property on quantityType and try to invoke the getter
-            var staticInfoProperty = quantityType?.GetProperties(BindingFlags.Public | BindingFlags.Static).SingleOrDefault(p => p.PropertyType == typeof(QuantityInfo));
+            var staticInfoProperty = quantityType?.GetProperties(BindingFlags.Public | BindingFlags.Static).SingleOrDefault(p => typeof(QuantityInfo).IsAssignableFrom(p.PropertyType));
             var staticInfoGetter = staticInfoProperty?.GetGetMethod();
             quantityInfo = staticInfoGetter?.Invoke(null, null) as QuantityInfo;
             if (quantityInfo?.UnitType == unit.GetType())
@@ -90,9 +90,9 @@ namespace UnitsNet.Metadata
         {
             // Get quantity metadata
             if (!unit.TryGetQuantityInfo(quantityType, out var quantityInfo))
-                throw new ArgumentException($"{unit.GetType()} is not a known unit type.");
+                throw new ArgumentException($"{unit.GetType().Name} is not a known unit type.");
             if (!unit.TryGetUnitInfo(quantityType, out var unitInfo))
-                throw new ArgumentException($"{unit.GetType()}.{unit} is not a known unit value.");
+                throw new ArgumentException($"{unit.GetType().Name}.{unit} is not a known unit value.");
 
             // Try to create a quantity for a build-in unit type
             if (Quantity.TryFrom(value, unit, out var quantity))
@@ -109,7 +109,7 @@ namespace UnitsNet.Metadata
                     where parameters.Last().ParameterType == quantityInfo!.UnitType
                     select c).SingleOrDefault();
                 if (ctor is null)
-                    throw new InvalidOperationException($"Unable to create quantity. No constructor found compatible with {t}({typeof(QuantityValue)}, {quantityInfo!.UnitType})");
+                    throw new InvalidOperationException($"Unable to create quantity. No constructor found compatible with {t.Name}({typeof(QuantityValue).Name}, {quantityInfo!.UnitType.Name})");
 
                 return (ctor, ctor.GetParameters().First().ParameterType);
             });            
