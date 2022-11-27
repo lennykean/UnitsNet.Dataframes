@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 using HondataDotNet.Datalog.Core.Annotations;
@@ -8,10 +9,9 @@ using UnitsNet.Metadata.Annotations;
 
 namespace HondataDotNet.Datalog.Core.Metadata
 {
-    public sealed class DatalogFrameMetadata<TObject> : ObjectMetadata<TObject, SensorAttribute, SensorMetadata, DatalogFrameMetadata<TObject>.Mapper> 
-        where TObject : IDatalogFrame
+    public sealed class DatalogFrameMetadata : ObjectMetadata<SensorAttribute, SensorMetadata, DatalogFrameMetadata.Mapper> 
     {
-        public DatalogFrameMetadata(CultureInfo? culture = null) : base(culture)
+        public DatalogFrameMetadata(Type forType, CultureInfo? culture = null) : base(forType, culture)
         {
         }
 

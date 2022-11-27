@@ -8,14 +8,20 @@ namespace UnitsNet.Metadata
 {
     public static class ObjectMetadataExtensions
     {
-        public static ObjectMetadata<T> GetObjectMetadata<T>(this T _)
+        public static ObjectMetadata<QuantityMetadata> GetObjectMetadata<T>(this T obj)
         {
-            return new ObjectMetadata<T>();
+            if (obj is IMetadataProvider<QuantityMetadata> metadataProvider)
+                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetMetadatas());
+
+            return QuantityObjectMetadata.For<T>();
         }
 
-        public static ObjectMetadata<T> GetObjectMetadata<T>(this IEnumerable<T> _)
+        public static ObjectMetadata<QuantityMetadata> GetObjectMetadata<T>(this IEnumerable<T> obj)
         {
-            return new ObjectMetadata<T>();
+            if (obj is IMetadataProvider<QuantityMetadata> metadataProvider)
+                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetMetadatas());
+
+            return QuantityObjectMetadata.For<T>();
         }
 
         public static IQuantity GetQuantity<TObject>(this TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression)

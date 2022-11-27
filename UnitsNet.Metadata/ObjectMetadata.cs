@@ -10,7 +10,15 @@ using UnitsNet.Metadata.Utils;
 
 namespace UnitsNet.Metadata
 {
-    public abstract class ObjectMetadata<TMetadataAttribute, TMetadata, TMapper> : ReadOnlyDictionary<string, TMetadata>
+    public class ObjectMetadata<TMetadata> : ReadOnlyDictionary<string, TMetadata>
+        where TMetadata : QuantityMetadata
+    {
+        public ObjectMetadata(IEnumerable<TMetadata> dictionary) : base(dictionary.ToDictionary(k => k.Name, v => v))
+        {
+        }
+    }
+
+    public abstract class ObjectMetadata<TMetadataAttribute, TMetadata, TMapper> : ObjectMetadata<TMetadata>
         where TMetadataAttribute : QuantityAttribute
         where TMetadata : QuantityMetadata
         where TMapper : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
@@ -22,8 +30,9 @@ namespace UnitsNet.Metadata
 
         private static readonly TMapper _mapper = new();
 
-        private protected ObjectMetadata(IDictionary<string, TMetadata> dictionary) : base(dictionary)
+        protected ObjectMetadata(Type forType, CultureInfo? culture = null) : base(BuildMetadata(forType, culture))
         {
+
         }
 
         public static TMetadata? GetQuantityMetadata(PropertyInfo property, CultureInfo? culture = null)
@@ -37,34 +46,19 @@ namespace UnitsNet.Metadata
                 return _mapper.Map(metadataAttribute, p.Name, p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true), culture);
             });
         }
-    }
 
-    public abstract class ObjectMetadata<TObject, TMetadataAttribute, TMetadata, TMapper> : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>
-        where TMetadataAttribute : QuantityAttribute
-        where TMetadata : QuantityMetadata
-        where TMapper : ObjectMetadata<TMetadataAttribute, TMetadata, TMapper>.IMetadataAttributeMapper, new()
-    {
-        protected ObjectMetadata(CultureInfo? culture) : base(BuildMetadata(typeof(TObject), culture))
+        private static IEnumerable<TMetadata> BuildMetadata(Type forType, CultureInfo? culture)
         {
-        }
-
-        private static IDictionary<string, TMetadata> BuildMetadata(Type type, CultureInfo? culture)
-        {
-            return (
-                from property in type.GetProperties()
+            return
+                from property in forType.GetProperties()
                 let metadata = GetQuantityMetadata(property, culture)
                 where metadata != null
-                select (key: property.Name, value: metadata))
-                .ToDictionary(k => k.key, v => v.value);
+                select metadata;
         }
     }
 
-    public class ObjectMetadata : ObjectMetadata<QuantityAttribute, QuantityMetadata, ObjectMetadata.Mapper>
+    public sealed class QuantityObjectMetadata : ObjectMetadata<QuantityAttribute, QuantityMetadata, QuantityObjectMetadata.Mapper>
     {
-        private protected ObjectMetadata(Dictionary<string, QuantityMetadata> dictionary) : base(dictionary)
-        {
-        }
-
         public class Mapper : IMetadataAttributeMapper
         {
             public QuantityMetadata Map(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
@@ -72,12 +66,14 @@ namespace UnitsNet.Metadata
                 return QuantityMetadata.FromQuantityAttribute(metadataAttribute, name, allowedConversions, culture);
             }
         }
-    }
 
-    public class ObjectMetadata<TObject> : ObjectMetadata<TObject, QuantityAttribute, QuantityMetadata, ObjectMetadata.Mapper>
-    {
-        public ObjectMetadata(CultureInfo? culture = null) : base(culture)
+        private QuantityObjectMetadata(Type forType, CultureInfo? culture = null) : base(forType, culture)
         {
+        }
+
+        public static QuantityObjectMetadata For<TObject>(CultureInfo? culture = null)
+        {
+            return new QuantityObjectMetadata(typeof(TObject), culture);
         }
     }
 }

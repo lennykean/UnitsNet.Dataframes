@@ -46,8 +46,10 @@ namespace UnitsNet.Metadata.Reflection
         }
 
         public static IQuantity GetQuantity<TObject>(TObject obj, PropertyInfo property)
-        {
-            var metadata = ObjectMetadata.GetQuantityMetadata(property);
+        {    
+            var metadata = (obj is IMetadataProvider<QuantityMetadata> metadataProviderObj) 
+                ? metadataProviderObj.GetMetadata(property)
+                : QuantityObjectMetadata.GetQuantityMetadata(property);
             if (metadata?.Unit is null)
                 throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
 
@@ -61,7 +63,9 @@ namespace UnitsNet.Metadata.Reflection
 
         public static IQuantity ConvertQuantity<TObject>(TObject obj, PropertyInfo property, Enum to)
         {
-            var metadata = ObjectMetadata.GetQuantityMetadata(property);
+            var metadata = (obj is IMetadataProvider<QuantityMetadata> metadataProviderObj)
+                ? metadataProviderObj.GetMetadata(property)
+                : QuantityObjectMetadata.GetQuantityMetadata(property);
             if (metadata?.Unit is null)
                 throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
 

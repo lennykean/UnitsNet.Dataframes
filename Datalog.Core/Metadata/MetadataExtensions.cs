@@ -7,14 +7,14 @@ namespace UnitsNet.Metadata
 {
     public static class MetadataExtensions
     {
-        public static DatalogFrameMetadata<TDatalogFrame> GetDatalogFrameMetadata<TDatalogFrame>(this TDatalogFrame _) where TDatalogFrame : IDatalogFrame
+        public static DatalogFrameMetadata GetDatalogFrameMetadata<TDatalogFrame>(this TDatalogFrame _) where TDatalogFrame : IDatalogFrame
         {
-            return new DatalogFrameMetadata<TDatalogFrame>();
+            return new DatalogFrameMetadata(typeof(TDatalogFrame));
         }
 
-        public static DatalogFrameMetadata<TDatalogFrame> GetDatalogFrameMetadata<TDatalogFrame>(this IEnumerable<TDatalogFrame> _) where TDatalogFrame : IDatalogFrame
+        public static DatalogFrameMetadata GetDatalogFrameMetadata<TDatalogFrame>(this IEnumerable<TDatalogFrame> _) where TDatalogFrame : IDatalogFrame
         {
-            return new DatalogFrameMetadata<TDatalogFrame>();
+            return new DatalogFrameMetadata(typeof(TDatalogFrame));
         }
     }
 }
