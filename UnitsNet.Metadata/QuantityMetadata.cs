@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 
 using UnitsNet.Metadata.Annotations;
 using UnitsNet.Metadata.Utils;
@@ -11,18 +12,18 @@ namespace UnitsNet.Metadata
 {
     public class QuantityMetadata
     {
-        public QuantityMetadata(string name, UnitMetadata? unit, IList<UnitMetadataBasic> conversions)
+        public QuantityMetadata(PropertyInfo property, UnitMetadata? unit, IList<UnitMetadataBasic> conversions)
         {
-            Name = name;
+            Property = property;
             Unit = unit;
             Conversions = new(conversions);
         }
 
-        public string Name { get; }
+        public PropertyInfo Property { get; }
         public UnitMetadata? Unit { get; }
         public ReadOnlyCollection<UnitMetadataBasic> Conversions { get; }
 
-        public static QuantityMetadata FromQuantityAttribute(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+        public static QuantityMetadata FromQuantityAttribute(QuantityAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
         {
             if (metadataAttribute is null)
                 throw new ArgumentNullException(nameof(metadataAttribute));
@@ -31,7 +32,7 @@ namespace UnitsNet.Metadata
             var quantityInfo = metadataAttribute.QuantityInfo;
             var unit = unitInfo is null || quantityInfo is null ? null : UnitMetadata.FromUnitInfo(unitInfo, quantityInfo, culture);
 
-            return new(name, unit, GetConversions(metadataAttribute, allowedConversions, culture).ToList());
+            return new(property, unit, GetConversions(metadataAttribute, allowedConversions, culture).ToList());
         }
 
         protected static IEnumerable<UnitMetadataBasic> GetConversions(QuantityAttribute metadataAttribute, IEnumerable<AllowUnitConversionAttribute> allowedConversions,  CultureInfo? culture = null)

@@ -9,7 +9,7 @@ namespace UnitsNet.Metadata.Annotations
         private readonly Lazy<UnitInfo>? _lazyUnitInfo;
         private readonly Lazy<QuantityInfo>? _lazyQuantityInfo;
 
-        protected QuantityAttribute(object? unit = null, Type? quantityType = null)
+        public QuantityAttribute(object? unit = null, Type? quantityType = null)
         {
             if (unit is null)
                 return;

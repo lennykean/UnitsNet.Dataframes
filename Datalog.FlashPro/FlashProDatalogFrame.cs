@@ -26,6 +26,7 @@ namespace HondataDotNet.Datalog.FlashPro
         /// </summary>
         [Sensor("RPM", RotationalSpeedUnit.RevolutionPerMinute, Description = "Engine speed")]
         public double RPM => _frame.RPM;
+        [Sensor("RPM", RotationalSpeedUnit.RevolutionPerMinute, Description = "Engine speed")]
         int IDatalogFrame.RPM => (int)RPM;
         /// <summary>
         /// Vehicle speed in KilometerPerHour.

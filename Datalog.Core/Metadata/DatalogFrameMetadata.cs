@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 
 using HondataDotNet.Datalog.Core.Annotations;
 
@@ -17,9 +18,9 @@ namespace HondataDotNet.Datalog.Core.Metadata
 
         public class Mapper : IMetadataAttributeMapper
         {
-            public SensorMetadata Map(SensorAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+            public SensorMetadata Map(SensorAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
             {
-                return SensorMetadata.FromSensorAttribute(metadataAttribute, name, allowedConversions, culture);
+                return SensorMetadata.FromSensorAttribute(metadataAttribute, property, allowedConversions, culture);
             }
         }
     }

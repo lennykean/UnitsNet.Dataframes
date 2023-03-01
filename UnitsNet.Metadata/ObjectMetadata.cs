@@ -10,10 +10,10 @@ using UnitsNet.Metadata.Utils;
 
 namespace UnitsNet.Metadata
 {
-    public class ObjectMetadata<TMetadata> : ReadOnlyDictionary<string, TMetadata>
+    public class ObjectMetadata<TMetadata> : ReadOnlyDictionary<PropertyInfo, TMetadata>
         where TMetadata : QuantityMetadata
     {
-        public ObjectMetadata(IEnumerable<TMetadata> dictionary) : base(dictionary.ToDictionary(k => k.Name, v => v))
+        public ObjectMetadata(IEnumerable<TMetadata> metadatas) : base(metadatas.ToDictionary(k => k.Property, v => v))
         {
         }
     }
@@ -25,14 +25,18 @@ namespace UnitsNet.Metadata
     {
         public interface IMetadataAttributeMapper
         {
-            TMetadata Map(TMetadataAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null);
+            TMetadata Map(TMetadataAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null);
         }
 
         private static readonly TMapper _mapper = new();
 
         protected ObjectMetadata(Type forType, CultureInfo? culture = null) : base(BuildMetadata(forType, culture))
         {
+        }
 
+        public static TMetadata MapAttribute(TMetadataAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+        {
+            return _mapper.Map(metadataAttribute, property, allowedConversions, culture);
         }
 
         public static TMetadata? GetQuantityMetadata(PropertyInfo property, CultureInfo? culture = null)
@@ -43,14 +47,14 @@ namespace UnitsNet.Metadata
                 if (metadataAttribute is null)
                     return null;
 
-                return _mapper.Map(metadataAttribute, p.Name, p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true), culture);
+                return _mapper.Map(metadataAttribute, property, p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true), culture);
             });
         }
 
         private static IEnumerable<TMetadata> BuildMetadata(Type forType, CultureInfo? culture)
         {
             return
-                from property in forType.GetProperties()
+                from property in forType.GetProperties((BindingFlags)(-1))
                 let metadata = GetQuantityMetadata(property, culture)
                 where metadata != null
                 select metadata;
@@ -61,13 +65,13 @@ namespace UnitsNet.Metadata
     {
         public class Mapper : IMetadataAttributeMapper
         {
-            public QuantityMetadata Map(QuantityAttribute metadataAttribute, string name, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+            public QuantityMetadata Map(QuantityAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
             {
-                return QuantityMetadata.FromQuantityAttribute(metadataAttribute, name, allowedConversions, culture);
+                return QuantityMetadata.FromQuantityAttribute(metadataAttribute, property, allowedConversions, culture);
             }
         }
 
-        private QuantityObjectMetadata(Type forType, CultureInfo? culture = null) : base(forType, culture)
+        public QuantityObjectMetadata(Type forType, CultureInfo? culture = null) : base(forType, culture)
         {
         }
 

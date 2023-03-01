@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -7,7 +8,7 @@ using UnitsNet.Metadata.Utils;
 
 namespace UnitsNet.Metadata.Reflection
 {
-    internal static class ReflectionUtils
+    public static class ReflectionUtils
     {
         private static readonly Lazy<Type[]> LazyQuantityValueCompatibleTypes = new(() => (
             from m in typeof(QuantityValue).GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -141,6 +142,54 @@ namespace UnitsNet.Metadata.Reflection
             }
             instance = (IQuantity)ctor.Invoke(null);
             return true;
+        }
+
+        public static Dictionary<PropertyInfo, PropertyInfo> GetInterfaceToConcretePropertyDictionary(Type concreteType, Type interfaceType)
+        {
+            return SimpleCache<(Type, Type), Dictionary<PropertyInfo, PropertyInfo>>.Instance.GetOrAdd((concreteType, interfaceType), t =>
+            {
+                if (!interfaceType.IsInterface)
+                    throw new ArgumentException($"${interfaceType} is not an interface");
+
+                return new(GetInterfaceToConcretePropertyKeyValues(t.Item1, t.Item2));
+            });
+        }
+
+        public static IEnumerable<PropertyInfo> GetProperties(Type type, bool inherit = true)
+        {
+            foreach (var property in type.GetProperties())
+            {
+                yield return property;
+            }
+
+            if (!inherit)
+                yield break;
+
+            foreach (var super in type.GetInterfaces())
+            {
+                foreach (var property in super.GetProperties())
+                {
+                    yield return property;
+                }
+            }
+        }
+
+        private static IEnumerable<KeyValuePair<PropertyInfo, PropertyInfo>> GetInterfaceToConcretePropertyKeyValues(Type concreteType, Type interfaceType)
+        {
+            var interfaceMap = concreteType.GetInterfaceMap(interfaceType);
+            var allInterfaceProperties = interfaceType.GetProperties((BindingFlags)(-1));
+            var allConcreteProperties = concreteType.GetProperties((BindingFlags)(-1));
+
+            for (var i = 0; i < interfaceMap.InterfaceMethods.Length; i++)
+            {
+                var interfaceProperty = allInterfaceProperties.SingleOrDefault(p => p.GetMethod == interfaceMap.InterfaceMethods[i]);
+                var concreteProperty = allConcreteProperties.SingleOrDefault(p => p.GetMethod == interfaceMap.TargetMethods[i]);
+
+                if (interfaceProperty is null || concreteProperty is null)
+                    continue;
+
+                yield return new(interfaceProperty, concreteProperty);
+            }
         }
     }
 }

@@ -79,7 +79,7 @@ namespace UnitsNet.Metadata
 
         public static UnitMetadata FromUnitInfo(UnitInfo unitInfo, QuantityInfo quantityInfo, CultureInfo? culture = null)
         {
-            return SimpleCache<Enum, UnitMetadata>.Instance.GetOrAdd(quantityInfo.BaseUnitInfo.Value, _ =>
+            return SimpleCache<Enum, UnitMetadata>.Instance.GetOrAdd(unitInfo.Value, _ =>
             {
                 var value = Convert.ToInt32(unitInfo.Value);
                 var displayName = GetDisplayName(unitInfo);

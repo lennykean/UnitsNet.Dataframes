@@ -5,7 +5,7 @@ namespace UnitsNet.Metadata
 {
     public interface IMetadataProvider<out TMetadata> where TMetadata : QuantityMetadata
     {
-        IEnumerable<TMetadata> GetMetadatas();
-        TMetadata GetMetadata(PropertyInfo property);
+        IEnumerable<TMetadata> GetAllMetadata<TObject>();
+        TMetadata? GetMetadata(PropertyInfo property);
     }
 }

@@ -11,7 +11,7 @@ namespace UnitsNet.Metadata
         public static ObjectMetadata<QuantityMetadata> GetObjectMetadata<T>(this T obj)
         {
             if (obj is IMetadataProvider<QuantityMetadata> metadataProvider)
-                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetMetadatas());
+                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetAllMetadata<T>());
 
             return QuantityObjectMetadata.For<T>();
         }
@@ -19,7 +19,7 @@ namespace UnitsNet.Metadata
         public static ObjectMetadata<QuantityMetadata> GetObjectMetadata<T>(this IEnumerable<T> obj)
         {
             if (obj is IMetadataProvider<QuantityMetadata> metadataProvider)
-                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetMetadatas());
+                return new ObjectMetadata<QuantityMetadata>(metadataProvider.GetAllMetadata<T>());
 
             return QuantityObjectMetadata.For<T>();
         }
