@@ -150,10 +150,8 @@ internal static class ReflectionExtensionsz
     public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata(this PropertyInfo property, Enum to, IMetadataProvider<QuantityMetadata>? metadataProvider = null)
     {
         var quantityMetadata = property.GetQuantityMetadata(metadataProvider);
-        var conversionMetadata = quantityMetadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to));
-        if (conversionMetadata is null)
-            throw new InvalidOperationException($"Conversion to {conversionMetadata} is not allowed on {property.DeclaringType.Name}.{property.Name}.");
-
+        var conversionMetadata = quantityMetadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
+            ?? throw new InvalidOperationException($"{property.DeclaringType.Name}.{property.Name} ({quantityMetadata.Unit!.UnitInfo.Value}) cannot be converted to {to}.");
         var toMetadata = UnitMetadata.FromUnitInfo(conversionMetadata.UnitInfo, conversionMetadata.QuantityType.QuantityInfo);
 
         return (quantityMetadata.Unit!, toMetadata);

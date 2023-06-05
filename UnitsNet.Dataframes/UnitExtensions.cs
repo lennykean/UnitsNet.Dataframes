@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using UnitsNet.Dataframes.Reflection;
@@ -8,7 +9,7 @@ namespace UnitsNet.Dataframes;
 
 public static class UnitExtensions
 {
-    public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, out UnitInfo? unitInfo)
+    public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)]out UnitInfo? unitInfo)
     {
         // Check cache
         if (EphemeralValueCache<Enum, UnitInfo>.Instance.TryGet(unit, out unitInfo))
@@ -39,7 +40,7 @@ public static class UnitExtensions
         return false;
     }
 
-    public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, out QuantityInfo? quantityInfo)
+    public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)]out QuantityInfo? quantityInfo)
     {
         // Check cache
         if (EphemeralValueCache<Enum, QuantityInfo>.Instance.TryGet(unit, out quantityInfo))
@@ -64,9 +65,10 @@ public static class UnitExtensions
         }
 
         // Check for a default public constructor, try to construct an instance of quantityType, then use the QuantityInfo instance property
-        if (quantityType is not null && quantityType.TryCreateQuantityInstance(out var instance) && instance!.QuantityInfo.UnitType == unit.GetType())
+        if (quantityType is not null && quantityType.TryCreateQuantityInstance(out var instance) && instance.QuantityInfo.UnitType == unit.GetType())
         {
-            EphemeralValueCache<Enum, QuantityInfo>.Instance.AddOrUpdate(unit, quantityInfo!);
+            quantityInfo = instance.QuantityInfo;
+            EphemeralValueCache<Enum, QuantityInfo>.Instance.AddOrUpdate(unit, instance.QuantityInfo);
             return true;
         }
 
