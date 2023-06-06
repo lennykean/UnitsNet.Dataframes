@@ -12,7 +12,7 @@ namespace UnitsNet.Dataframes;
 
 internal static class MetadataBuilder
 {
-    public static bool TryBuildMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, [NotNullWhen(true)]out TMetadataAttribute? metadataAttribute, [NotNullWhen(true)]out TMetadata? metadata, CultureInfo? culture = null)
+    public static bool TryBuildMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, [NotNullWhen(true)] out TMetadataAttribute? metadataAttribute, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {

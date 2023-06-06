@@ -68,7 +68,7 @@ internal static class ReflectionExtensionsz
     }
 
     private static TMetadata GetQuantityMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null)
-        where TMetadataAttribute: QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
         if (metadataProvider?.TryGetMetadata(property, out var providerMetadata) is true && providerMetadata.Unit is not null)
@@ -164,7 +164,7 @@ internal static class ReflectionExtensionsz
         return (metadata.Unit!, toMetadata);
     }
 
-    public static bool TryGetMappedProperty(this PropertyInfo property, Type type, [NotNullWhen(true)]out PropertyInfo? otherProperty)
+    public static bool TryGetMappedProperty(this PropertyInfo property, Type type, [NotNullWhen(true)] out PropertyInfo? otherProperty)
     {
         otherProperty = property;
         if (property.DeclaringType == type)
@@ -193,7 +193,7 @@ internal static class ReflectionExtensionsz
     private static IEnumerable<(PropertyInfo, PropertyInfo)> BuildInterfacePropertyMap(Type type)
     {
         var properties = type.GetProperties((BindingFlags)(-1));
-        
+
         foreach (var interfaceType in type.GetInterfaces())
         {
             var interfaceMap = type.GetInterfaceMap(interfaceType);

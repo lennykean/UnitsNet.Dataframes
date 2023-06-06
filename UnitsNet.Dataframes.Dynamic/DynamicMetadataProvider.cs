@@ -26,7 +26,6 @@ internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadat
         _dataframeType = dataframeType;
     }
 
-
     public DynamicMetadataProvider<TMetadataAttribute, TMetadata> HoistMetadata<TDataframe>()
         where TDataframe : class
     {
@@ -43,7 +42,7 @@ internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadat
             select m.metadata;
     }
 
-    public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)]out TMetadata? metadata, CultureInfo? culture = null)
+    public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
     {
         if (property is null)
             throw new ArgumentNullException(nameof(property));
@@ -54,7 +53,7 @@ internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadat
         var baseMetadata = _baseDataframeMetadata.FirstOrDefault(m => m.Property == property);
         if (baseMetadata?.Unit is null)
             return false;
-        
+
         metadata = _dynamicMetadata.GetOrAdd(property, key =>
         {
             if (_dynamicMetadata.TryGetValue(key, out var dynamicMetadata))
@@ -66,7 +65,7 @@ internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadat
     }
 
     public void AddConversion(PropertyInfo property, Enum unit)
-    {   
+    {
         var (_, toMetadata) = property.GetConversionMetadata<TMetadataAttribute, TMetadata>(unit);
 
         var baseMetadata = _baseDataframeMetadata.FirstOrDefault(m => m.Property == property);

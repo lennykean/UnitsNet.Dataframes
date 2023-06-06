@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 using UnitsNet.Dataframes.Attributes;
 using UnitsNet.Dataframes.Reflection;
@@ -18,7 +17,7 @@ public static class DataframeExtensions
     {
         if (dataframe is IMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
             return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadataProvider.GetAllMetadata());
-        
+
         var metadatas = MetadataBuilder.BuildDataframeMetadata<TMetadataAttribute, TMetadata>(typeof(TDataframe), culture);
 
         return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadatas);
@@ -44,7 +43,7 @@ public static class DataframeExtensions
             throw new ArgumentNullException(nameof(dataframe));
 
         var property = propertySelectorExpression.ExtractProperty();
-        
+
         return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property);
     }
 
@@ -106,7 +105,7 @@ public static class DataframeExtensions
 
         return dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(property, to);
     }
-    
+
     public static TQuantity ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata, TQuantity>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
@@ -163,7 +162,7 @@ public static class DataframeExtensions
 
         var (fromMetadata, toMetadata) = property.GetConversionMetadata(to, dataframe as IMetadataProvider<TMetadataAttribute, TMetadata>);
         var value = dataframe.GetQuantityValueFromProperty(property);
-        
+
         if (!fromMetadata.TryConvertQuantity(value, toMetadata, out var quantity))
             throw new InvalidOperationException($"Invalid conversion from {fromMetadata.QuantityType.Name} to {toMetadata.QuantityType.Name}.");
 

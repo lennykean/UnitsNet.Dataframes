@@ -52,7 +52,7 @@ public class DataframeExtensionsTests
                 .Property(nameof(IQuantity.Unit)).EqualTo(VolumeUnit.CubicMeter));
         });
     }
-    
+
     [TestCase(TestName = $"{nameof(DataframeExtensions.GetQuantity)} (missing metadata)")]
     public void GetQuantityMissingMetadataTest()
     {

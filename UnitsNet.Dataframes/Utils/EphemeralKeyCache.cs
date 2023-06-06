@@ -7,7 +7,7 @@ namespace UnitsNet.Dataframes.Utils;
 internal class EphemeralKeyCache<TKey, TItem> where TKey : class where TItem : class?
 {
     private static readonly Lazy<EphemeralKeyCache<TKey, TItem>> _lazyInstance = new(() => new());
-    
+
 #if EPHEMERAL_CACHE
     private readonly ConditionalWeakTable<TKey, TItem> _cache;
 

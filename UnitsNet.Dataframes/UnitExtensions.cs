@@ -9,7 +9,7 @@ namespace UnitsNet.Dataframes;
 
 public static class UnitExtensions
 {
-    public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)]out UnitInfo? unitInfo)
+    public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)] out UnitInfo? unitInfo)
     {
         // Check cache
         if (EphemeralValueCache<Enum, UnitInfo>.Instance.TryGet(unit, out unitInfo))
@@ -30,7 +30,7 @@ public static class UnitExtensions
         // Check if quantityType can be used to get a matching quantityInfo and unitInfo.
         if (unit.TryGetQuantityInfo(quantityType, out var quantityInfo))
             unitInfo = quantityInfo?.UnitInfos.SingleOrDefault(i => i.Value.Equals(unit));
-        
+
         if (unitInfo is not null)
         {
             EphemeralValueCache<Enum, UnitInfo>.Instance.AddOrUpdate(unit, unitInfo);
@@ -40,7 +40,7 @@ public static class UnitExtensions
         return false;
     }
 
-    public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)]out QuantityInfo? quantityInfo)
+    public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)] out QuantityInfo? quantityInfo)
     {
         // Check cache
         if (EphemeralValueCache<Enum, QuantityInfo>.Instance.TryGet(unit, out quantityInfo))

@@ -45,7 +45,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
         return this;
     }
-    
+
     public DynamicDataframesBuilder<TSuperDataframe, TMetadataAttribute, TMetadata> As<TSuperDataframe>() where TSuperDataframe : class
     {
         var hoistedMetadataProvider = _dynamicMetadataProvider.HoistMetadata<TSuperDataframe>();

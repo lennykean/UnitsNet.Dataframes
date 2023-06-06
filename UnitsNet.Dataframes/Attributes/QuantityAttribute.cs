@@ -74,7 +74,7 @@ public class QuantityAttribute : Attribute, DataFrameMetadata.IMetadataAttribute
         {
             foreach (var conversion in allowedConversions)
             {
-                var (unitInfo, quantityInfo) = GetConversionInfo(conversion); 
+                var (unitInfo, quantityInfo) = GetConversionInfo(conversion);
                 var unitMetadata = UnitMetadataBasic.FromUnitInfo(unitInfo, quantityInfo, culture);
                 if (unitMetadata is not null)
                     yield return unitMetadata;

@@ -19,7 +19,7 @@ internal class EphemeralValueCache<TKey, TItem> where TItem : class?
 
     public static EphemeralValueCache<TKey, TItem> Instance => _lazyInstance.Value;
 
-    public bool TryGet(TKey key, [NotNullWhen(true)]out TItem? item)
+    public bool TryGet(TKey key, [NotNullWhen(true)] out TItem? item)
     {
         item = default;
 #if EPHEMERAL_CACHE
@@ -49,7 +49,7 @@ internal class EphemeralValueCache<TKey, TItem> where TItem : class?
         item = getter(key);
         if (item is not null)
             _cache.AddOrUpdate(key, _ => new(item), (_, _) => new(item));
-        
+
         return item;
 #else
         return getter(key);
