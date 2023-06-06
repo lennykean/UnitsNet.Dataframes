@@ -21,16 +21,16 @@ public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMet
 
     [JsonIgnore, IgnoreDataMember]
     public PropertyInfo Property { get; }
-    public string PropertyName => Property.Name;
+    public string FieldName => Property.Name;
     public UnitMetadata? Unit { get; }
     public ReadOnlyCollection<UnitMetadataBasic> Conversions { get; }
 
     QuantityMetadata DataframeMetadata<QuantityAttribute, QuantityMetadata>.IClonableMetadata.Clone(
         PropertyInfo property,
-        IEnumerable<UnitMetadataBasic>? overrideAllowedConversions,
-        UnitMetadata? unitOverride,
+        IEnumerable<UnitMetadataBasic>? overrideConversions,
+        UnitMetadata? overrideUnit,
         CultureInfo? culture)
     {
-        return new QuantityMetadata(property, unitOverride ?? Unit, (overrideAllowedConversions ?? Conversions).ToList());
+        return new QuantityMetadata(property, overrideUnit ?? Unit, (overrideConversions ?? Conversions).ToList());
     }
 }

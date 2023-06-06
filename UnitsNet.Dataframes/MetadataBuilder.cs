@@ -31,6 +31,11 @@ internal static class MetadataBuilder
         return true;
     }
 
+    public static bool TryBuildMetadata(this PropertyInfo property, [NotNullWhen(true)] out QuantityAttribute? metadataAttribute, [NotNullWhen(true)] out QuantityMetadata? metadata, CultureInfo? culture = null)
+    {
+        return TryBuildMetadata<QuantityAttribute, QuantityMetadata>(property, out metadataAttribute, out metadata, culture);
+    }
+
     public static IEnumerable<TMetadata> BuildDataframeMetadata<TMetadataAttribute, TMetadata>(this Type type, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
@@ -40,5 +45,10 @@ internal static class MetadataBuilder
             let m = (hasMetadata: TryBuildMetadata<TMetadataAttribute, TMetadata>(property, out _, out var metadata, culture), metadata)
             where m.hasMetadata
             select m.metadata);
+    }
+
+    public static IEnumerable<QuantityMetadata> BuildDataframeMetadata(this Type type, CultureInfo? culture = null)
+    {
+        return BuildDataframeMetadata<QuantityAttribute, QuantityMetadata>(type, culture);
     }
 }

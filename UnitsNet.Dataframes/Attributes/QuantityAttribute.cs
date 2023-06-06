@@ -9,7 +9,7 @@ using UnitsNet.Dataframes.Utils;
 namespace UnitsNet.Dataframes.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class QuantityAttribute : Attribute, DataFrameMetadata.IMetadataAttribute
+public class QuantityAttribute : Attribute, DataframeMetadata.IMetadataAttribute
 {
     private readonly Lazy<Type?>? _lazyQuantityType;
     private readonly Lazy<UnitInfo>? _lazyUnitInfo;
@@ -107,13 +107,13 @@ public class QuantityAttribute : Attribute, DataFrameMetadata.IMetadataAttribute
         return (unitInfo!, quantityInfo);
     }
 
-    QuantityMetadata DataframeMetadata<QuantityAttribute, QuantityMetadata>.IMetadataAttribute.ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> allowedConversions, UnitMetadata? overrideUnit, CultureInfo? culture)
+    QuantityMetadata DataframeMetadata<QuantityAttribute, QuantityMetadata>.IMetadataAttribute.ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> conversions, UnitMetadata? overrideUnit, CultureInfo? culture)
     {
         var unit = overrideUnit ?? UnitMetadata.FromUnitInfo(
             UnitInfo ?? throw new InvalidOperationException(),
             QuantityInfo ?? throw new InvalidOperationException(),
             culture);
 
-        return new(property, unit, allowedConversions.ToList());
+        return new(property, unit, conversions.ToList());
     }
 }

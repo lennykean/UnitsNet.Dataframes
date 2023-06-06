@@ -13,12 +13,12 @@ public class DataframeMetadata<TMetadataAttribute, TMetadata> : IEnumerable<TMet
 {
     public interface IMetadataAttribute
     {
-        TMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> allowedConversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null);
+        TMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> conversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null);
     }
 
     public interface IClonableMetadata
     {
-        TMetadata Clone(PropertyInfo property, IEnumerable<UnitMetadataBasic>? overrideAllowedConversions = null, UnitMetadata? unitOverride = null, CultureInfo? culture = null);
+        TMetadata Clone(PropertyInfo property, IEnumerable<UnitMetadataBasic>? overrideConversions = null, UnitMetadata? overrideUnit = null, CultureInfo? culture = null);
     }
 
     private readonly IEnumerable<TMetadata> _metadatas;
@@ -39,9 +39,9 @@ public class DataframeMetadata<TMetadataAttribute, TMetadata> : IEnumerable<TMet
     }
 }
 
-public sealed class DataFrameMetadata : DataframeMetadata<QuantityAttribute, QuantityMetadata>
+public sealed class DataframeMetadata : DataframeMetadata<QuantityAttribute, QuantityMetadata>
 {
-    public DataFrameMetadata(IEnumerable<QuantityMetadata> metadatas) : base(metadatas)
+    public DataframeMetadata(IEnumerable<QuantityMetadata> metadatas) : base(metadatas)
     {
     }
 }

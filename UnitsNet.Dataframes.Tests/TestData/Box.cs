@@ -1,7 +1,7 @@
 ﻿using UnitsNet.Dataframes.Attributes;
 using UnitsNet.Units;
 
-namespace UnitsNet.Dataframes.Tests;
+namespace UnitsNet.Dataframes.Tests.TestData;
 
 public class Box
 {
@@ -14,13 +14,17 @@ public class Box
     public virtual double Height { get; set; }
     [Quantity(LengthUnit.Meter)]
     public virtual double Depth { get; set; }
-    [Quantity(MassUnit.Kilogram), AllowUnitConversion(MassUnit.Gram)]
+    [Quantity(MassUnit.Kilogram)]
+    [AllowUnitConversion(MassUnit.Gram)]
+    [AllowUnitConversion(MassUnit.Pound)]
     public virtual double Weight { get; set; }
     [Quantity(ScalarUnit.Amount)]
     public virtual int Items { get; set; }
     [Quantity(InformationUnit.Bit)]
     public virtual string? Data { get; set; }
 
-    [Quantity(VolumeUnit.CubicMeter), AllowUnitConversion(VolumeUnit.CubicDecimeter)]
+    [Quantity(VolumeUnit.CubicMeter)]
+    [AllowUnitConversion(VolumeUnit.CubicDecimeter)]
+    [AllowUnitConversion(VolumeUnit.CubicInch)]
     public virtual double Volume => Width * Height * Depth;
 }
