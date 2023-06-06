@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
@@ -8,34 +7,36 @@ using UnitsNet.Dataframes.Attributes;
 
 namespace UnitsNet.Dataframes;
 
-public sealed class DataFrameMetadata :
-    DataframeMetadataBase<QuantityMetadata>,
-    IDataframeMetadata<QuantityAttribute, QuantityMetadata, DataFrameMetadata.Mapper>
+public class DataframeMetadata<TMetadataAttribute, TMetadata> : IEnumerable<TMetadata>
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
+    where TMetadata : QuantityMetadata
 {
-    public class Mapper : IDataframeMetadata<QuantityAttribute, QuantityMetadata, Mapper>.IMetadataAttributeMapper
+    public interface IMetadataFactory
     {
-        public QuantityMetadata Map(QuantityAttribute metadataAttribute, PropertyInfo property, IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
-        {
-            return QuantityMetadata.FromQuantityAttribute(metadataAttribute, property, allowedConversions, culture);
-        }
+        TMetadata CreateMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> allowedConversions, CultureInfo? culture = null, UnitMetadata? overrideUnit = null);
     }
 
-    public DataFrameMetadata(Type forType, CultureInfo? culture = null) : base(IDataframeMetadata<QuantityAttribute, QuantityMetadata, Mapper>.BuildMetadata(forType, culture))
+    private readonly IEnumerable<TMetadata> _metadatas;
+
+    internal DataframeMetadata(IEnumerable<TMetadata> metadatas)
     {
+        _metadatas = metadatas;
     }
 
-    public static DataFrameMetadata For<TDataframe>(CultureInfo? culture = null)
+    public IEnumerator<TMetadata> GetEnumerator()
     {
-        return new DataFrameMetadata(typeof(TDataframe), culture);
+        return _metadatas.GetEnumerator();
     }
 
-    public static bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)]out QuantityMetadata? metadata, CultureInfo? culture = null)
+    IEnumerator IEnumerable.GetEnumerator()
     {
-        return IDataframeMetadata<QuantityAttribute, QuantityMetadata, Mapper>.TryGetMetadata(property, out metadata, culture);
+        return GetEnumerator();
     }
+}
 
-    public static IEnumerable<QuantityMetadata> BuildMetadata(Type forType, CultureInfo? culture)
+public sealed class DataFrameMetadata : DataframeMetadata<QuantityAttribute, QuantityMetadata>
+{
+    public DataFrameMetadata(IEnumerable<QuantityMetadata> metadatas) : base(metadatas)
     {
-        return IDataframeMetadata<QuantityAttribute, QuantityMetadata, Mapper>.BuildMetadata(forType, culture);
     }
 }

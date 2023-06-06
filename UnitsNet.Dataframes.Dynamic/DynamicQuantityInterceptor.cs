@@ -22,7 +22,7 @@ internal class DynamicQuantityInterceptor : IInterceptor
 
         var concreteMethod = invocation.GetConcreteMethodInvocationTarget();
         var concreteProperty = concreteMethod.DeclaringType!.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == concreteMethod || p.SetMethod == concreteMethod);
-        if (concreteProperty is null || !MetadataProvider.ConcreteMetadata.TryGetValue(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
+        if (concreteProperty is null || !MetadataProvider.Metadata.TryGetValue(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
             return;
 
         var property = invocation.Method.DeclaringType?.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == invocation.Method || p.SetMethod == invocation.Method);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 
 using UnitsNet.Dataframes.Attributes;
@@ -7,40 +8,37 @@ using UnitsNet.Dataframes.Reflection;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
-internal class DynamicMetadataProvider : IMetadataProvider<QuantityMetadata>
+internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadataProvider<TMetadata>
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
+    where TMetadata : QuantityMetadata
 {
-    private readonly Type _concreteType;
-    private readonly ConcurrentDictionary<PropertyInfo, QuantityAttribute> _conversions = new();
-    private readonly ConcurrentDictionary<PropertyInfo, QuantityMetadata> _dynamicMetadata = new();
+    private readonly Type _dataframeType;
+    private readonly DataframeMetadata<TMetadataAttribute, TMetadata> _baseMetadata;
+    private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
-    public DynamicMetadataProvider(Type concreteType, Dictionary<PropertyInfo, QuantityAttribute>? conversions = null)
+    public DynamicMetadataProvider(
+        Type dataframeType,
+        IEnumerable<TMetadata> baseMetadata,
+        IEnumerable<KeyValuePair<PropertyInfo, TMetadata>>? conversions = null)
     {
-        _concreteType = concreteType;
-        ConcreteMetadata = new(_concreteType);
-        _conversions = new(conversions ?? new());
+        _dataframeType = dataframeType;
+        _baseMetadata = new(baseMetadata);
+        _dynamicMetadata = new(conversions);
     }
 
-    public DataFrameMetadata ConcreteMetadata { get; }
 
-    public DynamicMetadataProvider MapTo(Type other)
+    public DynamicMetadataProvider<TMetadataAttribute, TMetadata> HoistMetadata(Type other)
     {
-        var interfacePropertyMap = _concreteType.GetBidirectionalInterfacePropertyMap();
-        var otherProperties = other.GetProperties();
-
-        return new(_concreteType, _conversions.ToDictionary(k => k.Key switch
-        {
-            _ when k.Key.DeclaringType == other
-                => k.Key,
-            _ when interfacePropertyMap.TryGetValue(k.Key, out var interfaceProperty) && interfaceProperty.DeclaringType?.IsAssignableFrom(other) is true
-                => interfaceProperty,
-            _ when k.Key.GetMethod?.IsVirtual is true || k.Key.GetMethod?.IsAbstract is true
-                => otherProperties.SingleOrDefault(p => p.DeclaringType == k.Key.DeclaringType?.DeclaringType && p.Name == k.Key.Name) ?? k.Key,
-            _ 
-                => k.Key,
-        }, v => v.Value));
+        throw new NotImplementedException();
+        // return new(_dataframeType, _baseMetadata);
+            //_dataframeType,
+            //_baseMetadata
+            //_dynamicOverrides.ToDictionary(
+            //    k => k.Key.TryGetMappedProperty(other, out var mappedProperty) ? mappedProperty : k.Key,
+            //    v => v.Value));
     }
 
-    public IEnumerable<QuantityMetadata> GetAllMetadata<TDataframe>()
+    public IEnumerable<TMetadata> GetAllMetadata<TDataframe>()
     {
         return
             from p in typeof(TDataframe).GetProperties(inherit: true).Distinct()
@@ -49,45 +47,35 @@ internal class DynamicMetadataProvider : IMetadataProvider<QuantityMetadata>
             select m.metadata;
     }
 
-    public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)]out QuantityMetadata? metadata)
+    public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)]out TMetadata? metadata, CultureInfo? culture = null)
     {
-        if (property is not { DeclaringType: not null, GetMethod: not null })
+        if (property is null)
             throw new ArgumentNullException(nameof(property));
 
         if (_dynamicMetadata.TryGetValue(property, out metadata))
             return true;
 
-        var concreteProperty = property switch
-        {
-            _ when property.DeclaringType == _concreteType
-                => property,
-            _ when property.DeclaringType.IsInterface
-                => _concreteType.GetBidirectionalInterfacePropertyMap()[property],
-            _ when property.GetMethod.IsVirtual || property.GetMethod.IsAbstract
-                => _concreteType.GetProperties().SingleOrDefault(p => p.Name == property.Name && p.DeclaringType == property.DeclaringType),
-            _ => null,
-        };
-        if (concreteProperty is null || !ConcreteMetadata.TryGetValue(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
+        if (!MetadataBuilder.TryBuildMetadata<TMetadataAttribute, TMetadata>(property, out var staticMetadataAttribute, out var staticMetadata) || staticMetadata.Unit is null)
             return false;
         
         metadata = _dynamicMetadata.GetOrAdd(property, key =>
         {
-            if (!_conversions.TryGetValue(key, out var conversion))
-                return concreteMetadata;
+            if (!_dynamicMetadata.TryGetValue(key, out var conversionAttribute) || conversionAttribute.Unit?.UnitInfo is null || conversionAttribute.Unit.QuantityType.QuantityInfo is null)
+                return staticMetadata;
 
-            var allowConvertBack = new AllowUnitConversionAttribute(concreteMetadata.Unit.UnitInfo.Value, concreteMetadata.Unit.QuantityType.QuantityInfo.ValueType);
-            var allowedConversions = concreteProperty.GetCustomAttributes<AllowUnitConversionAttribute>().Append(allowConvertBack);
-            
-            return QuantityMetadata.FromQuantityAttribute(conversion, key, allowedConversions);
+            var convertBack = UnitMetadataBasic.FromUnitInfo(conversionAttribute.Unit.UnitInfo, conversionAttribute.Unit.QuantityType.QuantityInfo)!;
+            var allowedConversions = staticMetadata.Conversions.Append(convertBack);
+
+            return staticMetadataAttribute.CreateMetadata(property, allowedConversions, culture);
         });
         return true;
     }
 
     public void AddConversion(PropertyInfo property, Enum unit)
     {
-        var (fromMetadata, toMetadata) = property.GetConversionMetadata(unit);
+        var (fromMetadata, toMetadata) = property.GetConversionMetadata<TMetadataAttribute, TMetadata>(unit);
         var quantityAttribute = new QuantityAttribute(unit, fromMetadata.QuantityType.QuantityInfo.ValueType);
 
-        _conversions.AddOrUpdate(property, _ => quantityAttribute, (_, _) => quantityAttribute);
+        _dynamicMetadata.AddOrUpdate(property, _ => quantityAttribute, (_, _) => quantityAttribute);
     }
 }

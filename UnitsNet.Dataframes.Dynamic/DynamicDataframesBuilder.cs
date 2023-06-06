@@ -8,15 +8,17 @@ using UnitsNet.Dataframes.Utils;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
-public class DynamicDataframesBuilder<TDataframe> where TDataframe : class
+public class DynamicDataframesBuilder<TDataframe, TMetadata> 
+    where TDataframe : class
+    where TMetadata : QuantityMetadata
 {
     private readonly IEnumerable _dataframes;
-    private readonly DynamicMetadataProvider _dynamicMetadataProvider;
+    private readonly DynamicMetadataProvider<TMetadata> _dynamicMetadataProvider;
 
     public DynamicDataframesBuilder(IEnumerable<TDataframe> dataframes)
     {
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
-        _dynamicMetadataProvider = new((
+        _dynamicMetadataProvider = new(typeof(TDataframe), (
             from i in dataframes.GetType().GetInterfaces()
             where i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
             select i.GetGenericArguments().First())
@@ -26,7 +28,7 @@ public class DynamicDataframesBuilder<TDataframe> where TDataframe : class
     private DynamicDataframesBuilder(IEnumerable dataframes, DynamicMetadataProvider dynamicMetadataProvider)
     {
         _dataframes = dataframes;
-        _dynamicMetadataProvider = dynamicMetadataProvider.MapTo(typeof(TDataframe));
+        _dynamicMetadataProvider = dynamicMetadataProvider.HoistMetadata(typeof(TDataframe));
     }
 
     public DynamicDataframesBuilder<TDataframe> WithConversion(string propertyName, Enum to)

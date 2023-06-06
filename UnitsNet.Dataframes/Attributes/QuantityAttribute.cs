@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 
 namespace UnitsNet.Dataframes.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class QuantityAttribute : Attribute
+public class QuantityAttribute : Attribute, DataFrameMetadata.IMetadataFactory
 {
     private readonly Lazy<Type?>? _lazyQuantityType;
     private readonly Lazy<UnitInfo>? _lazyUnitInfo;
@@ -48,4 +51,13 @@ public class QuantityAttribute : Attribute
     public Type? QuantityType => _lazyQuantityType?.Value;
     public QuantityInfo? QuantityInfo => _lazyQuantityInfo?.Value;
     public UnitInfo? UnitInfo => _lazyUnitInfo?.Value;
+
+    QuantityMetadata DataFrameMetadata.IMetadataFactory.CreateMetadata(
+        PropertyInfo property,
+        IEnumerable<UnitMetadataBasic> allowedConversions,
+        CultureInfo? culture,
+        UnitMetadata? overrideUnit)
+    {
+        return QuantityMetadata.FromQuantityAttribute(property, this, allowedConversions, culture, overrideUnit);
+    }
 }
