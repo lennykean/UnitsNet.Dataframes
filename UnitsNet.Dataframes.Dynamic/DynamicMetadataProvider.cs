@@ -8,40 +8,36 @@ using UnitsNet.Dataframes.Reflection;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
-internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadataProvider<TMetadata>
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-    where TMetadata : QuantityMetadata
+internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadataProvider<TMetadataAttribute, TMetadata>
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
 {
     private readonly Type _dataframeType;
-    private readonly DataframeMetadata<TMetadataAttribute, TMetadata> _baseMetadata;
+    private readonly DataframeMetadata<TMetadataAttribute, TMetadata> _baseDataframeMetadata;
     private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
     public DynamicMetadataProvider(
         Type dataframeType,
-        IEnumerable<TMetadata> baseMetadata,
-        IEnumerable<KeyValuePair<PropertyInfo, TMetadata>>? conversions = null)
+        IEnumerable<TMetadata> baseDataframeMetadata,
+        IEnumerable<KeyValuePair<PropertyInfo, TMetadata>>? dynamicMetadata = null)
     {
+        _baseDataframeMetadata = new(baseDataframeMetadata);
+        _dynamicMetadata = new(dynamicMetadata);
         _dataframeType = dataframeType;
-        _baseMetadata = new(baseMetadata);
-        _dynamicMetadata = new(conversions);
     }
 
 
-    public DynamicMetadataProvider<TMetadataAttribute, TMetadata> HoistMetadata(Type other)
+    public DynamicMetadataProvider<TMetadataAttribute, TMetadata> HoistMetadata<TDataframe>()
+        where TDataframe : class
     {
-        throw new NotImplementedException();
-        // return new(_dataframeType, _baseMetadata);
-            //_dataframeType,
-            //_baseMetadata
-            //_dynamicOverrides.ToDictionary(
-            //    k => k.Key.TryGetMappedProperty(other, out var mappedProperty) ? mappedProperty : k.Key,
-            //    v => v.Value));
+        throw new NotImplementedException("Do mapping");
+        return new(typeof(TDataframe), GetAllMetadata(), _dynamicMetadata);
     }
 
-    public IEnumerable<TMetadata> GetAllMetadata<TDataframe>()
+    public IEnumerable<TMetadata> GetAllMetadata()
     {
         return
-            from p in typeof(TDataframe).GetProperties(inherit: true).Distinct()
+            from p in _dataframeType.GetProperties(inherit: true).Distinct()
             let m = (hasMetadata: TryGetMetadata(p, out var metadata), metadata)
             where m.hasMetadata
             select m.metadata;
@@ -55,27 +51,33 @@ internal class DynamicMetadataProvider<TMetadataAttribute, TMetadata> : IMetadat
         if (_dynamicMetadata.TryGetValue(property, out metadata))
             return true;
 
-        if (!MetadataBuilder.TryBuildMetadata<TMetadataAttribute, TMetadata>(property, out var staticMetadataAttribute, out var staticMetadata) || staticMetadata.Unit is null)
+        var baseMetadata = _baseDataframeMetadata.FirstOrDefault(m => m.Property == property);
+        if (baseMetadata?.Unit is null)
             return false;
         
         metadata = _dynamicMetadata.GetOrAdd(property, key =>
         {
-            if (!_dynamicMetadata.TryGetValue(key, out var conversionAttribute) || conversionAttribute.Unit?.UnitInfo is null || conversionAttribute.Unit.QuantityType.QuantityInfo is null)
-                return staticMetadata;
+            if (_dynamicMetadata.TryGetValue(key, out var dynamicMetadata))
+                return dynamicMetadata;
 
-            var convertBack = UnitMetadataBasic.FromUnitInfo(conversionAttribute.Unit.UnitInfo, conversionAttribute.Unit.QuantityType.QuantityInfo)!;
-            var allowedConversions = staticMetadata.Conversions.Append(convertBack);
-
-            return staticMetadataAttribute.CreateMetadata(property, allowedConversions, culture);
+            return baseMetadata;
         });
         return true;
     }
 
     public void AddConversion(PropertyInfo property, Enum unit)
-    {
-        var (fromMetadata, toMetadata) = property.GetConversionMetadata<TMetadataAttribute, TMetadata>(unit);
-        var quantityAttribute = new QuantityAttribute(unit, fromMetadata.QuantityType.QuantityInfo.ValueType);
+    {   
+        var (_, toMetadata) = property.GetConversionMetadata<TMetadataAttribute, TMetadata>(unit);
 
-        _dynamicMetadata.AddOrUpdate(property, _ => quantityAttribute, (_, _) => quantityAttribute);
+        var baseMetadata = _baseDataframeMetadata.FirstOrDefault(m => m.Property == property);
+        if (baseMetadata is null || baseMetadata.Unit is null)
+            throw new InvalidOperationException($"No metadata found for property {property}.");
+
+        var convertBack = UnitMetadataBasic.FromUnitInfo(baseMetadata.Unit.UnitInfo, baseMetadata.Unit.QuantityType.QuantityInfo)!;
+        var allowedConversions = baseMetadata.Conversions.Append(convertBack);
+
+        var metadata = baseMetadata.Clone(property, allowedConversions, toMetadata);
+
+        _dynamicMetadata.AddOrUpdate(property, _ => metadata, (_, _) => metadata);
     }
 }

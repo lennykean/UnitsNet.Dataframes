@@ -13,8 +13,8 @@ namespace UnitsNet.Dataframes;
 internal static class MetadataBuilder
 {
     public static bool TryBuildMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, [NotNullWhen(true)]out TMetadataAttribute? metadataAttribute, [NotNullWhen(true)]out TMetadata? metadata, CultureInfo? culture = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-        where TMetadata : QuantityMetadata
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
         metadata = default;
 
@@ -22,18 +22,18 @@ internal static class MetadataBuilder
         if (metadataAttribute is null)
             return false;
 
-        var metadataFactory = metadataAttribute;
+        var attribute = metadataAttribute;
         metadata = EphemeralValueCache<PropertyInfo, TMetadata>.Instance.GetOrAdd(property, p =>
         {
             var allowedConversionAttributes = p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
-            return metadataFactory.CreateMetadata(property, allowedConversionAttributes, culture);
+            return attribute.ToMetadata(property, attribute.GetAllowedConversionsMetadata(allowedConversionAttributes, culture));
         });
         return true;
     }
 
     public static IEnumerable<TMetadata> BuildDataframeMetadata<TMetadataAttribute, TMetadata>(this Type type, CultureInfo? culture = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-        where TMetadata : QuantityMetadata
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
         return EphemeralValueCache<Type, IEnumerable<TMetadata>>.Instance.GetOrAdd(type, key =>
             from property in key.GetProperties((BindingFlags)(-1))

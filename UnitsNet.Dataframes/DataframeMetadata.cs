@@ -8,12 +8,17 @@ using UnitsNet.Dataframes.Attributes;
 namespace UnitsNet.Dataframes;
 
 public class DataframeMetadata<TMetadataAttribute, TMetadata> : IEnumerable<TMetadata>
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-    where TMetadata : QuantityMetadata
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
 {
-    public interface IMetadataFactory
+    public interface IMetadataAttribute
     {
-        TMetadata CreateMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> allowedConversions, CultureInfo? culture = null, UnitMetadata? overrideUnit = null);
+        TMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> allowedConversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null);
+    }
+
+    public interface IClonableMetadata
+    {
+        TMetadata Clone(PropertyInfo property, IEnumerable<UnitMetadataBasic>? overrideAllowedConversions = null, UnitMetadata? unitOverride = null, CultureInfo? culture = null);
     }
 
     private readonly IEnumerable<TMetadata> _metadatas;

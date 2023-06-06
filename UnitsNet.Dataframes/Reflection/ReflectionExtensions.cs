@@ -67,9 +67,9 @@ internal static class ReflectionExtensionsz
         return true;
     }
 
-    private static QuantityMetadata GetQuantityMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, IMetadataProvider<TMetadata>? metadataProvider = null)
-        where TMetadataAttribute: QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-        where TMetadata : QuantityMetadata
+    private static TMetadata GetQuantityMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null)
+        where TMetadataAttribute: QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
         if (metadataProvider?.TryGetMetadata(property, out var providerMetadata) is true && providerMetadata.Unit is not null)
             return providerMetadata;
@@ -93,11 +93,11 @@ internal static class ReflectionExtensionsz
     }
 
     public static IQuantity GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, PropertyInfo property)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-        where TMetadata : QuantityMetadata
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
         var value = dataframe.GetQuantityValueFromProperty(property);
-        var quantityMetadata = property.GetQuantityMetadata<TMetadataAttribute, TMetadata>(dataframe as IMetadataProvider<TMetadata>);
+        var quantityMetadata = property.GetQuantityMetadata<TMetadataAttribute, TMetadata>(dataframe as IMetadataProvider<TMetadataAttribute, TMetadata>);
         var unitMetadata = quantityMetadata.Unit!;
         var quantityTypeMetadata = unitMetadata.QuantityType;
 
@@ -152,16 +152,16 @@ internal static class ReflectionExtensionsz
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });
     }
 
-    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, Enum to, IMetadataProvider<TMetadata>? metadataProvider = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataFactory
-        where TMetadata : QuantityMetadata
+    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, Enum to, IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null)
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
-        var quantityMetadata = property.GetQuantityMetadata<TMetadataAttribute, TMetadata>(metadataProvider);
-        var conversionMetadata = quantityMetadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
-            ?? throw new InvalidOperationException($"{property.DeclaringType.Name}.{property.Name} ({quantityMetadata.Unit!.UnitInfo.Value}) cannot be converted to {to}.");
+        var metadata = property.GetQuantityMetadata(metadataProvider);
+        var conversionMetadata = metadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
+            ?? throw new InvalidOperationException($"{property.DeclaringType.Name}.{property.Name} ({metadata.Unit!.UnitInfo.Value}) cannot be converted to {to}.");
         var toMetadata = UnitMetadata.FromUnitInfo(conversionMetadata.UnitInfo, conversionMetadata.QuantityType.QuantityInfo);
 
-        return (quantityMetadata.Unit!, toMetadata);
+        return (metadata.Unit!, toMetadata);
     }
 
     public static bool TryGetMappedProperty(this PropertyInfo property, Type type, [NotNullWhen(true)]out PropertyInfo? otherProperty)
