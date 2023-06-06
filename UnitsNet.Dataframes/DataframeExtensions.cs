@@ -106,12 +106,7 @@ public static class DataframeExtensions
 
         return dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(property, to);
     }
-
-    public static IQuantity ConvertQuantity<TDataframe>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
-    {
-        return dataframe.ConvertQuantity<TDataframe, QuantityAttribute, QuantityMetadata>(propertySelectorExpression, to);
-    }
-
+    
     public static TQuantity ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata, TQuantity>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
@@ -132,9 +127,31 @@ public static class DataframeExtensions
     public static TQuantity ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata, TQuantity>(this TDataframe dataframe, string propertyName, Enum to)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    {
+        var property = typeof(TDataframe).GetProperty(propertyName);
+
+        return (TQuantity)dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(property, to);
+    }
+
+    public static IQuantity ConvertQuantity<TDataframe>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
+    {
+        return dataframe.ConvertQuantity<TDataframe, QuantityAttribute, QuantityMetadata>(propertySelectorExpression, to);
+    }
+
+    public static TQuantity ConvertQuantity<TDataframe, TQuantity>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
         where TQuantity : IQuantity
     {
-        return (TQuantity)dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(propertyName, to);
+        return dataframe.ConvertQuantity<TDataframe, QuantityAttribute, QuantityMetadata, TQuantity>(propertySelectorExpression, to);
+    }
+
+    public static IQuantity ConvertQuantity<TDataframe>(this TDataframe dataframe, string propertyName, Enum to)
+    {
+        return dataframe.ConvertQuantity<TDataframe, QuantityAttribute, QuantityMetadata>(propertyName, to);
+    }
+
+    public static TQuantity ConvertQuantity<TDataframe, TQuantity>(this TDataframe dataframe, string propertyName, Enum to)
+    {
+        return dataframe.ConvertQuantity<TDataframe, QuantityAttribute, QuantityMetadata, TQuantity>(propertyName, to);
     }
 
     private static IQuantity ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, PropertyInfo property, Enum to)
