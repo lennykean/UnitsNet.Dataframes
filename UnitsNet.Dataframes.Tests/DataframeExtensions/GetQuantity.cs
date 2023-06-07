@@ -10,7 +10,7 @@ namespace UnitsNet.Dataframes.Tests.DataframeExtensions;
 [TestFixture]
 public class GetQuantity
 {
-    [TestCase(TestName = "{c} (gets the quantity)")]
+    [TestCase(TestName = "{c} (gets quantity)")]
     public void GetQuantityTest()
     {
         var box = new Box
@@ -63,26 +63,16 @@ public class GetQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => box.GetQuantity(b => b.SerialNumber),
-                Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.SerialNumber."));
-            Assert.That(() => box.GetQuantity("Priority"),
-                Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.Priority."));
+            Assert.That(() => box.GetQuantity(b => b.SerialNumber), Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.SerialNumber."));
+            Assert.That(() => box.GetQuantity("Priority"), Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.Priority."));
         });
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void GetQuantityInvalidDatatypeTest()
     {
-        var box = new Box
-        {
-            SerialNumber = 1,
-            Priority = 2,
-        };
+        var box = new Box();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(() => box.GetQuantity("Data"),
-                Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)"));
-        });
+        Assert.That(() => box.GetQuantity("Data"), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)"));
     }
 }

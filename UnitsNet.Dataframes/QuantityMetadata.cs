@@ -26,11 +26,11 @@ public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMet
     public ReadOnlyCollection<UnitMetadataBasic> Conversions { get; }
 
     QuantityMetadata DataframeMetadata<QuantityAttribute, QuantityMetadata>.IClonableMetadata.Clone(
-        PropertyInfo property,
+        PropertyInfo? overrideProperty,
         IEnumerable<UnitMetadataBasic>? overrideConversions,
         UnitMetadata? overrideUnit,
-        CultureInfo? culture)
+        CultureInfo? overrideCulture)
     {
-        return new QuantityMetadata(property, overrideUnit ?? Unit, (overrideConversions ?? Conversions).ToList());
+        return new QuantityMetadata(overrideProperty ?? Property, overrideUnit ?? Unit, (overrideConversions ?? Conversions).ToList());
     }
 }

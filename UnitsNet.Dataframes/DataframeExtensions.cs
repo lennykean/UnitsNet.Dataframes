@@ -15,47 +15,37 @@ public static class DataframeExtensions
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
-        if (dataframe is IMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
-            return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadataProvider.GetAllMetadata());
+        var metadataProvider = dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
+            ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
 
-        var metadatas = MetadataBuilder.BuildDataframeMetadata<TMetadataAttribute, TMetadata>(typeof(TDataframe), culture);
+        var metadatas = metadataProvider.GetAllMetadata(culture);
 
         return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadatas);
     }
 
-    public static DataframeMetadata GetDataframeMetadata<TDataframe>(this TDataframe dataframe, CultureInfo? culture = null)
+    public static DataframeMetadata<QuantityAttribute, QuantityMetadata> GetDataframeMetadata<TDataframe>(this TDataframe dataframe, CultureInfo? culture = null)
     {
-        if (dataframe is IMetadataProvider<QuantityAttribute, QuantityMetadata> metadataProvider)
-            return new DataframeMetadata(metadataProvider.GetAllMetadata());
-
-        var metadatas = MetadataBuilder.BuildDataframeMetadata(typeof(TDataframe), culture);
-
-        return new DataframeMetadata(metadatas);
+        return dataframe.GetDataframeMetadata<TDataframe, QuantityAttribute, QuantityMetadata>(culture);
     }
 
     public static DataframeMetadata<TMetadataAttribute, TMetadata> GetDataframesMetadata<TDataframe, TMetadataAttribute, TMetadata>(this IEnumerable<TDataframe> dataframes, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
-        if (dataframes is IMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
-            return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadataProvider.GetAllMetadata());
+        var metadataProvider = dataframes as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
+            ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
 
-        var metadatas = MetadataBuilder.BuildDataframeMetadata<TMetadataAttribute, TMetadata>(typeof(TDataframe), culture);
+        var metadatas = metadataProvider.GetAllMetadata(culture);
 
         return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadatas);
     }
 
-    public static DataframeMetadata GetDataframesMetadata<TDataframe>(this IEnumerable<TDataframe> dataframes, CultureInfo? culture = null)
+    public static DataframeMetadata<QuantityAttribute, QuantityMetadata> GetDataframesMetadata<TDataframe>(this IEnumerable<TDataframe> dataframes, CultureInfo? culture = null)
     {
-        if (dataframes is IMetadataProvider<QuantityAttribute, QuantityMetadata> metadataProvider)
-            return new DataframeMetadata(metadataProvider.GetAllMetadata());
-
-        var metadatas = MetadataBuilder.BuildDataframeMetadata(typeof(TDataframe), culture);
-
-        return new DataframeMetadata(metadatas);
+        return dataframes.GetDataframesMetadata<TDataframe, QuantityAttribute, QuantityMetadata>(culture);
     }
 
-    public static IQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression)
+    public static IQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
@@ -64,7 +54,7 @@ public static class DataframeExtensions
 
         var property = propertySelectorExpression.ExtractProperty();
 
-        return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property);
+        return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property, culture);
     }
 
     public static TQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata, TQuantity>(this TDataframe dataframe, Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression)
@@ -75,7 +65,7 @@ public static class DataframeExtensions
         return (TQuantity)dataframe.GetQuantity<TDataframe, TMetadataAttribute, TMetadata>(propertySelectorExpression);
     }
 
-    public static IQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, string propertyName)
+    public static IQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, string propertyName, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
@@ -84,7 +74,7 @@ public static class DataframeExtensions
 
         var property = typeof(TDataframe).GetProperty(propertyName);
 
-        return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property);
+        return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property, culture);
     }
 
     public static TQuantity GetQuantity<TDataframe, TMetadataAttribute, TMetadata, TQuantity>(this TDataframe dataframe, string propertyName)
@@ -180,7 +170,7 @@ public static class DataframeExtensions
         if (dataframe is null)
             throw new ArgumentNullException(nameof(dataframe));
 
-        var (fromMetadata, toMetadata) = property.GetConversionMetadata(to, dataframe as IMetadataProvider<TMetadataAttribute, TMetadata>);
+        var (fromMetadata, toMetadata) = property.GetConversionMetadata(to, dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>);
         var value = dataframe.GetQuantityValueFromProperty(property);
 
         if (!fromMetadata.TryConvertQuantity(value, toMetadata, out var quantity))

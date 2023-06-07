@@ -6,22 +6,22 @@ using UnitsNet.Dataframes.Attributes;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
-internal class DynamicQuantityInterceptor<TMetadataAttribute, TMetadata> : IInterceptor
+internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetadata> : IInterceptor
     where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
     where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
 {
-    public DynamicQuantityInterceptor(DynamicMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
+    public DynamicQuantityInterceptor(DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider)
     {
         MetadataProvider = metadataProvider;
     }
 
-    public DynamicMetadataProvider<TMetadataAttribute, TMetadata> MetadataProvider { get; }
+    public DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> MetadataProvider { get; }
 
     public void Intercept(IInvocation invocation)
     {
         invocation.Proceed();
 
-        if (typeof(IMetadataProvider<TMetadataAttribute, TMetadata>).IsAssignableFrom(invocation.TargetType))
+        if (typeof(IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>).IsAssignableFrom(invocation.TargetType))
             return;
 
         var concreteMethod = invocation.GetConcreteMethodInvocationTarget();

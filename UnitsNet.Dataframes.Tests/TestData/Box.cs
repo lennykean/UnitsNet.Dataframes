@@ -3,7 +3,7 @@ using UnitsNet.Units;
 
 namespace UnitsNet.Dataframes.Tests.TestData;
 
-public class Box
+public class Box : IBox
 {
     public virtual int SerialNumber { get; set; }
     public virtual int Priority { get; set; }

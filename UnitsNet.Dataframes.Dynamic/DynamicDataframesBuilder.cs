@@ -15,16 +15,18 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
     where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
 {
+    private readonly CultureInfo? _culture;
     private readonly IEnumerable _dataframes;
-    private readonly DynamicMetadataProvider<TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
+    private readonly DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
 
     public DynamicDataframesBuilder(IEnumerable<TDataframe> dataframes, CultureInfo? culture = null)
     {
+        _culture = culture;
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
-        _dynamicMetadataProvider = new(typeof(TDataframe), dataframes.GetDataframesMetadata<TDataframe, TMetadataAttribute, TMetadata>(culture));
+        _dynamicMetadataProvider = new(dataframes.GetDataframesMetadata<TDataframe, TMetadataAttribute, TMetadata>(culture).Values);
     }
 
-    private DynamicDataframesBuilder(IEnumerable dataframes, DynamicMetadataProvider<TMetadataAttribute, TMetadata> dynamicMetadataProvider)
+    private DynamicDataframesBuilder(IEnumerable dataframes, DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> dynamicMetadataProvider)
     {
         _dataframes = dataframes;
         _dynamicMetadataProvider = dynamicMetadataProvider;
@@ -33,7 +35,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     public DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata> WithConversion(string propertyName, Enum to)
     {
         var property = typeof(TDataframe).GetProperties(inherit: typeof(TDataframe).IsInterface).Single(p => p.Name == propertyName);
-        _dynamicMetadataProvider.AddConversion(property, to);
+        _dynamicMetadataProvider.AddConversion(property, to, _culture);
 
         return this;
     }
@@ -41,14 +43,14 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     public DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata> WithConversion(Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
     {
         var property = propertySelectorExpression.ExtractProperty();
-        _dynamicMetadataProvider.AddConversion(property, to);
+        _dynamicMetadataProvider.AddConversion(property, to, _culture);
 
         return this;
     }
 
     public DynamicDataframesBuilder<TSuperDataframe, TMetadataAttribute, TMetadata> As<TSuperDataframe>() where TSuperDataframe : class
     {
-        var hoistedMetadataProvider = _dynamicMetadataProvider.HoistMetadata<TSuperDataframe>();
+        var hoistedMetadataProvider = _dynamicMetadataProvider.HoistMetadata<TSuperDataframe>(_culture);
         return new(_dataframes, hoistedMetadataProvider);
     }
 
@@ -58,7 +60,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
         options.AddMixinInstance(_dynamicMetadataProvider);
 
         var proxyGenerator = new ProxyGenerator();
-        var interceptor = new DynamicQuantityInterceptor<TMetadataAttribute, TMetadata>(_dynamicMetadataProvider);
+        var interceptor = new DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetadata>(_dynamicMetadataProvider);
 
         Func<object, TDataframe> createProxy = typeof(TDataframe).IsInterface
             ? dataframe => (TDataframe)proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TDataframe), dataframe, options, interceptor)

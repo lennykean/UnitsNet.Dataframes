@@ -9,7 +9,7 @@ using UnitsNet.Dataframes.Utils;
 namespace UnitsNet.Dataframes.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class QuantityAttribute : Attribute, DataframeMetadata.IMetadataAttribute
+public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute, QuantityMetadata>.IMetadataAttribute
 {
     private readonly Lazy<Type?>? _lazyQuantityType;
     private readonly Lazy<UnitInfo>? _lazyUnitInfo;

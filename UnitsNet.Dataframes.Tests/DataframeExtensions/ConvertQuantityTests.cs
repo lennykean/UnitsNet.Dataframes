@@ -89,10 +89,8 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => box.ConvertQuantity(b => b.Width, to: AngleUnit.Degree),
-                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
-            Assert.That(() => box.ConvertQuantity("Height", to: SpeedUnit.Mach),
-                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => box.ConvertQuantity(b => b.Width, to: AngleUnit.Degree), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => box.ConvertQuantity("Height", to: SpeedUnit.Mach), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
         });
     }
 
@@ -109,42 +107,16 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => box.ConvertQuantity(b => b.Volume, to: VolumeUnit.CubicFoot),
-                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
-            Assert.That(() => box.ConvertQuantity("Height", to: MassUnit.Pound),
-                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => box.ConvertQuantity(b => b.Volume, to: VolumeUnit.CubicFoot), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => box.ConvertQuantity("Height", to: MassUnit.Pound), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
         });
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void ConvertQuantityInvalidQuantityTypeTest()
     {
-        var box = new Box
-        {
-            Width = 1,
-            Height = 2,
-            Depth = 3,
-            Weight = 4
-        };
+        var box = new Box();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(() => box.ConvertQuantity("Data", to: InformationUnit.Gibibit),
-                Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)\\."));
-        });
-    }
-
-    [Test]
-    public void GetDataframeMetadataTests()
-    {
-        var box = new Box
-        {
-            Width = 1,
-            Height = 2,
-            Depth = 3,
-            Weight = 4
-        };
-
-        var metatdata = box.GetDataframeMetadata();
+        Assert.That(() => box.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)\\."));
     }
 }

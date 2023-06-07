@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,7 +13,7 @@ using UnitsNet.Dataframes.Utils;
 
 namespace UnitsNet.Dataframes.Reflection;
 
-internal static class ReflectionExtensionsz
+internal static class ReflectionExtensions
 {
     private static readonly Lazy<Type[]> LazyQuantityValueCompatibleTypes = new(() => (
         from m in typeof(QuantityValue).GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -67,16 +68,14 @@ internal static class ReflectionExtensionsz
         return true;
     }
 
-    private static TMetadata GetQuantityMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null)
+    private static TMetadata GetQuantityMetadata<TDataframe, TMetadataAttribute, TMetadata>(this PropertyInfo property, IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
-        if (metadataProvider?.TryGetMetadata(property, out var providerMetadata) is true && providerMetadata.Unit is not null)
-            return providerMetadata;
-        else if (MetadataBuilder.TryBuildMetadata<TMetadataAttribute, TMetadata>(property, out var _, out var metadata) && metadata.Unit is not null)
-            return metadata;
-        else
+        if (metadataProvider.TryGetMetadata(property, out var metadata, culture) is not true || metadata.Unit is null)
             throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
+        
+        return metadata;
     }
 
     public static bool TryGetStaticQuantityInfo(this Type type, [NotNullWhen(true)] out QuantityInfo? value)
@@ -92,12 +91,15 @@ internal static class ReflectionExtensionsz
         return true;
     }
 
-    public static IQuantity GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, PropertyInfo property)
+    public static IQuantity GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, PropertyInfo property, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
+        var metadataProvider = dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
+            ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+
         var value = dataframe.GetQuantityValueFromProperty(property);
-        var quantityMetadata = property.GetQuantityMetadata<TMetadataAttribute, TMetadata>(dataframe as IMetadataProvider<TMetadataAttribute, TMetadata>);
+        var quantityMetadata = property.GetQuantityMetadata(metadataProvider, culture);
         var unitMetadata = quantityMetadata.Unit!;
         var quantityTypeMetadata = unitMetadata.QuantityType;
 
@@ -152,14 +154,16 @@ internal static class ReflectionExtensionsz
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });
     }
 
-    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata<TMetadataAttribute, TMetadata>(this PropertyInfo property, Enum to, IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null)
+    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata<TDataframe, TMetadataAttribute, TMetadata>(this PropertyInfo property, Enum to, IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>? metadataProvider = null, CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
-        var metadata = property.GetQuantityMetadata(metadataProvider);
+        metadataProvider ??= DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+
+        var metadata = property.GetQuantityMetadata(metadataProvider, culture);
         var conversionMetadata = metadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
             ?? throw new InvalidOperationException($"{property.DeclaringType.Name}.{property.Name} ({metadata.Unit!.UnitInfo.Value}) cannot be converted to {to}.");
-        var toMetadata = UnitMetadata.FromUnitInfo(conversionMetadata.UnitInfo, conversionMetadata.QuantityType.QuantityInfo);
+        var toMetadata = UnitMetadata.FromUnitInfo(conversionMetadata.UnitInfo, conversionMetadata.QuantityType.QuantityInfo, culture);
 
         return (metadata.Unit!, toMetadata);
     }
