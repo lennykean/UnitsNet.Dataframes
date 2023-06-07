@@ -2,18 +2,15 @@
 using System.Globalization;
 using System.Linq.Expressions;
 
-using Castle.DynamicProxy;
-
 using UnitsNet.Dataframes.Attributes;
 using UnitsNet.Dataframes.Reflection;
-using UnitsNet.Dataframes.Utils;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
 public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     where TDataframe : class
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
     private readonly CultureInfo? _culture;
     private readonly IEnumerable _dataframes;
@@ -23,7 +20,12 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     {
         _culture = culture;
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
-        _dynamicMetadataProvider = new(dataframes.GetDataframesMetadata<TDataframe, TMetadataAttribute, TMetadata>(culture).Values);
+        
+        var baseMetadataProvider = 
+            (dataframes as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> ??
+            DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance);
+
+        _dynamicMetadataProvider = new(baseMetadataProvider);
     }
 
     private DynamicDataframesBuilder(IEnumerable dataframes, DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> dynamicMetadataProvider)
@@ -54,20 +56,8 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
         return new(_dataframes, hoistedMetadataProvider);
     }
 
-    public IEnumerable<TDataframe> Build()
+    public IDynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata> Build()
     {
-        var options = new ProxyGenerationOptions();
-        options.AddMixinInstance(_dynamicMetadataProvider);
-
-        var proxyGenerator = new ProxyGenerator();
-        var interceptor = new DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetadata>(_dynamicMetadataProvider);
-
-        Func<object, TDataframe> createProxy = typeof(TDataframe).IsInterface
-            ? dataframe => (TDataframe)proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TDataframe), dataframe, options, interceptor)
-            : dataframe => (TDataframe)proxyGenerator.CreateClassProxyWithTarget(typeof(TDataframe), dataframe, options, interceptor);
-
-        var cache = EphemeralValueCache<(IEnumerable dataframes, object dataframe), TDataframe>.Instance;
-        foreach (var dataframe in _dataframes)
-            yield return cache.GetOrAdd((_dataframes, dataframe), _ => createProxy(dataframe));
+        return new DynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata>(_dataframes, _dynamicMetadataProvider);
     }
 }

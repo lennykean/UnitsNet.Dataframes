@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="NBuilder" Version="6.1.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
     <PackageReference Include="NUnit.Analyzers" Version="3.6.1" />
@@ -17,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UnitsNet.Dataframes\UnitsNet.Dataframes.csproj" />
+    <ProjectReference Include="..\UnitsNet.Dataframes.Dynamic\UnitsNet.Dataframes.Dynamic.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,8 +11,9 @@ using UnitsNet.Dataframes.Utils;
 namespace UnitsNet.Dataframes;
 
 public sealed class DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> : IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    where TDataframe : class
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
     private static readonly Lazy<DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>> _instance = new(() => new DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>());
 
@@ -33,17 +34,33 @@ public sealed class DefaultDataframeMetadataProvider<TDataframe, TMetadataAttrib
     
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
     {
-        metadata = default;
+        var cache = EphemeralValueCache<PropertyInfo, TMetadata>.Instance;
+
+        if (cache.TryGet(property, out metadata))
+            return true;
 
         var metadataAttribute = property.GetCustomAttribute<TMetadataAttribute>(inherit: true);
         if (metadataAttribute is null)
             return false;
 
-        metadata = EphemeralValueCache<PropertyInfo, TMetadata>.Instance.GetOrAdd(property, p =>
+        metadataAttribute.Validate();
+
+        metadata = cache.GetOrAdd(property, p =>
         {
             var allowedConversionAttributes = p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
-            return metadataAttribute.ToMetadata(property, metadataAttribute.GetConversionsMetadata(allowedConversionAttributes, culture));
+            return metadataAttribute.ToMetadata(property, metadataAttribute.BuildAllowedConversionsMetadata(allowedConversionAttributes, culture));
         });
         return true;
+    }
+
+    public void ValidateAllMetadata()
+    {
+        foreach (var metadata in GetAllMetadata())
+        {
+            if (!metadata.Property.DeclaringType.IsAssignableFrom(typeof(TDataframe)))
+                throw new InvalidOperationException($"{metadata.Property.DeclaringType}.{metadata.Property} metadata is not valid on type {typeof(TDataframe).Name}");
+
+            metadata.Validate();
+        }
     }
 }

@@ -9,33 +9,30 @@ using UnitsNet.Dataframes.Reflection;
 namespace UnitsNet.Dataframes.Dynamic;
 
 internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> : IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    where TDataframe : class
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
-    private readonly DataframeMetadata<TMetadataAttribute, TMetadata> _baseDataframeMetadata;
+    private readonly IDataframeMetadataProvider<TMetadataAttribute, TMetadata> _innerDataframeMetadataProvider;
     private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
     public DynamicDataframeMetadataProvider(
-        IEnumerable<TMetadata> baseDataframeMetadata,
+        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> innerDataframeMetadataProvider,
         IEnumerable<TMetadata>? dynamicMetadata = null)
     {
-        _baseDataframeMetadata = new(baseDataframeMetadata);
-        _dynamicMetadata = new(dynamicMetadata.ToDictionary(k => k.Property, v => v));
+        _innerDataframeMetadataProvider = innerDataframeMetadataProvider;
+        _dynamicMetadata = new(dynamicMetadata?.ToDictionary(k => k.Property, v => v) ?? new());
     }
 
     public DynamicDataframeMetadataProvider<THoistedDataframe, TMetadataAttribute, TMetadata> HoistMetadata<THoistedDataframe>(CultureInfo? culture = null)
         where THoistedDataframe : class
     {
-        var baseMetadatas =
-            from metadata in _baseDataframeMetadata.Values
-            let property = metadata.Property.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : metadata.Property
-            select metadata.Clone(overrideProperty: property, overrideCulture: culture);
         var dynamicMetadatas =
             from metadata in _dynamicMetadata.Values
             let property = metadata.Property.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : metadata.Property
             select metadata.Clone(overrideProperty: property, overrideCulture: culture);
 
-        return new(baseMetadatas, dynamicMetadatas);
+        return new(this, dynamicMetadatas);
     }
 
     public IEnumerable<TMetadata> GetAllMetadata(CultureInfo? culture = null)
@@ -47,6 +44,11 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
             select m.metadata;
     }
 
+    public IEnumerable<TMetadata> GetAllBaseMetadata()
+    {
+        return _innerDataframeMetadataProvider.GetAllMetadata();
+    }
+
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
     {
         if (property is null)
@@ -54,7 +56,7 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
         if (!_dynamicMetadata.TryGetValue(property, out metadata))
         {
-            if (!_baseDataframeMetadata.TryGetValue(property, out var baseMetadata) || baseMetadata?.Unit is null)
+            if (!_innerDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata?.Unit is null)
                 return false;
 
             metadata = _dynamicMetadata.GetOrAdd(property, key =>
@@ -68,11 +70,16 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
         return true;
     }
 
+    public bool TryGetBaseMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata)
+    {
+        return _innerDataframeMetadataProvider.TryGetMetadata(property, out metadata);
+    }
+
     public void AddConversion(PropertyInfo property, Enum unit, CultureInfo? culture = null)
     {
         var (_, toMetadata) = property.GetConversionMetadatas(to: unit, this, culture);
 
-        if (!_baseDataframeMetadata.TryGetValue(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
+        if (!_innerDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
             throw new InvalidOperationException($"No metadata found for property {property}.");
 
         var convertBack = UnitMetadataBasic.FromUnitInfo(baseMetadata.Unit.UnitInfo, baseMetadata.Unit.QuantityType.QuantityInfo, culture)!;
@@ -81,5 +88,10 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
         var metadata = baseMetadata.Clone(overrideProperty: property, overrideConversions: conversions, overrideUnit: toMetadata, overrideCulture: culture);
 
         _dynamicMetadata.AddOrUpdate(property, _ => metadata, (_, _) => metadata);
+    }
+
+    public void ValidateAllMetadata()
+    {
+        _innerDataframeMetadataProvider.ValidateAllMetadata();
     }
 }

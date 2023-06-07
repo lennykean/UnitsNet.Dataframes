@@ -9,17 +9,19 @@ using UnitsNet.Dataframes.Attributes;
 namespace UnitsNet.Dataframes;
 
 public class DataframeMetadata<TMetadataAttribute, TMetadata> : IReadOnlyDictionary<string, TMetadata>, IReadOnlyDictionary<PropertyInfo, TMetadata>
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
-    public interface IMetadataAttribute
+    public interface IDataframeMetadataAttribute
     {
         TMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> conversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null);
+        void Validate();
     }
 
-    public interface IClonableMetadata
+    public interface IDataframeMetadata
     {
         TMetadata Clone(PropertyInfo? overrideProperty = null, IEnumerable<UnitMetadataBasic>? overrideConversions = null, UnitMetadata? overrideUnit = null, CultureInfo? overrideCulture = null);
+        void Validate();
     }
 
     private readonly IEnumerable<TMetadata> _metadatas;

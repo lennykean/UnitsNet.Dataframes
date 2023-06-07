@@ -5,25 +5,29 @@ namespace UnitsNet.Dataframes.Attributes;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class AllowUnitConversionAttribute : Attribute
 {
+    private readonly Lazy<Enum?> _lazyUnit;
     private readonly Lazy<Type?> _lazyQuantityType;
-    private readonly Lazy<UnitInfo> _lazyUnitInfo;
-    private readonly Lazy<QuantityInfo> _lazyQuantityInfo;
+    private readonly Lazy<UnitInfo?> _lazyUnitInfo;
+    private readonly Lazy<QuantityInfo?> _lazyQuantityInfo;
 
     public AllowUnitConversionAttribute(object unit, Type? quantityType = null)
     {
-        if (unit is not Enum unitValue)
-            throw new ArgumentException($"{nameof(unit)} must be an enum value");
-
-        Unit = unitValue;
-
+        _lazyUnit = new(() =>
+        {
+            return unit as Enum;
+        });
         _lazyUnitInfo = new(() =>
         {
-            Unit.TryGetUnitInfo(QuantityType, out var unitInfo);
+            if (Unit?.TryGetUnitInfo(QuantityType, out var unitInfo) is not true)
+                return default;
+
             return unitInfo!;
         });
         _lazyQuantityInfo = new(() =>
         {
-            Unit.TryGetQuantityInfo(QuantityType, out var quantityInfo);
+            if (Unit?.TryGetQuantityInfo(QuantityType, out var quantityInfo) is not true)
+                return default;
+
             return quantityInfo!;
         });
         _lazyQuantityType = new(() =>
@@ -31,15 +35,26 @@ public class AllowUnitConversionAttribute : Attribute
             if (quantityType is not null)
                 return quantityType;
 
-            Unit.TryGetQuantityInfo(null, out var quantityInfo);
+            if (Unit?.TryGetQuantityInfo(null, out var quantityInfo) is not true)
+                return default;
 
             return quantityInfo?.ValueType;
         });
     }
 
-    public Enum Unit { get; }
+    public Enum? Unit => _lazyUnit.Value;
 
     public Type? QuantityType => _lazyQuantityType.Value;
     public QuantityInfo? QuantityInfo => _lazyQuantityInfo.Value;
     public UnitInfo? UnitInfo => _lazyUnitInfo.Value;
+
+    protected internal virtual void Validate()
+    {
+        if (Unit is null)
+            throw new ArgumentException($"{nameof(Unit)} must be an enum value");
+        if (!Unit.TryGetUnitInfo(QuantityType, out _))
+            throw new ArgumentException($"{Unit?.GetType()}.{Unit} is not a known unit value.");
+        if (!Unit.TryGetQuantityInfo(QuantityType, out _))
+            throw new ArgumentException($"{Unit?.GetType()} is not a known unit type.");
+    }
 }

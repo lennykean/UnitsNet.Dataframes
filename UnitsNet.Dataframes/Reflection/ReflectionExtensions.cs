@@ -72,12 +72,15 @@ internal static class ReflectionExtensions
         this PropertyInfo property,
         IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider,
         CultureInfo? culture = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+        where TDataframe : class
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
         if (metadataProvider.TryGetMetadata(property, out var metadata, culture) is not true || metadata.Unit is null)
             throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
-        
+
+        metadata.Validate();
+
         return metadata;
     }
 
@@ -95,8 +98,9 @@ internal static class ReflectionExtensions
     }
 
     public static IQuantity GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(this TDataframe dataframe, PropertyInfo property, CultureInfo? culture = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+        where TDataframe : class
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
         var metadataProvider = dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
             ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
@@ -162,8 +166,9 @@ internal static class ReflectionExtensions
         Enum to,
         IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>? metadataProvider = null,
         CultureInfo? culture = null)
-        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+        where TDataframe : class
+        where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+        where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
         metadataProvider ??= DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
 

@@ -7,8 +7,9 @@ using UnitsNet.Dataframes.Attributes;
 namespace UnitsNet.Dataframes.Dynamic;
 
 internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetadata> : IInterceptor
-    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
-    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
+    where TDataframe : class
+    where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
+    where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
     public DynamicQuantityInterceptor(DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider)
     {
@@ -26,7 +27,7 @@ internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetad
 
         var concreteMethod = invocation.GetConcreteMethodInvocationTarget();
         var concreteProperty = concreteMethod.DeclaringType!.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == concreteMethod || p.SetMethod == concreteMethod);
-        if (concreteProperty is null || !MetadataProvider.TryGetMetadata(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
+        if (concreteProperty is null || !MetadataProvider.TryGetBaseMetadata(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
             return;
 
         var property = invocation.Method.DeclaringType?.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == invocation.Method || p.SetMethod == invocation.Method);
