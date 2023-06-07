@@ -68,7 +68,10 @@ internal static class ReflectionExtensions
         return true;
     }
 
-    private static TMetadata GetQuantityMetadata<TDataframe, TMetadataAttribute, TMetadata>(this PropertyInfo property, IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider, CultureInfo? culture = null)
+    private static TMetadata GetQuantityMetadata<TDataframe, TMetadataAttribute, TMetadata>(
+        this PropertyInfo property,
+        IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider,
+        CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {
@@ -154,7 +157,11 @@ internal static class ReflectionExtensions
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });
     }
 
-    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadata<TDataframe, TMetadataAttribute, TMetadata>(this PropertyInfo property, Enum to, IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>? metadataProvider = null, CultureInfo? culture = null)
+    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadatas<TDataframe, TMetadataAttribute, TMetadata>(
+        this PropertyInfo property, 
+        Enum to,
+        IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>? metadataProvider = null,
+        CultureInfo? culture = null)
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IClonableMetadata
     {

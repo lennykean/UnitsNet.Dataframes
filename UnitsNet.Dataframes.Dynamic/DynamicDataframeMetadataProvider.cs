@@ -27,13 +27,13 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
         where THoistedDataframe : class
     {
         var baseMetadatas =
-            from k in _baseDataframeMetadata.Keys
-            let property = k.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : k
-            select _baseDataframeMetadata[k].Clone(overrideProperty: property, overrideCulture: culture);
+            from metadata in _baseDataframeMetadata.Values
+            let property = metadata.Property.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : metadata.Property
+            select metadata.Clone(overrideProperty: property, overrideCulture: culture);
         var dynamicMetadatas =
-            from k in _dynamicMetadata.Keys
-            let property = k.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : k
-            select _dynamicMetadata[k].Clone(overrideProperty: property, overrideCulture: culture);
+            from metadata in _dynamicMetadata.Values
+            let property = metadata.Property.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : metadata.Property
+            select metadata.Clone(overrideProperty: property, overrideCulture: culture);
 
         return new(baseMetadatas, dynamicMetadatas);
     }
@@ -70,7 +70,7 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
     public void AddConversion(PropertyInfo property, Enum unit, CultureInfo? culture = null)
     {
-        var (_, toMetadata) = property.GetConversionMetadata(to: unit, this, culture);
+        var (_, toMetadata) = property.GetConversionMetadatas(to: unit, this, culture);
 
         if (!_baseDataframeMetadata.TryGetValue(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
             throw new InvalidOperationException($"No metadata found for property {property}.");

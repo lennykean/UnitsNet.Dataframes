@@ -170,7 +170,7 @@ public static class DataframeExtensions
         if (dataframe is null)
             throw new ArgumentNullException(nameof(dataframe));
 
-        var (fromMetadata, toMetadata) = property.GetConversionMetadata(to, dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>);
+        var (fromMetadata, toMetadata) = property.GetConversionMetadatas(to, dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>);
         var value = dataframe.GetQuantityValueFromProperty(property);
 
         if (!fromMetadata.TryConvertQuantity(value, toMetadata, out var quantity))

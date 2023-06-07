@@ -42,7 +42,7 @@ public sealed class DefaultDataframeMetadataProvider<TDataframe, TMetadataAttrib
         metadata = EphemeralValueCache<PropertyInfo, TMetadata>.Instance.GetOrAdd(property, p =>
         {
             var allowedConversionAttributes = p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
-            return metadataAttribute.ToMetadata(property, metadataAttribute.GetAllowedConversionsMetadata(allowedConversionAttributes, culture));
+            return metadataAttribute.ToMetadata(property, metadataAttribute.GetConversionsMetadata(allowedConversionAttributes, culture));
         });
         return true;
     }

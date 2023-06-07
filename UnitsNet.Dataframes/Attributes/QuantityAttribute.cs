@@ -55,20 +55,18 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
     public QuantityInfo? QuantityInfo => _lazyQuantityInfo?.Value;
     public UnitInfo? UnitInfo => _lazyUnitInfo?.Value;
 
-    public IEnumerable<UnitMetadataBasic> GetAllowedConversionsMetadata(IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
-    {
-        var conversions = GetConversionsIterator(allowedConversions, culture);
-
-        return conversions.Distinct(new DelegateEqualityComparer<UnitMetadataBasic>((a, b) => a.UnitInfo.Value.Equals(b.UnitInfo.Value)));
-    }
-
-    private IEnumerable<UnitMetadataBasic> GetConversionsIterator(IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
+    public IEnumerable<UnitMetadataBasic> GetConversionsMetadata(IEnumerable<AllowUnitConversionAttribute> allowedConversions, CultureInfo? culture = null)
     {
         if (UnitInfo is null || QuantityInfo is null)
             yield break;
+        
+        var selfConversion = UnitMetadataBasic.FromUnitInfo(UnitInfo, QuantityInfo, culture)!;
 
-        // Quantities are always convertable to their own unit.
-        yield return UnitMetadataBasic.FromUnitInfo(UnitInfo, QuantityInfo, culture)!;
+        var distinctConversions = new HashSet<UnitMetadataBasic>(new DelegateEqualityComparer<UnitMetadataBasic>((a, b) => a.UnitInfo.Value.Equals(b.UnitInfo.Value)))
+        {
+            selfConversion
+        };
+        yield return selfConversion;
 
         if (allowedConversions.Any())
         {
@@ -76,8 +74,11 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
             {
                 var (unitInfo, quantityInfo) = GetConversionInfo(conversion);
                 var unitMetadata = UnitMetadataBasic.FromUnitInfo(unitInfo, quantityInfo, culture);
-                if (unitMetadata is not null)
+                if (unitMetadata is not null && !distinctConversions.Contains(unitMetadata))
+                {
+                    distinctConversions.Add(unitMetadata);
                     yield return unitMetadata;
+                }
             }
         }
         else
@@ -85,8 +86,11 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
             foreach (var unit in QuantityInfo.UnitInfos)
             {
                 var unitMetadata = UnitMetadataBasic.FromUnitInfo(unit, QuantityInfo, culture);
-                if (unitMetadata is not null)
+                if (unitMetadata is not null && !distinctConversions.Contains(unitMetadata))
+                {
+                    distinctConversions.Add(unitMetadata);
                     yield return unitMetadata;
+                }
             }
         }
     }
