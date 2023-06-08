@@ -46,6 +46,8 @@ internal class DynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetad
 
     DataframeMetadata<TMetadataAttribute, TMetadata> IDynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata>.GetDataframeMetadata(CultureInfo? culture)
     {
+        ValidateAllMetadata();
+        
         return new(_dynamicMetadataProvider.GetAllMetadata(culture));
     }
 

@@ -13,14 +13,14 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
     where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
     where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
-    private readonly IDataframeMetadataProvider<TMetadataAttribute, TMetadata> _innerDataframeMetadataProvider;
+    private readonly IDataframeMetadataProvider<TMetadataAttribute, TMetadata> _baseDataframeMetadataProvider;
     private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
     public DynamicDataframeMetadataProvider(
-        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> innerDataframeMetadataProvider,
+        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> baseDataframeMetadataProvider,
         IEnumerable<TMetadata>? dynamicMetadata = null)
     {
-        _innerDataframeMetadataProvider = innerDataframeMetadataProvider;
+        _baseDataframeMetadataProvider = baseDataframeMetadataProvider;
         _dynamicMetadata = new(dynamicMetadata?.ToDictionary(k => k.Property, v => v) ?? new());
     }
 
@@ -46,7 +46,7 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
     public IEnumerable<TMetadata> GetAllBaseMetadata()
     {
-        return _innerDataframeMetadataProvider.GetAllMetadata();
+        return _baseDataframeMetadataProvider.GetAllMetadata();
     }
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
@@ -54,32 +54,25 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
         if (property is null)
             throw new ArgumentNullException(nameof(property));
 
-        if (!_dynamicMetadata.TryGetValue(property, out metadata))
-        {
-            if (!_innerDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata?.Unit is null)
-                return false;
+        if (_dynamicMetadata.TryGetValue(property, out metadata) && metadata.Unit is not null)
+            return true;
 
-            metadata = _dynamicMetadata.GetOrAdd(property, key =>
-            {
-                if (_dynamicMetadata.TryGetValue(key, out var dynamicMetadata))
-                    return dynamicMetadata;
+        if (_baseDataframeMetadataProvider.TryGetMetadata(property, out metadata) && metadata?.Unit is not null)
+            return true;
 
-                return baseMetadata;
-            });
-        }
-        return true;
+        return false;
     }
 
     public bool TryGetBaseMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata)
     {
-        return _innerDataframeMetadataProvider.TryGetMetadata(property, out metadata);
+        return _baseDataframeMetadataProvider.TryGetMetadata(property, out metadata);
     }
 
     public void AddConversion(PropertyInfo property, Enum unit, CultureInfo? culture = null)
     {
         var (_, toMetadata) = property.GetConversionMetadatas(to: unit, this, culture);
 
-        if (!_innerDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
+        if (!_baseDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
             throw new InvalidOperationException($"No metadata found for property {property}.");
 
         var convertBack = UnitMetadataBasic.FromUnitInfo(baseMetadata.Unit.UnitInfo, baseMetadata.Unit.QuantityType.QuantityInfo, culture)!;
@@ -92,6 +85,15 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
     public void ValidateAllMetadata()
     {
-        _innerDataframeMetadataProvider.ValidateAllMetadata();
+        foreach (var metadata in GetAllMetadata())
+        {
+            metadata.Validate();
+
+            if (_baseDataframeMetadataProvider.TryGetMetadata(metadata.Property, out var baseMetadata) &&
+                metadata.Unit is not null && metadata.Unit.UnitInfo != baseMetadata.Unit?.UnitInfo &&
+                metadata.Property.GetMethod is not null && !metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual &&
+                metadata.Property.SetMethod is not null && !metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual)
+                throw new InvalidOperationException($"{typeof(TDataframe).Name}.{metadata.Property.Name} is non-virtual and cannot converted to {metadata.Unit.Name}");
+        }
     }
 }

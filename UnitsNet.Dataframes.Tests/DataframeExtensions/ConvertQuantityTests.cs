@@ -115,8 +115,16 @@ public class ConvertQuantity
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void ConvertQuantityInvalidQuantityTypeTest()
     {
-        var box = new Box();
+        var garbage = new Garbage();
 
-        Assert.That(() => box.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)\\."));
+        Assert.That(() => garbage.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+    }
+
+    [TestCase(TestName = "{c} (throws exception on missing property)")]
+    public void ConvertQuantityMissingPropertyTest()
+    {
+        var garbage = new Garbage();
+
+        Assert.That(() => garbage.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 }

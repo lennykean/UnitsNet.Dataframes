@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -60,8 +59,9 @@ public static class DataframeExtensions
         if (dataframe is null)
             throw new ArgumentNullException(nameof(dataframe));
 
-        var property = typeof(TDataframe).GetProperty(propertyName);
-
+        var property = typeof(TDataframe).GetProperty(propertyName) ??
+            throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TDataframe).Name}");
+        
         return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property, culture);
     }
 
@@ -124,7 +124,8 @@ public static class DataframeExtensions
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
-        var property = typeof(TDataframe).GetProperty(propertyName);
+        var property = typeof(TDataframe).GetProperty(propertyName) ??
+            throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TDataframe).Name}");
 
         return dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(property, to);
     }

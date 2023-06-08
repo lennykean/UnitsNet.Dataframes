@@ -20,8 +20,6 @@ public class Box : IBox
     public virtual double Weight { get; set; }
     [Quantity(ScalarUnit.Amount)]
     public virtual int Items { get; set; }
-    [Quantity(InformationUnit.Bit)]
-    public virtual string? Data { get; set; }
 
     [Quantity(VolumeUnit.CubicMeter)]
     [AllowUnitConversion(VolumeUnit.CubicDecimeter)]

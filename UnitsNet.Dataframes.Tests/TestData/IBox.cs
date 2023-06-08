@@ -12,6 +12,5 @@ public interface IBox
     double Depth { get; set; }
     double Weight { get; set; }
     int Items { get; set; }
-    string? Data { get; set; }
     double Volume { get; }
 }

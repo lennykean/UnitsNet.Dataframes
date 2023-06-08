@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -12,6 +13,21 @@ namespace UnitsNet.Dataframes;
 
 public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMetadata>.IDataframeMetadata
 {
+    private static readonly HashSet<Type> NumericTypes = new()
+    {
+        typeof(byte),
+        typeof(sbyte),
+        typeof(ushort),
+        typeof(uint),
+        typeof(ulong),
+        typeof(short),
+        typeof(int),
+        typeof(long),
+        typeof(decimal),
+        typeof(double),
+        typeof(float)
+    };
+
     public QuantityMetadata(PropertyInfo property, UnitMetadata? unit, IList<UnitMetadataBasic> conversions)
     {
         Property = property;
@@ -27,6 +43,8 @@ public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMet
 
     internal protected virtual void Validate()
     {
+        if (!NumericTypes.Contains(Property.PropertyType))
+            throw new InvalidOperationException($"Type of {Property.DeclaringType.Name}.{Property.Name} ({Property.PropertyType}) is not a valid quantity type");
     }
 
     QuantityMetadata DataframeMetadata<QuantityAttribute, QuantityMetadata>.IDataframeMetadata.Clone(

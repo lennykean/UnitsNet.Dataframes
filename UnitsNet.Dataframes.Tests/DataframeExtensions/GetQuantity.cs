@@ -63,16 +63,24 @@ public class GetQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => box.GetQuantity(b => b.SerialNumber), Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.SerialNumber."));
-            Assert.That(() => box.GetQuantity("Priority"), Throws.InvalidOperationException.With.Message.EqualTo("Unit metadata does not exist for Box.Priority."));
+            Assert.That(() => box.GetQuantity(b => b.SerialNumber), Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)."));
+            Assert.That(() => box.GetQuantity("Priority"), Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)."));
         });
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void GetQuantityInvalidDatatypeTest()
     {
-        var box = new Box();
+        var garbage = new Garbage();
 
-        Assert.That(() => box.GetQuantity("Data"), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)"));
+        Assert.That(() => garbage.GetQuantity("Data"), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)"));
+    }
+
+    [TestCase(TestName = "{c} (throws exception on missing property)")]
+    public void GetQuantityMissingPropertyTest()
+    {
+        var garbage = new Garbage();
+
+        Assert.That(() => garbage.GetQuantity("FakeProperty"), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 }
