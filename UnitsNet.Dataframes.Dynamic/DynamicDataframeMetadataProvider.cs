@@ -93,7 +93,7 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
                 metadata.Unit is not null && metadata.Unit.UnitInfo != baseMetadata.Unit?.UnitInfo &&
                 metadata.Property.GetMethod is not null && !metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual &&
                 metadata.Property.SetMethod is not null && !metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual)
-                throw new InvalidOperationException($"{typeof(TDataframe).Name}.{metadata.Property.Name} is non-virtual and cannot converted to {metadata.Unit.Name}");
+                throw new InvalidOperationException($"{typeof(TDataframe).Name}.{metadata.Property.Name} is non-virtual and cannot be converted to {metadata.Unit.Name}");
         }
     }
 }

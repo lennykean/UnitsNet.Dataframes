@@ -53,7 +53,7 @@ public class GetQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on missing metadata)")]
-    public void GetQuantityMissingMetadataTest()
+    public void MissingMetadataTest()
     {
         var box = new Box
         {
@@ -69,7 +69,7 @@ public class GetQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
-    public void GetQuantityInvalidDatatypeTest()
+    public void InvalidDatatypeTest()
     {
         var garbage = new Garbage();
 
@@ -77,10 +77,18 @@ public class GetQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on missing property)")]
-    public void GetQuantityMissingPropertyTest()
+    public void MissingPropertyTest()
     {
         var garbage = new Garbage();
 
         Assert.That(() => garbage.GetQuantity("FakeProperty"), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
+    }
+
+    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
+    public void InvalidAttributeTest()
+    {
+        var rubbish = new Rubbish();
+
+        Assert.That(() => rubbish.GetQuantity(r => r.Coolness), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 }

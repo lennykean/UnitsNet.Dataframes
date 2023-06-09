@@ -16,7 +16,7 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
     private readonly Lazy<UnitInfo?> _lazyUnitInfo;
     private readonly Lazy<QuantityInfo?> _lazyQuantityInfo;
 
-    public QuantityAttribute(object? unit = null, Type? quantityType = null)
+    public QuantityAttribute(object unit, Type? quantityType = null)
     {
         _lazyUnit = new(() =>
         {
@@ -58,7 +58,7 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
     {
         if (UnitInfo is null || QuantityInfo is null)
             yield break;
-        
+
         var selfConversion = UnitMetadataBasic.FromUnitInfo(UnitInfo, QuantityInfo, culture)!;
 
         var distinctConversions = new HashSet<UnitMetadataBasic>(new DelegateEqualityComparer<UnitMetadataBasic>((a, b) => a.UnitInfo.Value.Equals(b.UnitInfo.Value)))
@@ -111,7 +111,7 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
         var unit = overrideUnit;
         if (unit is null && UnitInfo is not null && QuantityInfo is not null)
             unit = UnitMetadata.FromUnitInfo(UnitInfo, QuantityInfo, culture);
-        
+
         return new(property, unit, conversions.ToList());
     }
 

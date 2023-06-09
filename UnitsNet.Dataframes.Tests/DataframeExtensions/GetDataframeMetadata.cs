@@ -11,7 +11,7 @@ namespace UnitsNet.Dataframes.Tests.DataframeExtensions;
 public class GetDataframeMetadata
 {
     [TestCase(TestName = "{c} (gets metadata)")]
-    public void GetDataframeMetadataTests()
+    public void GetMetadataTest()
     {
         var box = new Box();
 
@@ -33,5 +33,24 @@ public class GetDataframeMetadata
             Assert.That(metadata, Has.ItemAt(nameof(Box.Volume))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(VolumeUnit.CubicMeter));
         });
+    }
+
+    [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
+    public void InvalidDataTypeTest()
+    {
+        var garbage = new Garbage
+        {
+            Data = "1"
+        };
+
+        Assert.That(() => garbage.GetDataframeMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+    }
+
+    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
+    public void InvalidAttributeTest()
+    {
+        var rubbish = new Rubbish();
+
+        Assert.That(() => rubbish.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 }

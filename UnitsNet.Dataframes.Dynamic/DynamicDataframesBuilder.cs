@@ -20,10 +20,10 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
     {
         _culture = culture;
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
-        
-        var baseMetadataProvider = 
-            (dataframes as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> ??
-            DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance);
+
+        var baseMetadataProvider =
+            dataframes as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> ??
+            DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
 
         _dynamicMetadataProvider = new(baseMetadataProvider);
     }
@@ -58,6 +58,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
     public IDynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata> Build()
     {
+        _dynamicMetadataProvider.ValidateAllMetadata();
         return new DynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata>(_dataframes, _dynamicMetadataProvider);
     }
 }

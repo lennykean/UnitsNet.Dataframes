@@ -11,7 +11,7 @@ namespace UnitsNet.Dataframes.Tests.DataframeExtensions;
 
 [TestFixture]
 public class ConvertQuantity
-{ 
+{
     public record ConvertQuantityTestData(double Value, double Converted, Enum Unit);
 
     public readonly static TestCaseData[] ConvertQuantityTestCases = new[]
@@ -79,7 +79,7 @@ public class ConvertQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid unit conversion)")]
-    public void ConvertQuantityInvalidUnitConversionTest()
+    public void InvalidUnitConversionTest()
     {
         var box = new Box
         {
@@ -95,7 +95,7 @@ public class ConvertQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on disallowed unit conversion)")]
-    public void ConvertQuantityDisallowedUnitConversionTest()
+    public void DisallowedUnitConversionTest()
     {
         var box = new Box
         {
@@ -113,18 +113,29 @@ public class ConvertQuantity
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
-    public void ConvertQuantityInvalidQuantityTypeTest()
+    public void InvalidDataTypeTest()
     {
-        var garbage = new Garbage();
+        var garbage = new Garbage
+        {
+            Data = "1"
+        };
 
         Assert.That(() => garbage.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
     [TestCase(TestName = "{c} (throws exception on missing property)")]
-    public void ConvertQuantityMissingPropertyTest()
+    public void MissingPropertyTest()
     {
         var garbage = new Garbage();
 
         Assert.That(() => garbage.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
+    }
+
+    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
+    public void InvalidAttributeTest()
+    {
+        var rubbish = new Rubbish();
+
+        Assert.That(() => rubbish.ConvertQuantity(r => r.Coolness, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 }
