@@ -138,4 +138,38 @@ public class ConvertQuantity
 
         Assert.That(() => garbage.ConvertQuantity(r => r.Odor, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
+
+    [TestCase(TestName = "{c} (converts custom unit quantity)")]
+    public void CustomUnitTest()
+    {
+        var employee = new Employee
+        {
+            Name = "Cubert",
+            Coolness = 40
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(employee.ConvertQuantity(e => e.Coolness, to: CoolnessUnit.Fonzie), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(40_000_000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.Fonzie));
+            Assert.That(employee.ConvertQuantity("Coolness", to: CoolnessUnit.Fonzie), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(40_000_000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.Fonzie));
+        });
+    }
+    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
+    public void CustomUnitInvalidTest()
+    {
+        var rubbish = new Rubbish
+        {
+            Coolness = 40
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(() => rubbish.ConvertQuantity(r => r.Coolness, to: CoolnessUnit.Fonzie), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+            Assert.That(() => rubbish.ConvertQuantity("Coolness", to: CoolnessUnit.Fonzie), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+        });
+    }
 }

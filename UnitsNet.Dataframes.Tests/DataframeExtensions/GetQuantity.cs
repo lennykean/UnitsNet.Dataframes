@@ -91,4 +91,39 @@ public class GetQuantity
 
         Assert.That(() => garbage.GetQuantity(r => r.Odor), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
+
+    [TestCase(TestName = "{c} (gets custom unit quantity)")]
+    public void CustomUnitTest()
+    {
+        var employee = new Employee
+        {
+            Name = "Cubert",
+            Coolness = 40
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(employee.GetQuantity(e => e.Coolness), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(40).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.MegaFonzie));
+            Assert.That(employee.GetQuantity("Coolness"), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(40).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.MegaFonzie));
+        });
+    }
+
+    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
+    public void CustomUnitInvalidTest()
+    {
+        var rubbish = new Rubbish
+        {
+            Coolness = 40
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(() => rubbish.GetQuantity(r => r.Coolness), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+            Assert.That(() => rubbish.GetQuantity("Coolness"), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+        });
+    }
 }

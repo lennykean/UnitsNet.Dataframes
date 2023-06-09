@@ -53,4 +53,15 @@ public class GetDataframeMetadata
 
         Assert.That(() => garbage.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
+
+    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
+    public void CustomUnitInvalidTest()
+    {
+        var rubbish = new Rubbish
+        {
+            Coolness = 40
+        };
+
+        Assert.That(() => rubbish.GetDataframeMetadata(), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+    }
 }
