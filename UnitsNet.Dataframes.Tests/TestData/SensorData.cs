@@ -1,9 +1,9 @@
 ﻿using UnitsNet.Dataframes.Attributes;
 using UnitsNet.Units;
 
-namespace UnitsNet.Dataframes.Tests;
+namespace UnitsNet.Dataframes.Tests.TestData;
 
-public class SensorData
+public class SensorData : ISensorData
 {
     [Quantity(PowerUnit.Watt)]
     public double Power { get; set; }

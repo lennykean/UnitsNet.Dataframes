@@ -38,19 +38,19 @@ public class GetDataframeMetadata
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void InvalidDataTypeTest()
     {
-        var garbage = new Garbage
+        var blob = new Blob
         {
             Data = "1"
         };
 
-        Assert.That(() => garbage.GetDataframeMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+        Assert.That(() => blob.GetDataframeMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
     public void InvalidAttributeTest()
     {
-        var rubbish = new Rubbish();
+        var garbage = new Garbage();
 
-        Assert.That(() => rubbish.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
+        Assert.That(() => garbage.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 }

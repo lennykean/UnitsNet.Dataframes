@@ -91,8 +91,8 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
             if (_baseDataframeMetadataProvider.TryGetMetadata(metadata.Property, out var baseMetadata) &&
                 metadata.Unit is not null && metadata.Unit.UnitInfo != baseMetadata.Unit?.UnitInfo &&
-                metadata.Property.GetMethod is not null && !metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual &&
-                metadata.Property.SetMethod is not null && !metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual)
+                metadata.Property.GetMethod is not null && ((!metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual) || metadata.Property.GetMethod.IsFinal) &&
+                metadata.Property.SetMethod is not null && ((!metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual) || metadata.Property.SetMethod.IsFinal))
                 throw new InvalidOperationException($"{typeof(TDataframe).Name}.{metadata.Property.Name} is non-virtual and cannot be converted to {metadata.Unit.Name}");
         }
     }

@@ -1,10 +1,9 @@
 ﻿using UnitsNet.Dataframes.Attributes;
-using UnitsNet.Units;
 
-namespace UnitsNet.Dataframes.Tests;
+namespace UnitsNet.Dataframes.Tests.TestData;
 
 public class Garbage
 {
-    [Quantity(InformationUnit.Bit)]
-    public virtual string? Data { get; set; }
+    [Quantity("Blatt")]
+    public virtual double Odor { get; set; }
 }

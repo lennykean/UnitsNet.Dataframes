@@ -115,27 +115,27 @@ public class ConvertQuantity
     [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
     public void InvalidDataTypeTest()
     {
-        var garbage = new Garbage
+        var blob = new Blob
         {
             Data = "1"
         };
 
-        Assert.That(() => garbage.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+        Assert.That(() => blob.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
     [TestCase(TestName = "{c} (throws exception on missing property)")]
     public void MissingPropertyTest()
     {
-        var garbage = new Garbage();
+        var blob = new Blob();
 
-        Assert.That(() => garbage.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
+        Assert.That(() => blob.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 
     [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
     public void InvalidAttributeTest()
     {
-        var rubbish = new Rubbish();
+        var garbage = new Garbage();
 
-        Assert.That(() => rubbish.ConvertQuantity(r => r.Coolness, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
+        Assert.That(() => garbage.ConvertQuantity(r => r.Odor, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 }

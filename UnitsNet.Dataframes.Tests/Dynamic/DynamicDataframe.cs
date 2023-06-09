@@ -116,13 +116,34 @@ public class DynamicDataframe
     [TestCase(TestName = "{c} (throws exception on non-virtual property)")]
     public void NonVirtualPropertyTest()
     {
-        var data = Builder<SensorData>.CreateListOfSize(100).Build();
+        Assert.Multiple(() =>
+        {
+            Assert.That(() =>
+                Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                    .WithConversion(s => s.Mass, MassUnit.SolarMass)
+                    .WithConversion(b => b.Radius, LengthUnit.SolarRadius)
+                    .WithConversion(b => b.Distance, LengthUnit.AstronomicalUnit)
+                    .WithConversion(b => b.Luminosity, LuminosityUnit.SolarLuminosity)
+                    .Build(),
+                Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
 
-        var builder = data.AsDynamicDataframes()
-            .WithConversion(b => b.Power, PowerUnit.Milliwatt)
-            .WithConversion(b => b.Frequency, FrequencyUnit.Kilohertz)
-            .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius);
+            Assert.That(() =>
+                Builder<SensorData>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                    .WithConversion(b => b.Power, PowerUnit.Milliwatt)
+                    .WithConversion(b => b.Frequency, FrequencyUnit.Kilohertz)
+                    .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
+                    .Build(),
+                Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
+        });
+    }
 
-        Assert.That(() => builder.Build(), Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
+    [TestCase(TestName = "{c} (throws exception on missing metadata)")]
+    public void MissingMetadataTest()
+    {
+        Assert.That(() =>
+            Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                .WithConversion(s => s.Number, ScalarUnit.Amount)
+                .Build(),
+            Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
     }
 }
