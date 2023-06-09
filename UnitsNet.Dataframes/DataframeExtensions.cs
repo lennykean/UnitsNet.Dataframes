@@ -15,12 +15,12 @@ public static class DataframeExtensions
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
-        var metadataProvider = dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
-            ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+        var metadataProvider = dataframe as IDataframeMetadataProvider<TMetadataAttribute, TMetadata>
+            ?? DefaultDataframeMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
 
-        metadataProvider.ValidateAllMetadata();
+        metadataProvider.ValidateAllMetadata(typeof(TDataframe));
 
-        return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadataProvider.GetAllMetadata(culture));
+        return new DataframeMetadata<TMetadataAttribute, TMetadata>(metadataProvider.GetAllMetadata(typeof(TDataframe), culture));
     }
 
     public static DataframeMetadata<QuantityAttribute, QuantityMetadata> GetDataframeMetadata<TDataframe>(this TDataframe dataframe, CultureInfo? culture = null)
@@ -61,7 +61,7 @@ public static class DataframeExtensions
 
         var property = typeof(TDataframe).GetProperty(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TDataframe).Name}");
-        
+
         return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property, culture);
     }
 
@@ -173,7 +173,7 @@ public static class DataframeExtensions
         if (dataframe is null)
             throw new ArgumentNullException(nameof(dataframe));
 
-        var (fromMetadata, toMetadata) = property.GetConversionMetadatas(to, dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>);
+        var (fromMetadata, toMetadata) = property.GetConversionMetadatas(to, dataframe as IDataframeMetadataProvider<TMetadataAttribute, TMetadata>);
         var value = dataframe.GetQuantityValueFromProperty(property);
 
         if (!fromMetadata.TryConvertQuantity(value, toMetadata, out var quantity))

@@ -11,18 +11,18 @@ internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetad
     where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
     where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
-    public DynamicQuantityInterceptor(DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider)
+    public DynamicQuantityInterceptor(DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
     {
         MetadataProvider = metadataProvider;
     }
 
-    public DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> MetadataProvider { get; }
+    public DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> MetadataProvider { get; }
 
     public void Intercept(IInvocation invocation)
     {
         invocation.Proceed();
 
-        if (typeof(IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>).IsAssignableFrom(invocation.TargetType))
+        if (typeof(IDataframeMetadataProvider<TMetadataAttribute, TMetadata>).IsAssignableFrom(invocation.TargetType))
             return;
 
         var concreteMethod = invocation.GetConcreteMethodInvocationTarget();

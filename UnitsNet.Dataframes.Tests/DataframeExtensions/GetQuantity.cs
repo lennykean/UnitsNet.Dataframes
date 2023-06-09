@@ -10,8 +10,8 @@ namespace UnitsNet.Dataframes.Tests.DataframeExtensions;
 [TestFixture]
 public class GetQuantity
 {
-    [TestCase(TestName = "{c} (gets quantity)")]
-    public void GetQuantityTest()
+    [TestCase(TestName = "{c} (with valid metadata)")]
+    public void WithValidMetadataTest()
     {
         var box = new Box
         {
@@ -52,8 +52,8 @@ public class GetQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on missing metadata)")]
-    public void MissingMetadataTest()
+    [TestCase(TestName = "{c} (with missing metadata)")]
+    public void WithMissingMetadataTest()
     {
         var box = new Box
         {
@@ -68,32 +68,32 @@ public class GetQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
-    public void InvalidDatatypeTest()
+    [TestCase(TestName = "{c} (with invalid quantity)")]
+    public void WithInvalidQuantityTest()
     {
         var blob = new Blob();
 
         Assert.That(() => blob.GetQuantity("Data"), Throws.InvalidOperationException.With.Message.Match("(.*) type of (.*) is not compatible with (.*)"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on missing property)")]
-    public void MissingPropertyTest()
+    [TestCase(TestName = "{c} (with missing property)")]
+    public void WithMissingPropertyTest()
     {
         var blob = new Blob();
 
         Assert.That(() => blob.GetQuantity("FakeProperty"), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
-    public void InvalidAttributeTest()
+    [TestCase(TestName = "{c} (with invalid attribute)")]
+    public void WithInvalidAttributeTest()
     {
         var garbage = new Garbage();
 
         Assert.That(() => garbage.GetQuantity(r => r.Odor), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
-    [TestCase(TestName = "{c} (gets custom unit quantity)")]
-    public void CustomUnitTest()
+    [TestCase(TestName = "{c} (with custom unit)")]
+    public void WithCustomUnitTest()
     {
         var employee = new Employee
         {
@@ -112,8 +112,8 @@ public class GetQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
-    public void CustomUnitInvalidTest()
+    [TestCase(TestName = "{c} (with invalid custom unit)")]
+    public void WithInvalidCustomUnitTest()
     {
         var rubbish = new Rubbish
         {

@@ -14,7 +14,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 {
     private readonly CultureInfo? _culture;
     private readonly IEnumerable _dataframes;
-    private readonly DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
+    private readonly DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
 
     public DynamicDataframesBuilder(IEnumerable<TDataframe> dataframes, CultureInfo? culture = null)
     {
@@ -22,13 +22,13 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
 
         var baseMetadataProvider =
-            dataframes as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> ??
-            DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+            dataframes as IDataframeMetadataProvider<TMetadataAttribute, TMetadata> ??
+            DefaultDataframeMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
 
         _dynamicMetadataProvider = new(baseMetadataProvider);
     }
 
-    private DynamicDataframesBuilder(IEnumerable dataframes, DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> dynamicMetadataProvider)
+    private DynamicDataframesBuilder(IEnumerable dataframes, DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> dynamicMetadataProvider)
     {
         _dataframes = dataframes;
         _dynamicMetadataProvider = dynamicMetadataProvider;
@@ -52,13 +52,13 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
     public DynamicDataframesBuilder<TSuperDataframe, TMetadataAttribute, TMetadata> As<TSuperDataframe>() where TSuperDataframe : class
     {
-        var hoistedMetadataProvider = _dynamicMetadataProvider.HoistMetadata<TSuperDataframe>(_culture);
-        return new(_dataframes, hoistedMetadataProvider);
+        _dynamicMetadataProvider.HoistMetadata<TSuperDataframe, TDataframe>(_culture);
+        return new(_dataframes, _dynamicMetadataProvider);
     }
 
     public IDynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata> Build()
     {
-        _dynamicMetadataProvider.ValidateAllMetadata();
+        ((IDataframeMetadataProvider<TMetadataAttribute, TMetadata>)_dynamicMetadataProvider).ValidateAllMetadata(typeof(TDataframe));
         return new DynamicDataframeEnumerable<TDataframe, TMetadataAttribute, TMetadata>(_dataframes, _dynamicMetadataProvider);
     }
 }

@@ -8,45 +8,19 @@ using UnitsNet.Dataframes.Reflection;
 
 namespace UnitsNet.Dataframes.Dynamic;
 
-internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> : IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
-    where TDataframe : class
+internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> : IDataframeMetadataProvider<TMetadataAttribute, TMetadata>
     where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
     where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
 {
-    private readonly IDataframeMetadataProvider<TMetadataAttribute, TMetadata> _baseDataframeMetadataProvider;
+    private readonly IDataframeMetadataProvider<TMetadataAttribute, TMetadata> _baseMetadataProvider;
     private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
     public DynamicDataframeMetadataProvider(
-        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> baseDataframeMetadataProvider,
+        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> baseMetadataProvider,
         IEnumerable<TMetadata>? dynamicMetadata = null)
     {
-        _baseDataframeMetadataProvider = baseDataframeMetadataProvider;
+        _baseMetadataProvider = baseMetadataProvider;
         _dynamicMetadata = new(dynamicMetadata?.ToDictionary(k => k.Property, v => v) ?? new());
-    }
-
-    public DynamicDataframeMetadataProvider<THoistedDataframe, TMetadataAttribute, TMetadata> HoistMetadata<THoistedDataframe>(CultureInfo? culture = null)
-        where THoistedDataframe : class
-    {
-        var dynamicMetadatas =
-            from metadata in _dynamicMetadata.Values
-            let property = metadata.Property.TryGetMappedProperty(typeof(THoistedDataframe), out var mappedProperty) ? mappedProperty : metadata.Property
-            select metadata.Clone(overrideProperty: property, overrideCulture: culture);
-
-        return new(this, dynamicMetadatas);
-    }
-
-    public IEnumerable<TMetadata> GetAllMetadata(CultureInfo? culture = null)
-    {
-        return
-            from p in typeof(TDataframe).GetProperties(inherit: true).Distinct()
-            let m = (hasMetadata: TryGetMetadata(p, out var metadata, culture), metadata)
-            where m.hasMetadata
-            select m.metadata;
-    }
-
-    public IEnumerable<TMetadata> GetAllBaseMetadata()
-    {
-        return _baseDataframeMetadataProvider.GetAllMetadata();
     }
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
@@ -57,7 +31,7 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
         if (_dynamicMetadata.TryGetValue(property, out metadata) && metadata.Unit is not null)
             return true;
 
-        if (_baseDataframeMetadataProvider.TryGetMetadata(property, out metadata) && metadata?.Unit is not null)
+        if (_baseMetadataProvider.TryGetMetadata(property, out metadata) && metadata?.Unit is not null)
             return true;
 
         return false;
@@ -65,35 +39,47 @@ internal class DynamicDataframeMetadataProvider<TDataframe, TMetadataAttribute, 
 
     public bool TryGetBaseMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata)
     {
-        return _baseDataframeMetadataProvider.TryGetMetadata(property, out metadata);
+        return _baseMetadataProvider.TryGetMetadata(property, out metadata);
     }
 
     public void AddConversion(PropertyInfo property, Enum unit, CultureInfo? culture = null)
     {
         var (_, toMetadata) = property.GetConversionMetadatas(to: unit, this, culture);
 
-        if (!_baseDataframeMetadataProvider.TryGetMetadata(property, out var baseMetadata) || baseMetadata is null || baseMetadata.Unit is null)
+        if (!_baseMetadataProvider.TryGetMetadata(property, out var innerMetadata) || innerMetadata is null || innerMetadata.Unit is null)
             throw new InvalidOperationException($"No metadata found for property {property}.");
 
-        var convertBack = UnitMetadataBasic.FromUnitInfo(baseMetadata.Unit.UnitInfo, baseMetadata.Unit.QuantityType.QuantityInfo, culture)!;
-        var conversions = baseMetadata.Conversions.Append(convertBack);
+        var convertBack = UnitMetadataBasic.FromUnitInfo(innerMetadata.Unit.UnitInfo, innerMetadata.Unit.QuantityType.QuantityInfo, culture)!;
+        var conversions = innerMetadata.Conversions.Append(convertBack);
 
-        var metadata = baseMetadata.Clone(overrideProperty: property, overrideConversions: conversions, overrideUnit: toMetadata, overrideCulture: culture);
+        var metadata = innerMetadata.Clone(overrideProperty: property, overrideConversions: conversions, overrideUnit: toMetadata, overrideCulture: culture);
 
         _dynamicMetadata.AddOrUpdate(property, _ => metadata, (_, _) => metadata);
     }
 
-    public void ValidateAllMetadata()
+    public void ValidateMetadata(PropertyInfo property)
     {
-        foreach (var metadata in GetAllMetadata())
-        {
-            metadata.Validate();
+        if (!TryGetMetadata(property, out var metadata))
+            return;
 
-            if (_baseDataframeMetadataProvider.TryGetMetadata(metadata.Property, out var baseMetadata) &&
-                metadata.Unit is not null && metadata.Unit.UnitInfo != baseMetadata.Unit?.UnitInfo &&
-                metadata.Property.GetMethod is not null && ((!metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual) || metadata.Property.GetMethod.IsFinal) &&
-                metadata.Property.SetMethod is not null && ((!metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual) || metadata.Property.SetMethod.IsFinal))
-                throw new InvalidOperationException($"{typeof(TDataframe).Name}.{metadata.Property.Name} is non-virtual and cannot be converted to {metadata.Unit.Name}");
+        metadata.Validate();
+
+        if (_baseMetadataProvider.TryGetMetadata(metadata.Property, out var baseMetadata) &&
+            metadata.Unit is not null && metadata.Unit.UnitInfo != baseMetadata.Unit?.UnitInfo &&
+            metadata.Property.GetMethod is not null && ((!metadata.Property.GetMethod.IsAbstract && !metadata.Property.GetMethod.IsVirtual) || metadata.Property.GetMethod.IsFinal) &&
+            metadata.Property.SetMethod is not null && ((!metadata.Property.SetMethod.IsAbstract && !metadata.Property.SetMethod.IsVirtual) || metadata.Property.SetMethod.IsFinal))
+            throw new InvalidOperationException($"{metadata.Property.DeclaringType.Name}.{metadata.Property.Name} is non-virtual and cannot be converted to {metadata.Unit.Name}");
+    }
+
+    public void HoistMetadata<TSuperDataframe, TDerivedDataframe>(CultureInfo? culture = null)
+    {
+        foreach (var metadata in ((IDataframeMetadataProvider<TMetadataAttribute, TMetadata>)this).GetAllMetadata(typeof(TDerivedDataframe), culture))
+        {
+            if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperDataframe), out var mappedProperty))
+            {
+                var hoistedMetadata = metadata.Clone(overrideProperty: mappedProperty, overrideCulture: culture);
+                _dynamicMetadata.AddOrUpdate(mappedProperty, _ => hoistedMetadata, (_, _) => hoistedMetadata);
+            }
         }
     }
 }

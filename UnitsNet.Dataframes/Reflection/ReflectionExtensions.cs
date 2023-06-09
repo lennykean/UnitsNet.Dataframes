@@ -68,11 +68,10 @@ internal static class ReflectionExtensions
         return true;
     }
 
-    private static TMetadata GetQuantityMetadata<TDataframe, TMetadataAttribute, TMetadata>(
+    private static TMetadata GetQuantityMetadata<TMetadataAttribute, TMetadata>(
         this PropertyInfo property,
-        IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata> metadataProvider,
+        IDataframeMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider,
         CultureInfo? culture = null)
-        where TDataframe : class
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
@@ -102,8 +101,8 @@ internal static class ReflectionExtensions
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
-        var metadataProvider = dataframe as IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>
-            ?? DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+        var metadataProvider = dataframe as IDataframeMetadataProvider<TMetadataAttribute, TMetadata>
+            ?? DefaultDataframeMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
 
         var value = dataframe.GetQuantityValueFromProperty(property);
         var quantityMetadata = property.GetQuantityMetadata(metadataProvider, culture);
@@ -161,16 +160,15 @@ internal static class ReflectionExtensions
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });
     }
 
-    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadatas<TDataframe, TMetadataAttribute, TMetadata>(
+    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadatas<TMetadataAttribute, TMetadata>(
         this PropertyInfo property, 
         Enum to,
-        IDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>? metadataProvider = null,
+        IDataframeMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null,
         CultureInfo? culture = null)
-        where TDataframe : class
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
-        metadataProvider ??= DefaultDataframeMetadataProvider<TDataframe, TMetadataAttribute, TMetadata>.Instance;
+        metadataProvider ??= DefaultDataframeMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
 
         var metadata = property.GetQuantityMetadata(metadataProvider, culture);
         var conversionMetadata = metadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
@@ -180,51 +178,53 @@ internal static class ReflectionExtensions
         return (metadata.Unit!, toMetadata);
     }
 
-    public static bool TryGetMappedProperty(this PropertyInfo property, Type type, [NotNullWhen(true)] out PropertyInfo? otherProperty)
+    public static bool TryGetInterfaceProperty(this PropertyInfo concreteProperty, Type interfaceType, [NotNullWhen(true)] out PropertyInfo? interfaceProperty)
     {
-        otherProperty = property;
-        if (property.DeclaringType == type)
+        interfaceProperty = concreteProperty;
+        if (concreteProperty.DeclaringType == interfaceType)
             return true;
 
-        ReadOnlyDictionary<PropertyInfo, PropertyInfo>? interfacePropertyMap;
-
-        if (!type.IsInterface && property.DeclaringType.IsInterface)
-            interfacePropertyMap = type.GetInterfacePropertyMap();
-        else if (!property.DeclaringType.IsInterface && type.IsInterface)
-            interfacePropertyMap = property.DeclaringType.GetInterfacePropertyMap();
-        else
+        if (!interfaceType.IsInterface)
             return false;
 
-        return interfacePropertyMap.TryGetValue(property, out otherProperty);
+        var interfacePropertyMap = concreteProperty.DeclaringType.GetInterfacePropertyMap();
+
+        return interfacePropertyMap.TryGetValue(concreteProperty, out interfaceProperty);
     }
 
-    private static ReadOnlyDictionary<PropertyInfo, PropertyInfo> GetInterfacePropertyMap(this Type concreteType)
+    private static IReadOnlyDictionary<PropertyInfo, PropertyInfo> GetInterfacePropertyMap(this Type concreteType)
     {
-        return EphemeralValueCache<Type, ReadOnlyDictionary<PropertyInfo, PropertyInfo>>.Instance.GetOrAdd(concreteType, t =>
+        return EphemeralValueCache<Type, IReadOnlyDictionary<PropertyInfo, PropertyInfo>>.Instance.GetOrAdd(concreteType, type =>
         {
-            return new(BuildInterfacePropertyMap(concreteType).ToDictionary(t => t.Item2, t => t.Item2));
+            return new Dictionary<PropertyInfo, PropertyInfo>(BuildInterfacePropertyMap(type));
         });
     }
 
-    private static IEnumerable<(PropertyInfo, PropertyInfo)> BuildInterfacePropertyMap(Type type)
+    private static IEnumerable<KeyValuePair<PropertyInfo, PropertyInfo>> BuildInterfacePropertyMap(Type concreteType)
     {
-        var properties = type.GetProperties((BindingFlags)(-1));
+        var concreteProperties = concreteType.GetProperties((BindingFlags)(-1));
 
-        foreach (var interfaceType in type.GetInterfaces())
+        foreach (var interfaceType in concreteType.GetInterfaces())
         {
-            var interfaceMap = type.GetInterfaceMap(interfaceType);
+            var map = concreteType.GetInterfaceMap(interfaceType);
             var interfaceProperties = interfaceType.GetProperties((BindingFlags)(-1));
 
-            for (var i = 0; i < interfaceMap.InterfaceMethods.Length; i++)
+            foreach (var interfaceProperty in interfaceProperties)
             {
-                var interfaceProperty = interfaceProperties.SingleOrDefault(p => p.GetMethod == interfaceMap.InterfaceMethods[i]);
-                var concreteProperty = properties.SingleOrDefault(p => p.GetMethod == interfaceMap.TargetMethods[i]);
+                for (var i = 0; i < map.InterfaceMethods.Length; i++)
+                {
+                    var interfaceMethod = map.InterfaceMethods[i];
+                    if (!interfaceProperty.GetAccessors().Contains(interfaceMethod))
+                        continue;
 
-                if (interfaceProperty is null || concreteProperty is null)
-                    continue;
-
-                yield return new(interfaceProperty, concreteProperty);
-                yield return new(concreteProperty, interfaceProperty);
+                    var concreteMethod = map.TargetMethods[i];
+                    var concreteProperty = concreteProperties.SingleOrDefault(p => p.GetAccessors().Contains(concreteMethod));
+                    if (concreteProperty is not null)
+                    {
+                        yield return new(concreteProperty, interfaceProperty);
+                        break;
+                    }
+                }
             }
         }
     }

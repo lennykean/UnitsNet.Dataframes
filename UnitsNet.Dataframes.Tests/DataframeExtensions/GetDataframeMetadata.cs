@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 using NUnit.Framework;
@@ -10,15 +11,17 @@ namespace UnitsNet.Dataframes.Tests.DataframeExtensions;
 [TestFixture]
 public class GetDataframeMetadata
 {
-    [TestCase(TestName = "{c} (gets metadata)")]
-    public void GetMetadataTest()
+    [TestCase(TestName = "{c} (with valid metadata)")]
+    public void WithValidMetadataTest()
     {
         var box = new Box();
 
         var metadata = box.GetDataframeMetadata();
+        var collectionMetadata = new List<Box>{ box }.GetDataframeMetadata();
 
         Assert.Multiple(() =>
         {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
             Assert.That(metadata, Has.Count.EqualTo(6));
             Assert.That(metadata, Has.ItemAt(nameof(Box.Width))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(LengthUnit.Meter));
@@ -35,8 +38,8 @@ public class GetDataframeMetadata
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
-    public void InvalidDataTypeTest()
+    [TestCase(TestName = "{c} (with invalid quantity)")]
+    public void WithInvalidQuantityTest()
     {
         var blob = new Blob
         {
@@ -46,16 +49,31 @@ public class GetDataframeMetadata
         Assert.That(() => blob.GetDataframeMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
-    public void InvalidAttributeTest()
+    [TestCase(TestName = "{c} (with invalid attribute)")]
+    public void WithInvalidAttributeTest()
     {
         var garbage = new Garbage();
 
         Assert.That(() => garbage.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
-    public void CustomUnitInvalidTest()
+    [TestCase(TestName = "{c} (with custom unit)")]
+    public void WithCustomUnitTest()
+    {
+        var employee = new Employee();
+
+        var metadata = employee.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata, Has.Count.EqualTo(1));
+            Assert.That(metadata, Has.ItemAt(nameof(employee.Coolness))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(CoolnessUnit.MegaFonzie));
+        });
+    }
+
+    [TestCase(TestName = "{c} (with invalid custom unit)")]
+    public void WithInvlidCustomUnitTest()
     {
         var rubbish = new Rubbish
         {

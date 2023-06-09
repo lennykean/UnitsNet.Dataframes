@@ -21,23 +21,23 @@ public class ConvertQuantity
             new ConvertQuantityTestData(2, 200, LengthUnit.Centimeter),
             new ConvertQuantityTestData(3, 3000, LengthUnit.Millimeter),
             new ConvertQuantityTestData(4, 4000, MassUnit.Gram),
-            new ConvertQuantityTestData(0, 6000, VolumeUnit.CubicDecimeter)).SetName("{c} (converts to same unit system)"),
+            new ConvertQuantityTestData(0, 6000, VolumeUnit.CubicDecimeter)).SetName("{c} (to same unit system)"),
         new TestCaseData(
             new ConvertQuantityTestData(1, 39.37, LengthUnit.Inch),
             new ConvertQuantityTestData(2, 6.561, LengthUnit.Foot),
             new ConvertQuantityTestData(3, 3.28, LengthUnit.Yard),
             new ConvertQuantityTestData(4, 8.818, MassUnit.Pound),
-            new ConvertQuantityTestData(0, 366143.894, VolumeUnit.CubicInch)).SetName("{c} (converts to different unit system)"),
+            new ConvertQuantityTestData(0, 366143.894, VolumeUnit.CubicInch)).SetName("{c} (to different unit system)"),
         new TestCaseData(
             new ConvertQuantityTestData(1, 1, LengthUnit.Meter),
             new ConvertQuantityTestData(2, 2, LengthUnit.Meter),
             new ConvertQuantityTestData(3, 3, LengthUnit.Meter),
             new ConvertQuantityTestData(4, 4, MassUnit.Kilogram),
-            new ConvertQuantityTestData(0, 6, VolumeUnit.CubicMeter)).SetName("{c} (does not convert quantity when \"to\" is the same unit)"),
+            new ConvertQuantityTestData(0, 6, VolumeUnit.CubicMeter)).SetName("{c} (to same unit)"),
     };
 
     [TestCaseSource(nameof(ConvertQuantityTestCases))]
-    public void ConvertQuantityTest(
+    public void ToUnitTest(
         ConvertQuantityTestData width,
         ConvertQuantityTestData height,
         ConvertQuantityTestData depth,
@@ -78,8 +78,8 @@ public class ConvertQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid unit conversion)")]
-    public void InvalidUnitConversionTest()
+    [TestCase(TestName = "{c} (to invalid unit)")]
+    public void ToInvalidUnitTest()
     {
         var box = new Box
         {
@@ -94,8 +94,8 @@ public class ConvertQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on disallowed unit conversion)")]
-    public void DisallowedUnitConversionTest()
+    [TestCase(TestName = "{c} (to disallowed unit)")]
+    public void ToDisallowedUnitTest()
     {
         var box = new Box
         {
@@ -112,8 +112,8 @@ public class ConvertQuantity
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid datatype)")]
-    public void InvalidDataTypeTest()
+    [TestCase(TestName = "{c} (with invalid quantity)")]
+    public void WithInvalidQuantityTest()
     {
         var blob = new Blob
         {
@@ -123,24 +123,24 @@ public class ConvertQuantity
         Assert.That(() => blob.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on missing property)")]
-    public void MissingPropertyTest()
+    [TestCase(TestName = "{c} (with missing property)")]
+    public void WithMissingPropertyTest()
     {
         var blob = new Blob();
 
         Assert.That(() => blob.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 
-    [TestCase(TestName = "{c} (throws exception on invalid attribute)")]
-    public void InvalidAttributeTest()
+    [TestCase(TestName = "{c} (with invalid attribute)")]
+    public void WithInvalidAttributeTest()
     {
         var garbage = new Garbage();
 
         Assert.That(() => garbage.ConvertQuantity(r => r.Odor, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
-    [TestCase(TestName = "{c} (converts custom unit quantity)")]
-    public void CustomUnitTest()
+    [TestCase(TestName = "{c} (with custom unit)")]
+    public void WithCustomUnitTest()
     {
         var employee = new Employee
         {
@@ -158,8 +158,9 @@ public class ConvertQuantity
                 .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.Fonzie));
         });
     }
-    [TestCase(TestName = "{c} (throws exception on invalid custom unit)")]
-    public void CustomUnitInvalidTest()
+
+    [TestCase(TestName = "{c} (with invalid custom unit)")]
+    public void WithInvalidCustomUnitTest()
     {
         var rubbish = new Rubbish
         {

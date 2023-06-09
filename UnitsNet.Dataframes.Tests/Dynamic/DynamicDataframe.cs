@@ -11,14 +11,20 @@ using UnitsNet.Units;
 namespace UnitsNet.Dataframes.Tests.Dynamic;
 
 [TestFixture]
-public class DynamicDataframe
+public class AsDynamicDataframes
 {
-    [TestCase(TestName = "{c} (dynamically creates metadata)")]
-    public void DynamicallyConvertUnitTest()
+    [TestCase(TestName = "{c} (with conversions)")]
+    public void DynamicallyConvertGetTest()
     {
-        var boxes = Builder<Box>.CreateListOfSize(100).Build();
+        var box = new Box
+        {
+            Width = 1,
+            Height = 2,
+            Depth = 3,
+            Weight = 4
+        };
 
-        var dynamicBoxes = boxes.AsDynamicDataframes()
+        var dynamicBoxes = new[] { box }.AsDynamicDataframes()
             .WithConversion(b => b.Width, LengthUnit.Centimeter)
             .WithConversion(b => b.Height, LengthUnit.Centimeter)
             .WithConversion(b => b.Depth, LengthUnit.Centimeter)
@@ -26,10 +32,14 @@ public class DynamicDataframe
             .WithConversion(b => b.Volume, VolumeUnit.CubicDecimeter)
             .Build();
 
-        var metadata = dynamicBoxes.GetDataframeMetadata();
+        var dynamicBox = dynamicBoxes.First();
+        var metadata = dynamicBox.GetDataframeMetadata();
+        var collectionMetadata = dynamicBoxes.GetDataframeMetadata();
 
         Assert.Multiple(() =>
         {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.Count.EqualTo(6));
             Assert.That(metadata, Has.ItemAt(nameof(Box.Width))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(LengthUnit.Centimeter));
             Assert.That(metadata, Has.ItemAt(nameof(Box.Height))
@@ -40,41 +50,17 @@ public class DynamicDataframe
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(MassUnit.Gram));
             Assert.That(metadata, Has.ItemAt(nameof(Box.Volume))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(VolumeUnit.CubicDecimeter));
-        });
-    }
 
-    [TestCase(TestName = "{c} (dynamically converts properties)")]
-    public void DynamicallyConvertPropertyTest()
-    {
-        var box = new Box
-        {
-            Width = 1,
-            Height = 2,
-            Depth = 3,
-            Weight = 4
-        };
-
-        var dynamicBox = new[] { box }.AsDynamicDataframes()
-            .WithConversion(b => b.Width, LengthUnit.Centimeter)
-            .WithConversion(b => b.Height, LengthUnit.Centimeter)
-            .WithConversion(b => b.Depth, LengthUnit.Centimeter)
-            .WithConversion(b => b.Weight, MassUnit.Gram)
-            .WithConversion(b => b.Volume, VolumeUnit.CubicDecimeter)
-            .Build()
-            .First();
-
-        Assert.Multiple(() =>
-        {
             Assert.That(dynamicBox, Has.Property(nameof(Box.Width)).EqualTo(100));
             Assert.That(dynamicBox, Has.Property(nameof(Box.Height)).EqualTo(200));
             Assert.That(dynamicBox, Has.Property(nameof(Box.Depth)).EqualTo(300));
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Weight)).EqualTo(4000)); ;
+            Assert.That(dynamicBox, Has.Property(nameof(Box.Weight)).EqualTo(4000));
             Assert.That(dynamicBox, Has.Property(nameof(Box.Volume)).EqualTo(6000));
         });
     }
 
-    [TestCase(TestName = "{c} (dynamically converts property setters)")]
-    public void DynamicallyConvertSetterTest()
+    [TestCase(TestName = "{c} (with setters)")]
+    public void WithSettersTest()
     {
         var box = new Box
         {
@@ -113,8 +99,8 @@ public class DynamicDataframe
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on non-virtual property)")]
-    public void NonVirtualPropertyTest()
+    [TestCase(TestName = "{c} (with non-virtual conversions)")]
+    public void WithNonVirtualPropertyTest()
     {
         Assert.Multiple(() =>
         {
@@ -137,13 +123,38 @@ public class DynamicDataframe
         });
     }
 
-    [TestCase(TestName = "{c} (throws exception on missing metadata)")]
-    public void MissingMetadataTest()
+    [TestCase(TestName = "{c} (with missing metadata)")]
+    public void WithMissingMetadataTest()
     {
         Assert.That(() =>
             Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
                 .WithConversion(s => s.Number, ScalarUnit.Amount)
                 .Build(),
             Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
+    }
+
+    [TestCase(TestName = "{c} (with hoisted metadata)")]
+    public void WithHoistedMetadataTest()
+    {
+        var sensorFrames = Builder<SensorData>.CreateListOfSize(100).Build();
+
+        var dynamicSensorFrames = sensorFrames.AsDynamicDataframes()
+            .WithConversion(b => b.Power, PowerUnit.Milliwatt)
+            .WithConversion(b => b.Frequency, FrequencyUnit.Megahertz)
+            .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
+            .As<ISensorData>()
+            .Build();
+
+        var metadata = dynamicSensorFrames.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Power))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.Milliwatt));
+            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Frequency))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(FrequencyUnit.Megahertz));
+            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Temperature))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TemperatureUnit.DegreeCelsius));
+        });
     }
 }
