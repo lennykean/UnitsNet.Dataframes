@@ -82,4 +82,49 @@ public class GetDataframeMetadata
 
         Assert.That(() => rubbish.GetDataframeMetadata(), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
     }
+
+    [TestCase(TestName = "{c} (with custom attribute)")]
+    public void WithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe();
+
+        var metadata = dynoDataframe.GetDataframeMetadata();
+        var collectionMetadata = new[] { dynoDataframe }.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.Count.EqualTo(3));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
+        });
+    }
+
+    [TestCase(TestName = "{c} (typed with custom attribute)")]
+    public void TypedWithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe();
+
+        var metadata = dynoDataframe.GetDataframeMetadata<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>();
+        var collectionMetadata = new List<DynoDataframe> { dynoDataframe }.GetDataframeMetadata<IEnumerable<DynoDataframe>, DynoMeasurementAttribute, DynoMetadata>();
+
+        Assert.Multiple(() =>
+        {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.Count.EqualTo(3));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower).And
+                .ItemAt(nameof(DynoDataframe.Horsepower)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Horsepower"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot).And
+                .ItemAt(nameof(DynoDataframe.Torque)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Torque"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute).And
+                .ItemAt(nameof(DynoDataframe.Rpm)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Speed"));
+        });
+    }
 }

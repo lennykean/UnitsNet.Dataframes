@@ -41,7 +41,7 @@ public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMet
     public UnitMetadata? Unit { get; }
     public ReadOnlyCollection<UnitMetadataBasic> Conversions { get; }
 
-    internal protected virtual void Validate()
+    public virtual void Validate()
     {
         if (!NumericTypes.Contains(Property.PropertyType))
             throw new InvalidOperationException($"Type of {Property.DeclaringType.Name}.{Property.Name} ({Property.PropertyType}) is not a valid quantity type");
@@ -54,10 +54,5 @@ public class QuantityMetadata : DataframeMetadata<QuantityAttribute, QuantityMet
         CultureInfo? overrideCulture)
     {
         return new QuantityMetadata(overrideProperty ?? Property, overrideUnit ?? Unit, (overrideConversions ?? Conversions).ToList());
-    }
-
-    void DataframeMetadata<QuantityAttribute, QuantityMetadata>.IDataframeMetadata.Validate()
-    {
-        Validate();
     }
 }

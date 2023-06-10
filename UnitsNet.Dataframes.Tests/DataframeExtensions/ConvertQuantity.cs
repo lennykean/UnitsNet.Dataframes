@@ -173,4 +173,46 @@ public class ConvertQuantity
             Assert.That(() => rubbish.ConvertQuantity("Coolness", to: CoolnessUnit.Fonzie), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
         });
     }
+
+    [TestCase(TestName = "{c} (with custom attribute)")]
+    public void WithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dynoDataframe.ConvertQuantity(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
+            Assert.That(dynoDataframe.ConvertQuantity("Torque", to: TorqueUnit.NewtonMeter), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
+        });
+    }
+
+    [TestCase(TestName = "{c} (typed with custom attribute)")]
+    public void TypedWithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dynoDataframe.ConvertQuantity<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
+            Assert.That(dynoDataframe.ConvertQuantity<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>("Torque", to: TorqueUnit.NewtonMeter), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
+        });
+    }
 }

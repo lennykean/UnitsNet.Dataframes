@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 using FizzWare.NBuilder;
 
@@ -230,6 +231,85 @@ public class AsDynamicDataframes
 
             Assert.That(dynamicTelemetryDataFrame, Has.Property(nameof(MotorVehicleTelemetry.Efficency)).EqualTo(4.7).Within(0.01));
             Assert.That(dynamicTelemetryDataFrame, Has.Property(nameof(MotorVehicleTelemetry.Speed)).EqualTo(6.21).Within(0.01));
+        });
+    }
+
+    [TestCase(TestName = "{c} (with custom attribute)")]
+    public void WithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        var dynamicDynoData = new[] { dynoDataframe }.AsDynamicDataframes()
+            .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
+            .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
+            .Build();
+
+        var dynamicTelemetryDataFrame = dynamicDynoData.First();
+        var metadata = dynamicTelemetryDataFrame.GetDataframeMetadata();
+        var collectionMetadata = dynamicTelemetryDataFrame.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.Kilowatt));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.NewtonMeter));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
+
+            Assert.That(dynoDataframe.ConvertQuantity(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
+            Assert.That(dynoDataframe.ConvertQuantity("Torque", to: TorqueUnit.NewtonMeter), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
+        });
+    }
+
+    [TestCase(TestName = "{c} (typed with custom attribute)")]
+    public void TypedWithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        var dynamicDynoDataframes = new[] { dynoDataframe }.AsDynamicDataframes<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>()
+            .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
+            .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
+            .Build();
+
+        var dynamicDynoDataframe = dynamicDynoDataframes.First();
+        var metadata = dynamicDynoDataframe.GetDataframeMetadata<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>();
+        var collectionMetadata = dynamicDynoDataframes.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.Kilowatt).And
+                .ItemAt(nameof(DynoDataframe.Horsepower)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Horsepower"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.NewtonMeter).And
+                .ItemAt(nameof(DynoDataframe.Torque)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Torque"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute).And
+                .ItemAt(nameof(DynoDataframe.Rpm)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Speed"));
+
+            Assert.That(dynoDataframe.ConvertQuantity(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
+            Assert.That(dynoDataframe.ConvertQuantity("Torque", to: TorqueUnit.NewtonMeter), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
         });
     }
 }

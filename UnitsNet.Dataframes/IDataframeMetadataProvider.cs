@@ -33,17 +33,26 @@ public interface IDataframeMetadataProvider<TMetadataAttribue, TMetadata>
 
             if (!metadata.Any())
             {
-                var collectionType = (
-                    from interfaceType in type.GetInterfaces()
-                    where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                    let interfaceMap = type.GetInterfaceMap(interfaceType)
-                    from interfaceMethod in interfaceMap.InterfaceMethods.Select((method, index) => (method, index))
-                    where interfaceMethod.method.Name == "GetEnumerator" && !interfaceMethod.method.GetParameters().Any()
-                    select interfaceMap.TargetMethods[interfaceMethod.index].DeclaringType.GenericTypeArguments[0])
-                    .SingleOrDefault();
-
-                if (collectionType != null)
-                    metadata = get(collectionType);
+                var elementType = type switch
+                {
+                    { IsArray: true } => type.GetElementType(),
+                    { IsInterface: true } when type.GetGenericTypeDefinition() == typeof(IEnumerable<>) => type.GenericTypeArguments[0],
+                    { IsInterface: true } => (
+                        from interfaceType in type.GetInterfaces()
+                        where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                        select interfaceType.GenericTypeArguments[0])
+                        .SingleOrDefault(),
+                    _ => (
+                        from interfaceType in type.GetInterfaces()
+                        where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                        let interfaceMap = type.GetInterfaceMap(interfaceType)
+                        from interfaceMethod in interfaceMap.InterfaceMethods.Select((method, index) => (method, index))
+                        where interfaceMethod.method.Name == "GetEnumerator" && !interfaceMethod.method.GetParameters().Any()
+                        select interfaceMap.TargetMethods[interfaceMethod.index].DeclaringType.GenericTypeArguments[0])
+                        .SingleOrDefault()
+                };
+                if (elementType != null)
+                    metadata = get(elementType);
             }
             return metadata;
         });

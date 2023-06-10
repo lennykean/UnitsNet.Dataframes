@@ -126,4 +126,52 @@ public class GetQuantity
             Assert.That(() => rubbish.GetQuantity("Coolness"), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
         });
     }
+
+    [TestCase(TestName = "{c} (with custom attribute)")]
+    public void WithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dynoDataframe.GetQuantity(d => d.Horsepower), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(300).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.MechanicalHorsepower));
+            Assert.That(dynoDataframe.GetQuantity("Torque"), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(200).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.PoundForceFoot));
+            Assert.That(dynoDataframe.GetQuantity(d => d.Rpm), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(6000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
+        });
+    }
+
+    [TestCase(TestName = "{c} (typed with custom attribute)")]
+    public void TypedWithCustomAttributeTest()
+    {
+        var dynoDataframe = new DynoDataframe
+        {
+            Horsepower = 300,
+            Torque = 200,
+            Rpm = 6000
+        };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dynoDataframe.GetQuantity<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>(d => d.Horsepower), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(300).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.MechanicalHorsepower));
+            Assert.That(dynoDataframe.GetQuantity<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>("Torque"), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(200).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.PoundForceFoot));
+            Assert.That(dynoDataframe.GetQuantity<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>(d => d.Rpm), Has
+                .Property(nameof(IQuantity.Value)).EqualTo(6000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
+        });
+    }
 }

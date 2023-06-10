@@ -94,7 +94,7 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
         }
     }
 
-    protected virtual void Validate()
+    public virtual void Validate()
     {
         if (Unit is null)
             throw new ArgumentException($"{nameof(Unit)} must be an enum value");
@@ -111,11 +111,6 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
             unit = UnitMetadata.FromUnitInfo(UnitInfo, QuantityInfo, culture);
 
         return new(property, unit, conversions.ToList());
-    }
-
-    void DataframeMetadata<QuantityAttribute, QuantityMetadata>.IDataframeMetadataAttribute.Validate()
-    {
-        Validate();
     }
 
     private (UnitInfo unitInfo, QuantityInfo quantityInfo) GetConversionInfo(AllowUnitConversionAttribute allowedConversion)
