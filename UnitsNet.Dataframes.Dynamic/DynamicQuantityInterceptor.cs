@@ -25,27 +25,28 @@ internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetad
         if (typeof(IDataframeMetadataProvider<TMetadataAttribute, TMetadata>).IsAssignableFrom(invocation.TargetType))
             return;
 
-        var concreteMethod = invocation.GetConcreteMethodInvocationTarget();
-        var concreteProperty = concreteMethod.DeclaringType!.GetProperties().SingleOrDefault(p => p.GetMethod == concreteMethod || p.SetMethod == concreteMethod);
-        if (concreteProperty is null || !MetadataProvider.TryGetBaseMetadata(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
+        var targetMethod = invocation.GetConcreteMethodInvocationTarget();
+        var targetProperty = targetMethod.ReflectedType.GetProperties().SingleOrDefault(p => p.GetMethod == targetMethod || p.SetMethod == targetMethod);
+        if (targetProperty is null || !MetadataProvider.TryGetBaseMetadata(targetProperty, out var targetMetadata) || targetMetadata.Unit is null)
             return;
 
-        var property = invocation.Method.DeclaringType?.GetProperties().SingleOrDefault(p => p.GetMethod == invocation.Method || p.SetMethod == invocation.Method);
+        var method = invocation.Method;
+        var property = method.ReflectedType.GetProperties().SingleOrDefault(p => p.GetMethod == method || p.SetMethod == method);
         if (property is null || !MetadataProvider.TryGetMetadata(property, out var metadata) || metadata.Unit is null)
             return;
 
-        if (concreteMetadata.Unit.UnitInfo.Value == metadata.Unit.UnitInfo.Value)
+        if (targetMetadata.Unit.UnitInfo.Value == metadata.Unit.UnitInfo.Value)
             return;
 
-        if (concreteProperty.GetMethod == concreteMethod)
+        if (targetProperty.GetMethod == targetMethod)
         {
-            var quantity = ConvertQuantity(from: concreteMetadata.Unit, to: metadata.Unit, value: invocation.ReturnValue);
+            var quantity = ConvertQuantity(from: targetMetadata.Unit, to: metadata.Unit, value: invocation.ReturnValue);
             invocation.ReturnValue = Convert.ChangeType(quantity.Value, property.PropertyType);
         }
         else
         {
-            var quantity = ConvertQuantity(from: metadata.Unit, to: concreteMetadata.Unit, value: invocation.Arguments[0]);
-            concreteProperty.SetValue(invocation.InvocationTarget, Convert.ChangeType(quantity.Value, property.PropertyType));
+            var quantity = ConvertQuantity(from: metadata.Unit, to: targetMetadata.Unit, value: invocation.Arguments[0]);
+            targetProperty.SetValue(invocation.InvocationTarget, Convert.ChangeType(quantity.Value, property.PropertyType));
         }
     }
 

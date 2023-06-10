@@ -22,9 +22,9 @@ public sealed class DefaultDataframeMetadataProvider<TMetadataAttribute, TMetada
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
     {
-        var cache = EphemeralValueCache<PropertyInfo, TMetadata>.Instance;
+        var cache = EphemeralValueCache<(Type, Type, string), TMetadata>.Instance;
 
-        if (cache.TryGet(property, out metadata))
+        if (cache.TryGet((property.DeclaringType, property.PropertyType, property.Name), out metadata))
             return true;
 
         var metadataAttribute = property.GetCustomAttribute<TMetadataAttribute>(inherit: true);
@@ -33,9 +33,9 @@ public sealed class DefaultDataframeMetadataProvider<TMetadataAttribute, TMetada
 
         metadataAttribute.Validate();
 
-        metadata = cache.GetOrAdd(property, p =>
+        metadata = cache.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
         {
-            var allowedConversionAttributes = p.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
+            var allowedConversionAttributes = property.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
             return metadataAttribute.ToMetadata(property, metadataAttribute.BuildAllowedConversionsMetadata(allowedConversionAttributes, culture));
         });
         return true;

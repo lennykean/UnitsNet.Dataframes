@@ -96,11 +96,11 @@ internal static class ReflectionExtensions
     public static double GetQuantityValueFromProperty<TDataframe>(this TDataframe dataframe, PropertyInfo property)
     {
         // Get property getter from cache, or get and add to cache
-        var getter = EphemeralValueCache<PropertyInfo, MethodInfo>.Instance.GetOrAdd(property, p =>
+        var getter = EphemeralValueCache<(Type, Type, string), MethodInfo>.Instance.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
         {
-            var getter = p.GetGetMethod() ?? throw new InvalidOperationException($"{p.DeclaringType}.{p.Name} does not have a public getter.");
+            var getter = property.GetGetMethod() ?? throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} does not have a public getter.");
             if (!LazyQuantityValueCompatibleTypes.Value.Contains(getter.ReturnType))
-                throw new InvalidOperationException($"{p.DeclaringType}.{p.Name} type of {getter.ReturnType} is not compatible with {typeof(QuantityValue)}.");
+                throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} type of {getter.ReturnType} is not compatible with {typeof(QuantityValue)}.");
 
             return getter;
         });

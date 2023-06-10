@@ -20,7 +20,8 @@ internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> :
         IEnumerable<TMetadata>? dynamicMetadata = null)
     {
         _baseMetadataProvider = baseMetadataProvider;
-        _dynamicMetadata = new(dynamicMetadata?.ToDictionary(k => k.Property, v => v) ?? new());
+        _dynamicMetadata = new(
+            dynamicMetadata?.ToDictionary(k => k.Property, v => v) ?? new(), new DeclaringTypePropertyComparer());
     }
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)

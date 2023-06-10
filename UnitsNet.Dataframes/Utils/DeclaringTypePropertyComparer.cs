@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+namespace UnitsNet.Dataframes.Utils;
+
+internal class DeclaringTypePropertyComparer : IEqualityComparer<PropertyInfo>
+{
+    public bool Equals(PropertyInfo x, PropertyInfo y)
+    {
+        return x.Name == y.Name && x.PropertyType == y.PropertyType && x.DeclaringType == y.DeclaringType;
+    }
+
+    public int GetHashCode(PropertyInfo obj)
+    {
+        return HashCode.Combine(obj.Name, obj.PropertyType, obj.DeclaringType);
+    }
+}

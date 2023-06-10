@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-using UnitsNet.Dataframes.Utils;
-
 namespace UnitsNet.Dataframes.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
@@ -61,7 +59,7 @@ public class QuantityAttribute : Attribute, DataframeMetadata<QuantityAttribute,
 
         var selfConversion = UnitMetadataBasic.FromUnitInfo(UnitInfo, QuantityInfo, culture)!;
 
-        var distinctConversions = new HashSet<UnitMetadataBasic>(new DelegateEqualityComparer<UnitMetadataBasic>((a, b) => a.UnitInfo.Value.Equals(b.UnitInfo.Value)))
+        var distinctConversions = new HashSet<UnitMetadataBasic>()
         {
             selfConversion
         };
