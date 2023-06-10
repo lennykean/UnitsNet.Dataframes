@@ -99,6 +99,16 @@ public class AsDynamicDataframes
         });
     }
 
+    [TestCase(TestName = "{c} (with missing metadata)")]
+    public void WithMissingMetadataTest()
+    {
+        Assert.That(() =>
+            Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                .WithConversion(s => s.Number, ScalarUnit.Amount)
+                .Build(),
+            Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
+    }
+
     [TestCase(TestName = "{c} (with non-virtual conversions)")]
     public void WithNonVirtualPropertyTest()
     {
@@ -114,7 +124,7 @@ public class AsDynamicDataframes
                 Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
 
             Assert.That(() =>
-                Builder<SensorData>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                Builder<TransmitterDataFrame>.CreateListOfSize(100).Build().AsDynamicDataframes()
                     .WithConversion(b => b.Power, PowerUnit.Milliwatt)
                     .WithConversion(b => b.Frequency, FrequencyUnit.Kilohertz)
                     .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
@@ -123,38 +133,71 @@ public class AsDynamicDataframes
         });
     }
 
-    [TestCase(TestName = "{c} (with missing metadata)")]
-    public void WithMissingMetadataTest()
+    [TestCase(TestName = "{c} (with interface hoisted metadata)")]
+    public void WithInterfaceHoistedMetadataTest()
     {
-        Assert.That(() =>
-            Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
-                .WithConversion(s => s.Number, ScalarUnit.Amount)
-                .Build(),
-            Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
-    }
+        var transmitterData = Builder<TransmitterDataFrame>.CreateListOfSize(100).Build();
 
-    [TestCase(TestName = "{c} (with hoisted metadata)")]
-    public void WithHoistedMetadataTest()
-    {
-        var sensorFrames = Builder<SensorData>.CreateListOfSize(100).Build();
-
-        var dynamicSensorFrames = sensorFrames.AsDynamicDataframes()
+        var dynamicSensorFrames = transmitterData.AsDynamicDataframes()
             .WithConversion(b => b.Power, PowerUnit.Milliwatt)
             .WithConversion(b => b.Frequency, FrequencyUnit.Megahertz)
             .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
-            .As<ISensorData>()
+            .As<ITransmitterData>()
             .Build();
 
         var metadata = dynamicSensorFrames.GetDataframeMetadata();
 
         Assert.Multiple(() =>
         {
-            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Power))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Power))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.Milliwatt));
-            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Frequency))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Frequency))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(FrequencyUnit.Megahertz));
-            Assert.That(metadata, Has.ItemAt(nameof(ISensorData.Temperature))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Temperature))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TemperatureUnit.DegreeCelsius));
+        });
+    }
+
+    [TestCase(TestName = "{c} (with virtual hoisted metadata)")]
+    public void WithVirtualHoistedMetadataTest()
+    {
+        var telemetry = Builder<AerospaceVehicleTelemetry>.CreateListOfSize(100).Build();
+
+        var dynamicSensorFrames = telemetry.AsDynamicDataframes()
+            .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
+            .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
+             .As<VehicleTelemetry>()
+            .Build();
+
+        var metadata = dynamicSensorFrames.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Efficency))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(FuelEfficiencyUnit.MilePerUsGallon));
+            Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Speed))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(SpeedUnit.MilePerHour));
+        });
+    }
+
+    [TestCase(TestName = "{c} (with virtual metadata)")]
+    public void WithVirtualMetadataTest()
+    {
+        var telemetry = Builder<MotorVehicleTelemetry>.CreateListOfSize(100).Build();
+
+        var dynamicSensorFrames = telemetry.AsDynamicDataframes()
+            .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
+            .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
+            .Build();
+
+        var metadata = dynamicSensorFrames.GetDataframeMetadata();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Efficency))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(FuelEfficiencyUnit.MilePerUsGallon));
+            Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Speed))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(SpeedUnit.MilePerHour));
         });
     }
 }

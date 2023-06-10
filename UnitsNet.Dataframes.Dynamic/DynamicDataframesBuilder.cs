@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 
 using UnitsNet.Dataframes.Attributes;
 using UnitsNet.Dataframes.Reflection;
@@ -36,7 +37,7 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
     public DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata> WithConversion(string propertyName, Enum to)
     {
-        var property = typeof(TDataframe).GetProperties(inherit: typeof(TDataframe).IsInterface).Single(p => p.Name == propertyName);
+        var property = typeof(TDataframe).GetProperty(propertyName);
         _dynamicMetadataProvider.AddConversion(property, to, _culture);
 
         return this;
@@ -44,7 +45,9 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
     public DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata> WithConversion(Expression<Func<TDataframe, QuantityValue>> propertySelectorExpression, Enum to)
     {
-        var property = propertySelectorExpression.ExtractProperty();
+        var propertyName = propertySelectorExpression.ExtractPropertyName();
+        var property = typeof(TDataframe).GetProperty(propertyName);
+
         _dynamicMetadataProvider.AddConversion(property, to, _culture);
 
         return this;
@@ -52,6 +55,9 @@ public class DynamicDataframesBuilder<TDataframe, TMetadataAttribute, TMetadata>
 
     public DynamicDataframesBuilder<TSuperDataframe, TMetadataAttribute, TMetadata> As<TSuperDataframe>() where TSuperDataframe : class
     {
+        if (!typeof(TSuperDataframe).IsAssignableFrom(typeof(TDataframe)))
+            throw new InvalidOperationException($"{nameof(TDataframe)} ({typeof(TDataframe).Name}) is not derived from {typeof(TSuperDataframe).Name}");
+
         _dynamicMetadataProvider.HoistMetadata<TSuperDataframe, TDataframe>(_culture);
         return new(_dataframes, _dynamicMetadataProvider);
     }

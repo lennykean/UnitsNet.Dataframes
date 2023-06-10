@@ -23,7 +23,7 @@ public interface IDataframeMetadataProvider<TMetadataAttribue, TMetadata>
         return EphemeralValueCache<Type, IEnumerable<TMetadata>>.Instance.GetOrAdd(dataframeType, type =>
         {
             IEnumerable<TMetadata> get(Type t) => (
-                from property in t.GetProperties((BindingFlags)(-1))
+                from property in t.GetProperties()
                 let m = (hasMetadata: TryGetMetadata(property, out var metadata, culture), metadata)
                 where m.hasMetadata
                 select m.metadata)

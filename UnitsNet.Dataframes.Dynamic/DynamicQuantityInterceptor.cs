@@ -26,11 +26,11 @@ internal class DynamicQuantityInterceptor<TDataframe, TMetadataAttribute, TMetad
             return;
 
         var concreteMethod = invocation.GetConcreteMethodInvocationTarget();
-        var concreteProperty = concreteMethod.DeclaringType!.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == concreteMethod || p.SetMethod == concreteMethod);
+        var concreteProperty = concreteMethod.DeclaringType!.GetProperties().SingleOrDefault(p => p.GetMethod == concreteMethod || p.SetMethod == concreteMethod);
         if (concreteProperty is null || !MetadataProvider.TryGetBaseMetadata(concreteProperty, out var concreteMetadata) || concreteMetadata.Unit is null)
             return;
 
-        var property = invocation.Method.DeclaringType?.GetProperties((BindingFlags)(-1)).SingleOrDefault(p => p.GetMethod == invocation.Method || p.SetMethod == invocation.Method);
+        var property = invocation.Method.DeclaringType?.GetProperties().SingleOrDefault(p => p.GetMethod == invocation.Method || p.SetMethod == invocation.Method);
         if (property is null || !MetadataProvider.TryGetMetadata(property, out var metadata) || metadata.Unit is null)
             return;
 

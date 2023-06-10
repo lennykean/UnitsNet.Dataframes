@@ -75,7 +75,8 @@ internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> :
     {
         foreach (var metadata in ((IDataframeMetadataProvider<TMetadataAttribute, TMetadata>)this).GetAllMetadata(typeof(TDerivedDataframe), culture))
         {
-            if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperDataframe), out var mappedProperty))
+            if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperDataframe), out var mappedProperty) ||
+                metadata.Property.TryGetVirtualProperty(typeof(TSuperDataframe), out mappedProperty))
             {
                 var hoistedMetadata = metadata.Clone(overrideProperty: mappedProperty, overrideCulture: culture);
                 _dynamicMetadata.AddOrUpdate(mappedProperty, _ => hoistedMetadata, (_, _) => hoistedMetadata);

@@ -22,26 +22,7 @@ internal static class ReflectionExtensions
 
     private static readonly Lazy<ConcurrentDictionary<Type, ConstructorInfo>> LazyQuantityConstructorTable = new(() => new());
 
-    public static IEnumerable<PropertyInfo> GetProperties(this Type type, bool inherit = true)
-    {
-        foreach (var property in type.GetProperties())
-        {
-            yield return property;
-        }
-
-        if (!inherit)
-            yield break;
-
-        foreach (var super in type.GetInterfaces())
-        {
-            foreach (var property in super.GetProperties())
-            {
-                yield return property;
-            }
-        }
-    }
-
-    public static PropertyInfo ExtractProperty<TDataframe, TPropertyValue>(this Expression<Func<TDataframe, TPropertyValue>> propertySelectorExpression)
+    public static string ExtractPropertyName<TDataframe, TPropertyValue>(this Expression<Func<TDataframe, TPropertyValue>> propertySelectorExpression)
     {
         var expression = propertySelectorExpression.Body;
 
@@ -53,7 +34,7 @@ internal static class ReflectionExtensions
         if (expression is not MemberExpression memberExpression || memberExpression.Member is not PropertyInfo property || property.GetGetMethod()?.IsPublic != true)
             throw new InvalidOperationException($"{{{propertySelectorExpression}}} is not a valid property accessor.");
 
-        return property;
+        return property.Name;
     }
 
     public static bool TryCreateQuantityInstance(this Type type, [NotNullWhen(true)] out IQuantity? instance)
@@ -161,7 +142,7 @@ internal static class ReflectionExtensions
     }
 
     public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadatas<TMetadataAttribute, TMetadata>(
-        this PropertyInfo property, 
+        this PropertyInfo property,
         Enum to,
         IDataframeMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null,
         CultureInfo? culture = null)
@@ -180,16 +161,25 @@ internal static class ReflectionExtensions
 
     public static bool TryGetInterfaceProperty(this PropertyInfo concreteProperty, Type interfaceType, [NotNullWhen(true)] out PropertyInfo? interfaceProperty)
     {
-        interfaceProperty = concreteProperty;
-        if (concreteProperty.DeclaringType == interfaceType)
-            return true;
-
+        interfaceProperty = default;
         if (!interfaceType.IsInterface)
             return false;
 
         var interfacePropertyMap = concreteProperty.DeclaringType.GetInterfacePropertyMap();
 
         return interfacePropertyMap.TryGetValue(concreteProperty, out interfaceProperty);
+    }
+
+    public static bool TryGetVirtualProperty(this PropertyInfo concreteProperty, Type superType, [NotNullWhen(true)] out PropertyInfo? virtualProperty)
+    {
+        var superTypeProperties = superType.GetProperties();
+        var virtualProperties = superTypeProperties.Where(p => (p.GetAccessors().All(p => p.IsVirtual) || p.GetAccessors().All(p => p.IsAbstract)) && !p.GetAccessors().Any(p => p.IsFinal));
+
+        virtualProperty = virtualProperties.FirstOrDefault(p => p.Name == concreteProperty.Name);
+        if (virtualProperty is null)
+            return false;
+
+        return true;
     }
 
     private static IReadOnlyDictionary<PropertyInfo, PropertyInfo> GetInterfacePropertyMap(this Type concreteType)
@@ -202,12 +192,12 @@ internal static class ReflectionExtensions
 
     private static IEnumerable<KeyValuePair<PropertyInfo, PropertyInfo>> BuildInterfacePropertyMap(Type concreteType)
     {
-        var concreteProperties = concreteType.GetProperties((BindingFlags)(-1));
+        var concreteProperties = concreteType.GetProperties();
 
         foreach (var interfaceType in concreteType.GetInterfaces())
         {
             var map = concreteType.GetInterfaceMap(interfaceType);
-            var interfaceProperties = interfaceType.GetProperties((BindingFlags)(-1));
+            var interfaceProperties = interfaceType.GetProperties();
 
             foreach (var interfaceProperty in interfaceProperties)
             {

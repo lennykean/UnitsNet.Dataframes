@@ -37,7 +37,8 @@ public static class DataframeExtensions
         if (dataframe is null)
             throw new ArgumentNullException(nameof(dataframe));
 
-        var property = propertySelectorExpression.ExtractProperty();
+        var propertyName = propertySelectorExpression.ExtractPropertyName();
+        var property = typeof(TDataframe).GetProperty(propertyName);
 
         return dataframe.GetQuantityFromProperty<TDataframe, TMetadataAttribute, TMetadata>(property, culture);
     }
@@ -105,7 +106,8 @@ public static class DataframeExtensions
         where TMetadataAttribute : QuantityAttribute, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadataAttribute
         where TMetadata : QuantityMetadata, DataframeMetadata<TMetadataAttribute, TMetadata>.IDataframeMetadata
     {
-        var property = propertySelectorExpression.ExtractProperty();
+        var propertyName = propertySelectorExpression.ExtractPropertyName();
+        var property = typeof(TDataframe).GetProperty(propertyName);
 
         return dataframe.ConvertQuantity<TDataframe, TMetadataAttribute, TMetadata>(property, to);
     }
