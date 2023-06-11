@@ -7,6 +7,7 @@ using UnitsNet.Metadata.Annotations;
 using UnitsNet.Metadata.Reflection;
 
 namespace UnitsNet.Metadata;
+
 public static class ObjectExtensions
 {
     public static IMetadataDictionary<TMetadata> GetDataframeMetadata<TObject, TMetadataAttribute, TMetadata>(this TObject obj, CultureInfo? culture = null)
@@ -61,7 +62,6 @@ public static class ObjectExtensions
     {
         return obj.GetQuantity<TObject, QuantityAttribute, QuantityMetadata>(propertySelectorExpression);
     }
-
 
     public static IQuantity GetQuantity<TObject>(this TObject obj, string propertyName)
         where TObject : class

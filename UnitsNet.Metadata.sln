@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.DynamicDa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.Tests", "UnitsNet.Metadata.Tests\UnitsNet.Metadata.Tests.csproj", "{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitsNet.Metadata.Annotations", "UnitsNet.Metadata.Annotations\UnitsNet.Metadata.Annotations.csproj", "{3CC79C32-7C40-4FB4-B951-D63F92EE40C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitsNet.Metadata.Fluent", "UnitsNet.Metadata.Fluent\UnitsNet.Metadata.Fluent.csproj", "{F2390507-A9B8-4C05-A91D-CED969FEF052}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,10 +36,10 @@ Global
 		{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CC79C32-7C40-4FB4-B951-D63F92EE40C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CC79C32-7C40-4FB4-B951-D63F92EE40C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CC79C32-7C40-4FB4-B951-D63F92EE40C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CC79C32-7C40-4FB4-B951-D63F92EE40C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2390507-A9B8-4C05-A91D-CED969FEF052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2390507-A9B8-4C05-A91D-CED969FEF052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2390507-A9B8-4C05-A91D-CED969FEF052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2390507-A9B8-4C05-A91D-CED969FEF052}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
