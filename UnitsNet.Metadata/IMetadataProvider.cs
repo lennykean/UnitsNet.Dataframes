@@ -67,7 +67,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
             ValidateMetadata(metadata.Property);
     }
 
-    public IMetadataDictionary<TMetadata> GetObjectMetadata<TObject>(TObject obj, CultureInfo? culture = null)
+    public IReadOnlyDictionary<string, TMetadata> GetObjectMetadata<TObject>(TObject obj, CultureInfo? culture = null)
         where TObject : class
     {
         ValidateAllMetadata(typeof(TObject));

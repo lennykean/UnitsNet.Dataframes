@@ -2,19 +2,19 @@
 
 using UnitsNet.Metadata.Annotations;
 
-namespace UnitsNet.Metadata.DynamicDataframes;
+namespace UnitsNet.Metadata.DynamicProxy;
 
 internal class DynamicQuantityInterceptor<TObject, TMetadataAttribute, TMetadata> : IInterceptor
     where TObject : class
     where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
     where TMetadata : QuantityMetadata, IMetadata<TMetadata>
 {
-    public DynamicQuantityInterceptor(DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
+    public DynamicQuantityInterceptor(DynamicProxyMetadataProvider<TMetadataAttribute, TMetadata> metadataProvider)
     {
         MetadataProvider = metadataProvider;
     }
 
-    public DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> MetadataProvider { get; }
+    public DynamicProxyMetadataProvider<TMetadataAttribute, TMetadata> MetadataProvider { get; }
 
     public void Intercept(IInvocation invocation)
     {

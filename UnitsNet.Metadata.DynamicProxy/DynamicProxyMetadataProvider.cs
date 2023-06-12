@@ -5,17 +5,18 @@ using System.Reflection;
 
 using UnitsNet.Metadata.Annotations;
 using UnitsNet.Metadata.Reflection;
+using UnitsNet.Metadata.Utils;
 
-namespace UnitsNet.Metadata.DynamicDataframes;
+namespace UnitsNet.Metadata.DynamicProxy;
 
-internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> : IMetadataProvider<TMetadataAttribute, TMetadata>
+internal class DynamicProxyMetadataProvider<TMetadataAttribute, TMetadata> : IMetadataProvider<TMetadataAttribute, TMetadata>
     where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
     where TMetadata : QuantityMetadata, IMetadata<TMetadata>
 {
     private readonly IMetadataProvider<TMetadataAttribute, TMetadata> _baseMetadataProvider;
     private readonly ConcurrentDictionary<PropertyInfo, TMetadata> _dynamicMetadata;
 
-    public DynamicDataframeMetadataProvider(
+    public DynamicProxyMetadataProvider(
         IMetadataProvider<TMetadataAttribute, TMetadata> baseMetadataProvider,
         IEnumerable<TMetadata>? dynamicMetadata = null)
     {
@@ -72,12 +73,12 @@ internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> :
             throw new InvalidOperationException($"{metadata.Property.DeclaringType.Name}.{metadata.Property.Name} is non-virtual and cannot be converted to {metadata.Unit.Name}");
     }
 
-    public void HoistMetadata<TSuperDataframe, TDerivedDataframe>(CultureInfo? culture = null)
+    public void HoistMetadata<TSuperObject, TDerivedObject>(CultureInfo? culture = null)
     {
-        foreach (var metadata in ((IMetadataProvider<TMetadataAttribute, TMetadata>)this).GetMetadata(typeof(TDerivedDataframe), culture))
+        foreach (var metadata in ((IMetadataProvider<TMetadataAttribute, TMetadata>)this).GetMetadata(typeof(TDerivedObject), culture))
         {
-            if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperDataframe), out var mappedProperty) ||
-                metadata.Property.TryGetVirtualProperty(typeof(TSuperDataframe), out mappedProperty))
+            if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperObject), out var mappedProperty) ||
+                metadata.Property.TryGetVirtualProperty(typeof(TSuperObject), out mappedProperty))
             {
                 var hoistedMetadata = metadata.Clone(overrideProperty: mappedProperty, overrideCulture: culture);
                 _dynamicMetadata.AddOrUpdate(mappedProperty, _ => hoistedMetadata, (_, _) => hoistedMetadata);

@@ -10,7 +10,7 @@
   
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>$(MSBuildProjectName).DynamicDataframes</_Parameter1>
+      <_Parameter1>$(MSBuildProjectName).DynamicProxy</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>$(MSBuildProjectName).Fluent</_Parameter1>

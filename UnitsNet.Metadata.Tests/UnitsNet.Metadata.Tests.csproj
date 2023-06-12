@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UnitsNet.Metadata.DynamicDataframes\UnitsNet.Metadata.DynamicDataframes.csproj" />
+    <ProjectReference Include="..\UnitsNet.Metadata.DynamicProxy\UnitsNet.Metadata.DynamicProxy.csproj" />
     <ProjectReference Include="..\UnitsNet.Metadata.Fluent\UnitsNet.Metadata.Fluent.csproj" />
   </ItemGroup>
 

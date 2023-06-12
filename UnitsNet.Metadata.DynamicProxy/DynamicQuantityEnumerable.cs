@@ -8,23 +8,23 @@ using Castle.DynamicProxy;
 
 using UnitsNet.Metadata.Annotations;
 
-namespace UnitsNet.Metadata.DynamicDataframes;
+namespace UnitsNet.Metadata.DynamicProxy;
 
-internal class DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata> : IDynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata>
+internal class DynamicQuantityEnumerable<TObject, TMetadataAttribute, TMetadata> : IDynamicProxyEnumerable<TObject, TMetadataAttribute, TMetadata>
     where TObject : class
     where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
     where TMetadata : QuantityMetadata, IMetadata<TMetadata>
 {
     private readonly ConcurrentDictionary<TObject, TObject> _proxyCache = new();
 
-    private readonly IEnumerable _dataframes;
-    private readonly DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
+    private readonly IEnumerable _objects;
+    private readonly DynamicProxyMetadataProvider<TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
 
-    public DynamicDataframeEnumerable(
-        IEnumerable dataframes,
-        DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> dynamicMetadataProvider)
+    public DynamicQuantityEnumerable(
+        IEnumerable objects,
+        DynamicProxyMetadataProvider<TMetadataAttribute, TMetadata> dynamicMetadataProvider)
     {
-        _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
+        _objects = objects ?? throw new ArgumentNullException(nameof(objects));
         _dynamicMetadataProvider = dynamicMetadataProvider ?? throw new ArgumentNullException(nameof(dynamicMetadataProvider));
     }
 
@@ -40,8 +40,8 @@ internal class DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata
             ? proxyObj => (TObject)proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TObject), proxyObj, options, interceptor)
             : proxyObj => (TObject)proxyGenerator.CreateClassProxyWithTarget(typeof(TObject), proxyObj, options, interceptor);
 
-        foreach (TObject dataframe in _dataframes)
-            yield return _proxyCache.GetOrAdd(dataframe, _ => createProxy(dataframe));
+        foreach (TObject @object in _objects)
+            yield return _proxyCache.GetOrAdd(@object, _ => createProxy(@object));
     }
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
@@ -54,7 +54,7 @@ internal class DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata
         _dynamicMetadataProvider.ValidateMetadata(property);
     }
 
-    public IMetadataDictionary<TMetadata> GetObjectMetadata(CultureInfo? culture)
+    public IReadOnlyDictionary<string, TMetadata> GetObjectMetadata(CultureInfo? culture)
     {
         var dynamicMetadataProvider = _dynamicMetadataProvider as IMetadataProvider<TMetadataAttribute, TMetadata>;
 

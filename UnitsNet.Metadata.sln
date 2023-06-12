@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata", "UnitsNet.Metadata\UnitsNet.Metadata.csproj", "{17FCFFEA-B5B6-42DD-96D8-DAFB18F661C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.DynamicDataframes", "UnitsNet.Metadata.DynamicDataframes\UnitsNet.Metadata.DynamicDataframes.csproj", "{65D6502C-5AEC-47F6-99A4-366C7D0AA27F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.DynamicProxy", "UnitsNet.Metadata.DynamicProxy\UnitsNet.Metadata.DynamicProxy.csproj", "{65D6502C-5AEC-47F6-99A4-366C7D0AA27F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.Tests", "UnitsNet.Metadata.Tests\UnitsNet.Metadata.Tests.csproj", "{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}"
 EndProject

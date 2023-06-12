@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace UnitsNet.Metadata.DynamicDataframes;
+namespace UnitsNet.Metadata.DynamicProxy;
 
 internal class DeclaringTypePropertyComparer : IEqualityComparer<PropertyInfo>
 {

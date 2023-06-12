@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace UnitsNet.Metadata;
 
-internal class MetadataDictionary<TMetadata> : IMetadataDictionary<TMetadata>
+internal class MetadataDictionary<TMetadata> : IReadOnlyDictionary<string, TMetadata>
     where TMetadata : QuantityMetadata, IMetadata<TMetadata>
 {
     private readonly IEnumerable<TMetadata> _metadatas;

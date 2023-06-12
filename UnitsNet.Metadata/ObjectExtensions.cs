@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
 
@@ -8,7 +9,7 @@ namespace UnitsNet.Metadata;
 
 public static class ObjectExtensions
 {
-    public static IMetadataDictionary<TMetadata> GetObjectMetadata<TObject, TMetadataAttribute, TMetadata>(this TObject obj, CultureInfo? culture = null)
+    public static IReadOnlyDictionary<string, TMetadata> GetObjectMetadata<TObject, TMetadataAttribute, TMetadata>(this TObject obj, CultureInfo? culture = null)
         where TObject : class
         where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
         where TMetadata : QuantityMetadata, IMetadata<TMetadata>
@@ -16,7 +17,7 @@ public static class ObjectExtensions
         return obj.GetMetadataProvider<TObject, TMetadataAttribute, TMetadata>().GetObjectMetadata(obj, culture);
     }
 
-    public static IMetadataDictionary<QuantityMetadata> GetObjectMetadata<TObject>(this TObject obj, CultureInfo? culture = null)
+    public static IReadOnlyDictionary<string, QuantityMetadata> GetObjectMetadata<TObject>(this TObject obj, CultureInfo? culture = null)
         where TObject : class
     {
         return obj.GetObjectMetadata<TObject, QuantityAttribute, QuantityMetadata>(culture);

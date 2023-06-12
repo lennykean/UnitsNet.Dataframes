@@ -4,14 +4,14 @@ using FizzWare.NBuilder;
 
 using NUnit.Framework;
 
-using UnitsNet.Metadata.DynamicDataframes;
+using UnitsNet.Metadata.DynamicProxy;
 using UnitsNet.Metadata.Tests.TestData;
 using UnitsNet.Units;
 
-namespace UnitsNet.Metadata.Tests.DynamicDataframes;
+namespace UnitsNet.Metadata.Tests.DynamicProxies;
 
 [TestFixture]
-public class AsDynamicDataframes
+public class AsDynamicQuantities
 {
     [TestCase(TestName = "{c} (with conversions)")]
     public void WithConversionsTest()
@@ -24,7 +24,7 @@ public class AsDynamicDataframes
             Weight = 4
         };
 
-        var dataframe = new[] { obj }.AsDynamicDataframes()
+        var proxies = new[] { obj }.AsDynamicQuantities()
             .WithConversion(b => b.Width, LengthUnit.Centimeter)
             .WithConversion(b => b.Height, LengthUnit.Centimeter)
             .WithConversion(b => b.Depth, LengthUnit.Centimeter)
@@ -32,9 +32,9 @@ public class AsDynamicDataframes
             .WithConversion(b => b.Volume, VolumeUnit.CubicDecimeter)
             .Build();
 
-        var dynamicBox = dataframe.First();
-        var metadata = dynamicBox.GetObjectMetadata();
-        var collectionMetadata = dataframe.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxy.GetObjectMetadata();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -51,11 +51,11 @@ public class AsDynamicDataframes
             Assert.That(metadata, Has.ItemAt(nameof(Box.Volume))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(VolumeUnit.CubicDecimeter));
 
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Width)).EqualTo(100));
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Height)).EqualTo(200));
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Depth)).EqualTo(300));
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Weight)).EqualTo(4000));
-            Assert.That(dynamicBox, Has.Property(nameof(Box.Volume)).EqualTo(6000));
+            Assert.That(proxy, Has.Property(nameof(Box.Width)).EqualTo(100));
+            Assert.That(proxy, Has.Property(nameof(Box.Height)).EqualTo(200));
+            Assert.That(proxy, Has.Property(nameof(Box.Depth)).EqualTo(300));
+            Assert.That(proxy, Has.Property(nameof(Box.Weight)).EqualTo(4000));
+            Assert.That(proxy, Has.Property(nameof(Box.Volume)).EqualTo(6000));
         });
     }
 
@@ -70,7 +70,7 @@ public class AsDynamicDataframes
             Weight = 4
         };
 
-        var dataframe = new[] { obj }.AsDynamicDataframes()
+        var proxy = new[] { obj }.AsDynamicQuantities()
             .WithConversion(b => b.Width, LengthUnit.Centimeter)
             .WithConversion(b => b.Height, LengthUnit.Centimeter)
             .WithConversion(b => b.Depth, LengthUnit.Centimeter)
@@ -79,23 +79,23 @@ public class AsDynamicDataframes
             .Build()
             .First();
 
-        dataframe.Width = 200;
-        dataframe.Height = 300;
-        dataframe.Depth = 400;
-        dataframe.Weight = 5000;
+        proxy.Width = 200;
+        proxy.Height = 300;
+        proxy.Depth = 400;
+        proxy.Weight = 5000;
 
         Assert.Multiple(() =>
         {
             Assert.That(obj, Has.Property(nameof(Box.Width)).EqualTo(2));
-            Assert.That(dataframe, Has.Property(nameof(Box.Width)).EqualTo(200));
+            Assert.That(proxy, Has.Property(nameof(Box.Width)).EqualTo(200));
             Assert.That(obj, Has.Property(nameof(Box.Height)).EqualTo(3));
-            Assert.That(dataframe, Has.Property(nameof(Box.Height)).EqualTo(300));
+            Assert.That(proxy, Has.Property(nameof(Box.Height)).EqualTo(300));
             Assert.That(obj, Has.Property(nameof(Box.Depth)).EqualTo(4));
-            Assert.That(dataframe, Has.Property(nameof(Box.Depth)).EqualTo(400));
+            Assert.That(proxy, Has.Property(nameof(Box.Depth)).EqualTo(400));
             Assert.That(obj, Has.Property(nameof(Box.Weight)).EqualTo(5));
-            Assert.That(dataframe, Has.Property(nameof(Box.Weight)).EqualTo(5000));
+            Assert.That(proxy, Has.Property(nameof(Box.Weight)).EqualTo(5000));
             Assert.That(obj, Has.Property(nameof(Box.Volume)).EqualTo(24));
-            Assert.That(dataframe, Has.Property(nameof(Box.Volume)).EqualTo(24000));
+            Assert.That(proxy, Has.Property(nameof(Box.Volume)).EqualTo(24000));
         });
     }
 
@@ -103,7 +103,7 @@ public class AsDynamicDataframes
     public void WithMissingMetadataTest()
     {
         Assert.That(() =>
-            Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
+            Builder<Star>.CreateListOfSize(100).Build().AsDynamicQuantities()
                 .WithConversion(s => s.Number, ScalarUnit.Amount)
                 .Build(),
             Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
@@ -115,7 +115,7 @@ public class AsDynamicDataframes
         Assert.Multiple(() =>
         {
             Assert.That(() =>
-                Builder<Star>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                Builder<Star>.CreateListOfSize(100).Build().AsDynamicQuantities()
                     .WithConversion(s => s.Mass, MassUnit.SolarMass)
                     .WithConversion(b => b.Radius, LengthUnit.SolarRadius)
                     .WithConversion(b => b.Distance, LengthUnit.AstronomicalUnit)
@@ -124,7 +124,7 @@ public class AsDynamicDataframes
                 Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
 
             Assert.That(() =>
-                Builder<TransmitterData>.CreateListOfSize(100).Build().AsDynamicDataframes()
+                Builder<TransmitterData>.CreateListOfSize(100).Build().AsDynamicQuantities()
                     .WithConversion(b => b.Power, PowerUnit.Milliwatt)
                     .WithConversion(b => b.Frequency, FrequencyUnit.Kilohertz)
                     .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
@@ -143,16 +143,16 @@ public class AsDynamicDataframes
             Temperature = 100
         };
 
-        var dataframes = new[] { obj }.AsDynamicDataframes()
+        var proxies = new[] { obj }.AsDynamicQuantities()
             .WithConversion(b => b.Power, PowerUnit.Milliwatt)
             .WithConversion(b => b.Frequency, FrequencyUnit.Megahertz)
             .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
             .As<ITransmitterData>()
             .Build();
 
-        var dataframe = dataframes.First();
-        var metadata = dataframe.GetObjectMetadata();
-        var collectionMetadata = dataframe.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxy.GetObjectMetadata();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -164,9 +164,9 @@ public class AsDynamicDataframes
             Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Temperature))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TemperatureUnit.DegreeCelsius));
 
-            Assert.That(dataframe, Has.Property(nameof(TransmitterData.Power)).EqualTo(2000).Within(0.01));
-            Assert.That(dataframe, Has.Property(nameof(TransmitterData.Frequency)).EqualTo(3).Within(0.01));
-            Assert.That(dataframe, Has.Property(nameof(TransmitterData.Temperature)).EqualTo(-173.14).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(TransmitterData.Power)).EqualTo(2000).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(TransmitterData.Frequency)).EqualTo(3).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(TransmitterData.Temperature)).EqualTo(-173.14).Within(0.01));
         });
     }
 
@@ -179,15 +179,15 @@ public class AsDynamicDataframes
             Speed = 10
         };
 
-        var dataframes = new[] { obj }.AsDynamicDataframes()
+        var proxies = new[] { obj }.AsDynamicQuantities()
             .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
             .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
             .As<VehicleTelemetry>()
             .Build();
 
-        var dataframe = dataframes.First();
-        var metadata = dataframes.GetObjectMetadata();
-        var collectionMetadata = dataframes.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxies.GetObjectMetadata();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -197,8 +197,8 @@ public class AsDynamicDataframes
             Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Speed))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(SpeedUnit.MilePerHour));
 
-            Assert.That(dataframe, Has.Property(nameof(MotorVehicleTelemetry.Efficency)).EqualTo(4.70).Within(0.01));
-            Assert.That(dataframe, Has.Property(nameof(MotorVehicleTelemetry.Speed)).EqualTo(6.21).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(MotorVehicleTelemetry.Efficency)).EqualTo(4.70).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(MotorVehicleTelemetry.Speed)).EqualTo(6.21).Within(0.01));
         });
     }
 
@@ -211,14 +211,14 @@ public class AsDynamicDataframes
             Speed = 10
         };
 
-        var dynamicTelemetryData = new[] { obj }.AsDynamicDataframes()
+        var proxies = new[] { obj }.AsDynamicQuantities()
             .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
             .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
             .Build();
 
-        var dataframe = dynamicTelemetryData.First();
-        var metadata = dataframe.GetObjectMetadata();
-        var collectionMetadata = dataframe.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxy.GetObjectMetadata();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -228,8 +228,8 @@ public class AsDynamicDataframes
             Assert.That(metadata, Has.ItemAt(nameof(VehicleTelemetry.Speed))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(SpeedUnit.MilePerHour));
 
-            Assert.That(dataframe, Has.Property(nameof(MotorVehicleTelemetry.Efficency)).EqualTo(4.7).Within(0.01));
-            Assert.That(dataframe, Has.Property(nameof(MotorVehicleTelemetry.Speed)).EqualTo(6.21).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(MotorVehicleTelemetry.Efficency)).EqualTo(4.7).Within(0.01));
+            Assert.That(proxy, Has.Property(nameof(MotorVehicleTelemetry.Speed)).EqualTo(6.21).Within(0.01));
         });
     }
 
@@ -243,14 +243,14 @@ public class AsDynamicDataframes
             Rpm = 6000
         };
 
-        var dataframes = new[] { obj }.AsDynamicDataframes()
+        var proxies = new[] { obj }.AsDynamicQuantities()
             .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
             .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
             .Build();
 
-        var dataframe = dataframes.First();
-        var metadata = dataframe.GetObjectMetadata();
-        var collectionMetadata = dataframe.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxy.GetObjectMetadata();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -281,14 +281,14 @@ public class AsDynamicDataframes
             Rpm = 6000
         };
 
-        var dataframes = new[] { obj }.AsDynamicDataframes<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>()
+        var proxies = new[] { obj }.AsDynamicQuantities<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>()
             .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
             .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
             .Build();
 
-        var dataframe = dataframes.First();
-        var metadata = dataframe.GetObjectMetadata<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>();
-        var collectionMetadata = dataframes.GetObjectMetadata();
+        var proxy = proxies.First();
+        var metadata = proxy.GetObjectMetadata<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>();
+        var collectionMetadata = proxies.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
