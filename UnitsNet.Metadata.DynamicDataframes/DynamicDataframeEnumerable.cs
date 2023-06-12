@@ -54,13 +54,13 @@ internal class DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata
         _dynamicMetadataProvider.ValidateMetadata(property);
     }
 
-    public IMetadataDictionary<TMetadata> GetDataframeMetadata(CultureInfo? culture)
+    public IMetadataDictionary<TMetadata> GetObjectMetadata(CultureInfo? culture)
     {
         var dynamicMetadataProvider = _dynamicMetadataProvider as IMetadataProvider<TMetadataAttribute, TMetadata>;
 
         dynamicMetadataProvider.ValidateAllMetadata(typeof(TObject));
 
-        return new MetadataDictionary<TMetadata>(dynamicMetadataProvider.GetAllMetadata(typeof(TObject), culture));
+        return new MetadataDictionary<TMetadata>(dynamicMetadataProvider.GetMetadata(typeof(TObject), culture));
     }
 
     IEnumerator IEnumerable.GetEnumerator()

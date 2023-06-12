@@ -2,7 +2,7 @@
 
 namespace UnitsNet.Metadata.Tests.TestData
 {
-    public class DynoDataframe
+    public class DynoData
     {
         [DynoMeasurement(PowerUnit.MechanicalHorsepower, displayName: "Engine Horsepower")]
         public virtual double Horsepower { get; set; }

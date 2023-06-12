@@ -74,7 +74,7 @@ internal class DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> :
 
     public void HoistMetadata<TSuperDataframe, TDerivedDataframe>(CultureInfo? culture = null)
     {
-        foreach (var metadata in ((IMetadataProvider<TMetadataAttribute, TMetadata>)this).GetAllMetadata(typeof(TDerivedDataframe), culture))
+        foreach (var metadata in ((IMetadataProvider<TMetadataAttribute, TMetadata>)this).GetMetadata(typeof(TDerivedDataframe), culture))
         {
             if (metadata.Property.TryGetInterfaceProperty(typeof(TSuperDataframe), out var mappedProperty) ||
                 metadata.Property.TryGetVirtualProperty(typeof(TSuperDataframe), out mappedProperty))

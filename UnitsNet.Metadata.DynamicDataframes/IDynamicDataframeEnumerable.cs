@@ -9,5 +9,5 @@ public interface IDynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetad
     where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
     where TMetadata : QuantityMetadata, IMetadata<TMetadata>
 {
-    IMetadataDictionary<TMetadata> GetDataframeMetadata(CultureInfo? culture = null);
+    IMetadataDictionary<TMetadata> GetObjectMetadata(CultureInfo? culture = null);
 }

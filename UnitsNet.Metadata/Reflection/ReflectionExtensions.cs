@@ -25,11 +25,9 @@ internal static class ReflectionExtensions
     {
         var expression = propertySelectorExpression.Body;
 
-        // Unwrap any casts in the expression tree
         while (expression is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert)
             expression = unaryExpression.Operand;
 
-        // Ensure the expression is a property accessor and get the PropertyInfo
         if (expression is not MemberExpression memberExpression || memberExpression.Member is not PropertyInfo property || property.GetGetMethod()?.IsPublic != true)
             throw new InvalidOperationException($"{{{propertySelectorExpression}}} is not a valid property accessor.");
 
@@ -76,25 +74,8 @@ internal static class ReflectionExtensions
         return true;
     }
 
-    public static IQuantity GetQuantityFromProperty<TObject, TMetadataAttribute, TMetadata>(this TObject obj, PropertyInfo property, CultureInfo? culture = null)
-        where TObject : class
-        where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
-        where TMetadata : QuantityMetadata, IMetadata<TMetadata>
-    {
-        var metadataProvider = obj as IMetadataProvider<TMetadataAttribute, TMetadata>
-            ?? GlobalMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
-
-        var value = obj.GetQuantityValueFromProperty(property);
-        var quantityMetadata = property.GetQuantityMetadata(metadataProvider, culture);
-        var unitMetadata = quantityMetadata.Unit!;
-        var quantityTypeMetadata = unitMetadata.QuantityType;
-
-        return value.AsQuantity(unitMetadata.UnitInfo.Value, quantityTypeMetadata.QuantityInfo.ValueType);
-    }
-
     public static double GetQuantityValueFromProperty<TObject>(this TObject obj, PropertyInfo property)
     {
-        // Get property getter from cache, or get and add to cache
         var getter = EphemeralValueCache<(Type, Type, string), MethodInfo>.Instance.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
         {
             var getter = property.GetGetMethod() ?? throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} does not have a public getter.");
@@ -110,17 +91,14 @@ internal static class ReflectionExtensions
 
     public static IQuantity AsQuantity(this double value, Enum unit, Type quantityType)
     {
-        // Get quantity metadata
         if (!unit.TryGetQuantityInfo(quantityType, out var quantityInfo))
             throw new ArgumentException($"{unit.GetType().Name} is not a known unit type.");
         if (!unit.TryGetUnitInfo(quantityType, out var unitInfo))
             throw new ArgumentException($"{unit.GetType().Name}.{unit} is not a known unit value.");
 
-        // Try to create a quantity for a build-in unit type
         if (Quantity.TryFrom(value, unit, out var quantity))
             return quantity!;
 
-        // Get quantity constructor for a custom unit type from cache, or get and add to cache
         var quantityCtor = LazyQuantityConstructorTable.Value.GetOrAdd(quantityType, t =>
         {
             var ctor = (

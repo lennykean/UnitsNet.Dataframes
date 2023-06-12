@@ -14,25 +14,25 @@ public class DynamicDataframesBuilder<TObject, TMetadataAttribute, TMetadata>
 {
     private readonly CultureInfo? _culture;
     private readonly IEnumerable _dataframes;
-    private readonly DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> _dynamicMetadataProvider;
+    private readonly DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> _metadataProvider;
 
     public DynamicDataframesBuilder(IEnumerable<TObject> dataframes, IMetadataProvider<TMetadataAttribute, TMetadata>  baseMetadataProvider, CultureInfo? culture = null)
     {
         _culture = culture;
         _dataframes = dataframes ?? throw new ArgumentNullException(nameof(dataframes));
-        _dynamicMetadataProvider = new(baseMetadataProvider);
+        _metadataProvider = new(baseMetadataProvider);
     }
 
     private DynamicDataframesBuilder(IEnumerable dataframes, DynamicDataframeMetadataProvider<TMetadataAttribute, TMetadata> dynamicMetadataProvider)
     {
         _dataframes = dataframes;
-        _dynamicMetadataProvider = dynamicMetadataProvider;
+        _metadataProvider = dynamicMetadataProvider;
     }
 
     public DynamicDataframesBuilder<TObject, TMetadataAttribute, TMetadata> WithConversion(string propertyName, Enum to)
     {
         var property = typeof(TObject).GetProperty(propertyName);
-        _dynamicMetadataProvider.AddConversion(property, to, _culture);
+        _metadataProvider.AddConversion(property, to, _culture);
 
         return this;
     }
@@ -42,7 +42,7 @@ public class DynamicDataframesBuilder<TObject, TMetadataAttribute, TMetadata>
         var propertyName = propertySelectorExpression.ExtractPropertyName();
         var property = typeof(TObject).GetProperty(propertyName);
 
-        _dynamicMetadataProvider.AddConversion(property, to, _culture);
+        _metadataProvider.AddConversion(property, to, _culture);
 
         return this;
     }
@@ -52,13 +52,13 @@ public class DynamicDataframesBuilder<TObject, TMetadataAttribute, TMetadata>
         if (!typeof(TSuperDataframe).IsAssignableFrom(typeof(TObject)))
             throw new InvalidOperationException($"{nameof(TObject)} ({typeof(TObject).Name}) is not derived from {typeof(TSuperDataframe).Name}");
 
-        _dynamicMetadataProvider.HoistMetadata<TSuperDataframe, TObject>(_culture);
-        return new(_dataframes, _dynamicMetadataProvider);
+        _metadataProvider.HoistMetadata<TSuperDataframe, TObject>(_culture);
+        return new(_dataframes, _metadataProvider);
     }
 
     public IDynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata> Build()
     {
-        ((IMetadataProvider<TMetadataAttribute, TMetadata>)_dynamicMetadataProvider).ValidateAllMetadata(typeof(TObject));
-        return new DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata>(_dataframes, _dynamicMetadataProvider);
+        ((IMetadataProvider<TMetadataAttribute, TMetadata>)_metadataProvider).ValidateAllMetadata(typeof(TObject));
+        return new DynamicDataframeEnumerable<TObject, TMetadataAttribute, TMetadata>(_dataframes, _metadataProvider);
     }
 }

@@ -10,15 +10,15 @@ using UnitsNet.Units;
 namespace UnitsNet.Metadata.Tests.ObjectExtensions;
 
 [TestFixture]
-public class GetDataframeMetadata
+public class GetObjectMetadata
 {
     [TestCase(TestName = "{c} (with valid metadata)")]
     public void WithValidMetadataTest()
     {
         var box = new Box();
 
-        var metadata = box.GetDataframeMetadata();
-        var collectionMetadata = new List<Box> { box }.GetDataframeMetadata();
+        var metadata = box.GetObjectMetadata();
+        var collectionMetadata = new List<Box> { box }.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -47,7 +47,7 @@ public class GetDataframeMetadata
             Data = "1"
         };
 
-        Assert.That(() => blob.GetDataframeMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+        Assert.That(() => blob.GetObjectMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
     }
 
     [TestCase(TestName = "{c} (with invalid attribute)")]
@@ -55,7 +55,7 @@ public class GetDataframeMetadata
     {
         var garbage = new Garbage();
 
-        Assert.That(() => garbage.GetDataframeMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
+        Assert.That(() => garbage.GetObjectMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
     [TestCase(TestName = "{c} (with custom unit)")]
@@ -63,7 +63,7 @@ public class GetDataframeMetadata
     {
         var employee = new Employee();
 
-        var metadata = employee.GetDataframeMetadata();
+        var metadata = employee.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
@@ -81,26 +81,26 @@ public class GetDataframeMetadata
             Coolness = 40
         };
 
-        Assert.That(() => rubbish.GetDataframeMetadata(), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+        Assert.That(() => rubbish.GetObjectMetadata(), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
     }
 
     [TestCase(TestName = "{c} (with custom attribute)")]
     public void WithCustomAttributeTest()
     {
-        var dynoDataframe = new DynoDataframe();
+        var obj = new DynoData();
 
-        var metadata = dynoDataframe.GetDataframeMetadata();
-        var collectionMetadata = new[] { dynoDataframe }.GetDataframeMetadata();
+        var metadata = obj.GetObjectMetadata();
+        var collectionMetadata = new[] { obj }.GetObjectMetadata();
 
         Assert.Multiple(() =>
         {
             CollectionAssert.AreEquivalent(metadata, collectionMetadata);
             Assert.That(metadata, Has.Count.EqualTo(3));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Horsepower))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Torque))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Rpm))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
         });
     }
@@ -108,24 +108,24 @@ public class GetDataframeMetadata
     [TestCase(TestName = "{c} (typed with custom attribute)")]
     public void TypedWithCustomAttributeTest()
     {
-        var dynoDataframe = new DynoDataframe();
+        var obj = new DynoData();
 
-        var metadata = dynoDataframe.GetDataframeMetadata<DynoDataframe, DynoMeasurementAttribute, DynoMetadata>();
-        var collectionMetadata = new List<DynoDataframe> { dynoDataframe }.GetDataframeMetadata<IEnumerable<DynoDataframe>, DynoMeasurementAttribute, DynoMetadata>();
+        var metadata = obj.GetObjectMetadata<DynoData, DynoMeasurementAttribute, DynoMetadata>();
+        var collectionMetadata = new List<DynoData> { obj }.GetObjectMetadata<IEnumerable<DynoData>, DynoMeasurementAttribute, DynoMetadata>();
 
         Assert.Multiple(() =>
         {
             CollectionAssert.AreEquivalent(metadata, collectionMetadata);
             Assert.That(metadata, Has.Count.EqualTo(3));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Horsepower))
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Horsepower))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower).And
-                .ItemAt(nameof(DynoDataframe.Horsepower)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Horsepower"));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Torque))
+                .ItemAt(nameof(DynoData.Horsepower)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Horsepower"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Torque))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot).And
-                .ItemAt(nameof(DynoDataframe.Torque)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Torque"));
-            Assert.That(metadata, Has.ItemAt(nameof(DynoDataframe.Rpm))
+                .ItemAt(nameof(DynoData.Torque)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Torque"));
+            Assert.That(metadata, Has.ItemAt(nameof(DynoData.Rpm))
                 .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute).And
-                .ItemAt(nameof(DynoDataframe.Rpm)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Speed"));
+                .ItemAt(nameof(DynoData.Rpm)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Speed"));
         });
     }
 }
