@@ -76,7 +76,7 @@ internal static class ReflectionExtensions
 
     public static double GetQuantityValueFromProperty<TObject>(this TObject obj, PropertyInfo property)
     {
-        var getter = EphemeralValueCache<(Type, Type, string), MethodInfo>.Instance.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
+        var getter = EphemeralValueCache<(Type, Type, string), MethodInfo>.GlobalInstance.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
         {
             var getter = property.GetGetMethod() ?? throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} does not have a public getter.");
             if (!LazyQuantityValueCompatibleTypes.Value.Contains(getter.ReturnType))
@@ -161,7 +161,7 @@ internal static class ReflectionExtensions
 
     private static IReadOnlyDictionary<PropertyInfo, PropertyInfo> GetInterfacePropertyMap(this Type concreteType)
     {
-        return EphemeralValueCache<Type, IReadOnlyDictionary<PropertyInfo, PropertyInfo>>.Instance.GetOrAdd(concreteType, type =>
+        return EphemeralValueCache<Type, IReadOnlyDictionary<PropertyInfo, PropertyInfo>>.GlobalInstance.GetOrAdd(concreteType, type =>
         {
             return new Dictionary<PropertyInfo, PropertyInfo>(BuildInterfacePropertyMap(type));
         });

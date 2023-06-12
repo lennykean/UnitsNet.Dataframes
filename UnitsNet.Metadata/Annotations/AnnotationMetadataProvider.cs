@@ -12,6 +12,8 @@ internal class AnnotationMetadataProvider<TMetadataAttribute, TMetadata> : IMeta
 {
     private static readonly Lazy<AnnotationMetadataProvider<TMetadataAttribute, TMetadata>> _instance = new(() => new AnnotationMetadataProvider<TMetadataAttribute, TMetadata>());
 
+    private static readonly Lazy<EphemeralValueCache<PropertyInfo, TMetadata>> _lazyPropertyMetadataCache = new(() => new(new DeclaringTypePropertyComparer()));
+
     private AnnotationMetadataProvider()
     {
     }
@@ -20,9 +22,7 @@ internal class AnnotationMetadataProvider<TMetadataAttribute, TMetadata> : IMeta
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
     {
-        var cache = EphemeralValueCache<(Type, Type, string), TMetadata>.Instance;
-
-        if (cache.TryGet((property.DeclaringType, property.PropertyType, property.Name), out metadata))
+        if (_lazyPropertyMetadataCache.Value.TryGet(property, out metadata))
             return true;
 
         var metadataAttribute = property.GetCustomAttribute<TMetadataAttribute>(inherit: true);
@@ -31,7 +31,7 @@ internal class AnnotationMetadataProvider<TMetadataAttribute, TMetadata> : IMeta
 
         metadataAttribute.Validate();
 
-        metadata = cache.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
+        metadata = _lazyPropertyMetadataCache.Value.GetOrAdd(property, p =>
         {
             var allowedConversionAttributes = property.GetCustomAttributes<AllowUnitConversionAttribute>(inherit: true);
             return metadataAttribute.ToMetadata(property, metadataAttribute.BuildAllowedConversionsMetadata(allowedConversionAttributes, culture));

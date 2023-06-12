@@ -22,32 +22,33 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
 
     public virtual IEnumerable<TMetadata> GetMetadata(Type type, CultureInfo? culture = null)
     {
-        return EphemeralValueCache<Type, IEnumerable<TMetadata>>.Instance.GetOrAdd(type, t =>
+        var cache = EphemeralValueCache<(IMetadataProvider<TMetadataAttribue, TMetadata>, Type type), IEnumerable<TMetadata>>.GlobalInstance;
+        return cache.GetOrAdd((this, type), key =>
         {
-            IEnumerable<TMetadata> get(Type t) => (
-                from property in t.GetProperties()
+            IEnumerable<TMetadata> get(Type type) => (
+                from property in type.GetProperties()
                 let m = (hasMetadata: TryGetMetadata(property, out var metadata, culture), metadata)
                 where m.hasMetadata
                 select m.metadata)
                 .ToList();
 
-            var metadata = get(t);
+            var metadata = get(key.type);
 
             if (!metadata.Any())
             {
-                var elementType = t switch
+                var elementType = key.type switch
                 {
-                    { IsArray: true } => t.GetElementType(),
-                    { IsInterface: true } when t.GetGenericTypeDefinition() == typeof(IEnumerable<>) => t.GenericTypeArguments[0],
+                    { IsArray: true } => key.type.GetElementType(),
+                    { IsInterface: true } when key.type.GetGenericTypeDefinition() == typeof(IEnumerable<>) => key.type.GenericTypeArguments[0],
                     { IsInterface: true } => (
-                        from interfaceType in t.GetInterfaces()
+                        from interfaceType in key.type.GetInterfaces()
                         where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
                         select interfaceType.GenericTypeArguments[0])
                         .SingleOrDefault(),
                     _ => (
-                        from interfaceType in t.GetInterfaces()
+                        from interfaceType in key.type.GetInterfaces()
                         where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                        let interfaceMap = t.GetInterfaceMap(interfaceType)
+                        let interfaceMap = key.type.GetInterfaceMap(interfaceType)
                         from interfaceMethod in interfaceMap.InterfaceMethods.Select((method, index) => (method, index))
                         where interfaceMethod.method.Name == "GetEnumerator" && !interfaceMethod.method.GetParameters().Any()
                         select interfaceMap.TargetMethods[interfaceMethod.index].DeclaringType.GenericTypeArguments[0])

@@ -1,28 +1,27 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace UnitsNet.Metadata.Utils;
 
 internal class EphemeralValueCache<TKey, TItem> where TItem : class?
 {
-    private static readonly Lazy<EphemeralValueCache<TKey, TItem>> _lazyInstance = new(() => new());
+    private static readonly Lazy<EphemeralValueCache<TKey, TItem>> _lazyGlobalInstance = new(() => new());
 
-#if EPHEMERAL_CACHE
     private readonly ConcurrentDictionary<TKey, WeakReference<TItem>> _cache;
 
-    private EphemeralValueCache()
+    public EphemeralValueCache(IEqualityComparer<TKey>? comparer = null)
     {
-        _cache = new();
+        _cache = new(comparer ?? EqualityComparer<TKey>.Default);
     }
-#endif
 
-    public static EphemeralValueCache<TKey, TItem> Instance => _lazyInstance.Value;
+    public static EphemeralValueCache<TKey, TItem> GlobalInstance => _lazyGlobalInstance.Value;
 
     public bool TryGet(TKey key, [NotNullWhen(true)] out TItem? item)
     {
         item = default;
-#if EPHEMERAL_CACHE
+
         if (!_cache.TryGetValue(key, out var reference) ||
             reference?.TryGetTarget(out item!) is not true)
         {
@@ -30,14 +29,10 @@ internal class EphemeralValueCache<TKey, TItem> where TItem : class?
             return false;
         }
         return true;
-#else
-        return false;
-#endif
     }
 
     public TItem GetOrAdd(TKey key, Func<TKey, TItem> getter)
     {
-#if EPHEMERAL_CACHE
         var reference = _cache.GetOrAdd(key, k =>
         {
             var item = getter(k);
@@ -51,22 +46,15 @@ internal class EphemeralValueCache<TKey, TItem> where TItem : class?
             _cache.AddOrUpdate(key, _ => new(item), (_, _) => new(item));
 
         return item;
-#else
-        return getter(key);
-#endif
     }
 
     public void AddOrUpdate(TKey key, TItem item)
     {
-#if EPHEMERAL_CACHE
         _cache.AddOrUpdate(key, _ => new(item), (_, _) => new(item));
-#endif
     }
 
     public void Purge()
     {
-#if EPHEMERAL_CACHE
         _cache.Clear();
-#endif
     }
 }

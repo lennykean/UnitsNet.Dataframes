@@ -12,7 +12,7 @@ public static class EnumExtensions
     public static bool TryGetUnitInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)] out UnitInfo? unitInfo)
     {
         // Check cache
-        if (EphemeralValueCache<Enum, UnitInfo>.Instance.TryGet(unit, out unitInfo))
+        if (EphemeralValueCache<Enum, UnitInfo>.GlobalInstance.TryGet(unit, out unitInfo))
             return true;
 
         // Check for a built-in unit type
@@ -23,7 +23,7 @@ public static class EnumExtensions
             select u).SingleOrDefault();
         if (unitInfo is not null)
         {
-            EphemeralValueCache<Enum, UnitInfo>.Instance.AddOrUpdate(unit, unitInfo);
+            EphemeralValueCache<Enum, UnitInfo>.GlobalInstance.AddOrUpdate(unit, unitInfo);
             return true;
         }
 
@@ -33,7 +33,7 @@ public static class EnumExtensions
 
         if (unitInfo is not null)
         {
-            EphemeralValueCache<Enum, UnitInfo>.Instance.AddOrUpdate(unit, unitInfo);
+            EphemeralValueCache<Enum, UnitInfo>.GlobalInstance.AddOrUpdate(unit, unitInfo);
             return true;
         }
 
@@ -43,7 +43,7 @@ public static class EnumExtensions
     public static bool TryGetQuantityInfo(this Enum unit, Type? quantityType, [NotNullWhen(true)] out QuantityInfo? quantityInfo)
     {
         // Check cache
-        if (EphemeralValueCache<Enum, QuantityInfo>.Instance.TryGet(unit, out quantityInfo))
+        if (EphemeralValueCache<Enum, QuantityInfo>.GlobalInstance.TryGet(unit, out quantityInfo))
             return true;
 
         // Check for a built-in quantity type
@@ -53,14 +53,14 @@ public static class EnumExtensions
             select q).SingleOrDefault();
         if (quantityInfo is not null)
         {
-            EphemeralValueCache<Enum, QuantityInfo>.Instance.AddOrUpdate(unit, quantityInfo);
+            EphemeralValueCache<Enum, QuantityInfo>.GlobalInstance.AddOrUpdate(unit, quantityInfo);
             return true;
         }
 
         // Check for a static QuantityInfo property on quantityType and try to invoke the getter
         if (quantityType is not null && quantityType.TryGetStaticQuantityInfo(out quantityInfo) && quantityInfo!.UnitType == unit.GetType())
         {
-            EphemeralValueCache<Enum, QuantityInfo>.Instance.AddOrUpdate(unit, quantityInfo);
+            EphemeralValueCache<Enum, QuantityInfo>.GlobalInstance.AddOrUpdate(unit, quantityInfo);
             return true;
         }
 
@@ -68,7 +68,7 @@ public static class EnumExtensions
         if (quantityType is not null && quantityType.TryCreateQuantityInstance(out var instance) && instance.QuantityInfo.UnitType == unit.GetType())
         {
             quantityInfo = instance.QuantityInfo;
-            EphemeralValueCache<Enum, QuantityInfo>.Instance.AddOrUpdate(unit, instance.QuantityInfo);
+            EphemeralValueCache<Enum, QuantityInfo>.GlobalInstance.AddOrUpdate(unit, instance.QuantityInfo);
             return true;
         }
 

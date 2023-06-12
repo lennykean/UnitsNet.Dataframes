@@ -42,6 +42,16 @@ public abstract class UnitMetadataBase
     {
         return UnitAbbreviationsCache.Default.GetUnitAbbreviations(quantityInfo.UnitType, Convert.ToInt32(unitInfo.Value), culture).FirstOrDefault() ?? "";
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is UnitMetadataBase other && UnitInfo.Value.Equals(other.UnitInfo.Value);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(UnitInfo.Value);
+    }
 }
 
 public sealed class UnitMetadataBasic : UnitMetadataBase
@@ -56,7 +66,7 @@ public sealed class UnitMetadataBasic : UnitMetadataBase
 
     public static UnitMetadataBasic? FromUnitInfo(UnitInfo unitInfo, QuantityInfo quantityInfo, CultureInfo? culture = null)
     {
-        return EphemeralValueCache<Enum, UnitMetadataBasic?>.Instance.GetOrAdd(unitInfo.Value, _ =>
+        return EphemeralValueCache<Enum, UnitMetadataBasic?>.GlobalInstance.GetOrAdd(unitInfo.Value, _ =>
         {
             return QuantityTypeMetadataBasic.FromQuantityInfo(quantityInfo) switch
             {
@@ -66,6 +76,16 @@ public sealed class UnitMetadataBasic : UnitMetadataBase
                     => null
             };
         });
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is UnitMetadataBasic other && UnitInfo.Value.Equals(other.UnitInfo.Value);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(UnitInfo.Value);
     }
 }
 
@@ -85,7 +105,7 @@ public sealed class UnitMetadata : UnitMetadataBase
         if (UnitInfo.Value == to.UnitInfo.Value)
             return true;
 
-        var conversionFunctions = EphemeralKeyCache<UnitMetadata, ConcurrentDictionary<UnitMetadata, ConversionFunction>>.Instance.GetOrAdd(this, _ => new());
+        var conversionFunctions = EphemeralKeyCache<UnitMetadata, ConcurrentDictionary<UnitMetadata, ConversionFunction>>.GlobalInstance.GetOrAdd(this, _ => new());
         if (!conversionFunctions.TryGetValue(to, out var conversionFunction))
         {
             if (!UnitConverter.Default.TryGetConversionFunction(
@@ -126,10 +146,20 @@ public sealed class UnitMetadata : UnitMetadataBase
 
     public static UnitMetadata FromUnitInfo(UnitInfo unitInfo, QuantityInfo quantityInfo, CultureInfo? culture = null)
     {
-        return EphemeralValueCache<Enum, UnitMetadata>.Instance.GetOrAdd(unitInfo.Value, _ =>
+        return EphemeralValueCache<Enum, UnitMetadata>.GlobalInstance.GetOrAdd(unitInfo.Value, _ =>
         {
             var quantityType = QuantityTypeMetadata.FromQuantityInfo(quantityInfo, culture);
             return new(unitInfo, unitInfo.Name, Convert.ToInt32(unitInfo.Value), GetDisplayName(unitInfo), GetAbbriviation(unitInfo, quantityInfo, culture), quantityType);
         });
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is UnitMetadata other && UnitInfo.Value.Equals(other.UnitInfo.Value);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(UnitInfo.Value);
     }
 }

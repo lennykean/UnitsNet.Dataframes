@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-    <DefineConstants>EPHEMERAL_CACHE</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

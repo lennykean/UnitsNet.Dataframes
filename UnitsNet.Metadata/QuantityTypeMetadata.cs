@@ -40,7 +40,7 @@ public sealed class QuantityTypeMetadataBasic : QuantityTypeMetadataBase
 
     public static QuantityTypeMetadataBasic? FromQuantityInfo(QuantityInfo quantityInfo)
     {
-        return EphemeralValueCache<Type, QuantityTypeMetadataBasic>.Instance.GetOrAdd(quantityInfo.ValueType, _ =>
+        return EphemeralValueCache<Type, QuantityTypeMetadataBasic>.GlobalInstance.GetOrAdd(quantityInfo.ValueType, _ =>
         {
             var name = quantityInfo.Name;
             var displayName = GetDisplayName(quantityInfo);
@@ -61,7 +61,7 @@ public sealed class QuantityTypeMetadata : QuantityTypeMetadataBase
 
     public static QuantityTypeMetadata FromQuantityInfo(QuantityInfo quantityInfo, CultureInfo? culture = null)
     {
-        return EphemeralValueCache<Type, QuantityTypeMetadata>.Instance.GetOrAdd(quantityInfo.ValueType, _ =>
+        return EphemeralValueCache<Type, QuantityTypeMetadata>.GlobalInstance.GetOrAdd(quantityInfo.ValueType, _ =>
         {
             var name = quantityInfo.Name;
             var displayName = GetDisplayName(quantityInfo);
