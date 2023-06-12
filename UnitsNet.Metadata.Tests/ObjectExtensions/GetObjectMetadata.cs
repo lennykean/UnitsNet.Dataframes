@@ -97,11 +97,11 @@ public class GetObjectMetadata
             CollectionAssert.AreEquivalent(metadata, collectionMetadata);
             Assert.That(metadata, Has.Count.EqualTo(3));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Horsepower))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Torque))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Rpm))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
         });
     }
 
@@ -110,22 +110,22 @@ public class GetObjectMetadata
     {
         var obj = new DynoData();
 
-        var metadata = obj.GetObjectMetadata<DynoData, DynoMeasurementAttribute, DynoMetadata>();
-        var collectionMetadata = new List<DynoData> { obj }.GetObjectMetadata<IEnumerable<DynoData>, DynoMeasurementAttribute, DynoMetadata>();
+        var metadata = obj.GetObjectMetadata<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>();
+        var collectionMetadata = new List<DynoData> { obj }.GetObjectMetadata<IEnumerable<DynoData>, DisplayMeasurementAttribute, DisplayMeasurementMetadata>();
 
         Assert.Multiple(() =>
         {
             CollectionAssert.AreEquivalent(metadata, collectionMetadata);
             Assert.That(metadata, Has.Count.EqualTo(3));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Horsepower))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower).And
-                .ItemAt(nameof(DynoData.Horsepower)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Horsepower"));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.MechanicalHorsepower).And
+                .ItemAt(nameof(DynoData.Horsepower)).Property(nameof(DisplayMeasurementMetadata.DisplayName)).EqualTo("Engine Horsepower"));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Torque))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot).And
-                .ItemAt(nameof(DynoData.Torque)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Torque"));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TorqueUnit.PoundForceFoot).And
+                .ItemAt(nameof(DynoData.Torque)).Property(nameof(DisplayMeasurementMetadata.DisplayName)).EqualTo("Engine Torque"));
             Assert.That(metadata, Has.ItemAt(nameof(DynoData.Rpm))
-                .Property(nameof(DynoMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute).And
-                .ItemAt(nameof(DynoData.Rpm)).Property(nameof(DynoMetadata.DisplayName)).EqualTo("Engine Speed"));
+                .Property(nameof(DisplayMeasurementMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute).And
+                .ItemAt(nameof(DynoData.Rpm)).Property(nameof(DisplayMeasurementMetadata.DisplayName)).EqualTo("Engine Speed"));
         });
     }
 }

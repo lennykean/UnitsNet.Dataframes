@@ -207,10 +207,10 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(obj.ConvertQuantity<DynoData, DynoMeasurementAttribute, DynoMetadata>(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
+            Assert.That(obj.ConvertQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
-            Assert.That(obj.ConvertQuantity<DynoData, DynoMeasurementAttribute, DynoMetadata>("Torque", to: TorqueUnit.NewtonMeter), Has
+            Assert.That(obj.ConvertQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>("Torque", to: TorqueUnit.NewtonMeter), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
         });

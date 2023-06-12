@@ -4,21 +4,20 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-using UnitsNet.Metadata;
 using UnitsNet.Metadata.Annotations;
 
 namespace UnitsNet.Metadata.Tests.TestData
 {
-    public class DynoMeasurementAttribute : QuantityAttribute, IMetadataAttribute<DynoMeasurementAttribute, DynoMetadata>
+    public class DisplayMeasurementAttribute : QuantityAttribute, IMetadataAttribute<DisplayMeasurementAttribute, DisplayMeasurementMetadata>
     {
-        public DynoMeasurementAttribute(object unit, Type? quantityType = null, string? displayName = null) : base(unit, quantityType)
+        public DisplayMeasurementAttribute(object unit, Type? quantityType = null, string? displayName = null) : base(unit, quantityType)
         {
             DisplayName = displayName;
         }
 
         public string? DisplayName { get; }
 
-        public DynoMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> conversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null)
+        public DisplayMeasurementMetadata ToMetadata(PropertyInfo property, IEnumerable<UnitMetadataBasic> conversions, UnitMetadata? overrideUnit = null, CultureInfo? culture = null)
         {
             var unit = overrideUnit;
             if (unit is null && UnitInfo is not null && QuantityInfo is not null)

@@ -163,13 +163,13 @@ public class GetQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(obj.GetQuantity<DynoData, DynoMeasurementAttribute, DynoMetadata>(d => d.Horsepower), Has
+            Assert.That(obj.GetQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>(d => d.Horsepower), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(300).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.MechanicalHorsepower));
-            Assert.That(obj.GetQuantity<DynoData, DynoMeasurementAttribute, DynoMetadata>("Torque"), Has
+            Assert.That(obj.GetQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>("Torque"), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(200).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.PoundForceFoot));
-            Assert.That(obj.GetQuantity<DynoData, DynoMeasurementAttribute, DynoMetadata>(d => d.Rpm), Has
+            Assert.That(obj.GetQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>(d => d.Rpm), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(6000).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
         });
