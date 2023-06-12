@@ -21,6 +21,12 @@ internal static class ReflectionExtensions
 
     private static readonly Lazy<ConcurrentDictionary<Type, ConstructorInfo>> LazyQuantityConstructorTable = new(() => new());
 
+    public static void ValidateQuantityType(this Type type)
+    {
+        if (!LazyQuantityValueCompatibleTypes.Value.Contains(type))
+            throw new InvalidOperationException($"{type} is not compatible with {typeof(QuantityValue)}.");
+    }
+
     public static string ExtractPropertyName<TObject, TPropertyValue>(this Expression<Func<TObject, TPropertyValue>> propertySelectorExpression)
     {
         var expression = propertySelectorExpression.Body;
@@ -79,8 +85,8 @@ internal static class ReflectionExtensions
         var getter = EphemeralValueCache<(Type, Type, string), MethodInfo>.GlobalInstance.GetOrAdd((property.DeclaringType, property.PropertyType, property.Name), p =>
         {
             var getter = property.GetGetMethod() ?? throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} does not have a public getter.");
-            if (!LazyQuantityValueCompatibleTypes.Value.Contains(getter.ReturnType))
-                throw new InvalidOperationException($"{property.DeclaringType}.{property.Name} type of {getter.ReturnType} is not compatible with {typeof(QuantityValue)}.");
+            
+            getter.ReturnType.ValidateQuantityType();
 
             return getter;
         });
@@ -99,10 +105,10 @@ internal static class ReflectionExtensions
         if (Quantity.TryFrom(value, unit, out var quantity))
             return quantity!;
 
-        var quantityCtor = LazyQuantityConstructorTable.Value.GetOrAdd(quantityType, t =>
+        var quantityCtor = LazyQuantityConstructorTable.Value.GetOrAdd(quantityType, type =>
         {
             var ctor = (
-                from c in t.GetConstructors()
+                from c in type.GetConstructors()
                 let parameters = c.GetParameters()
                 where parameters.Count() == 2
                 where
@@ -112,7 +118,7 @@ internal static class ReflectionExtensions
                 select c).SingleOrDefault();
 
             return ctor is null
-                ? throw new InvalidOperationException($"Unable to create quantity. No constructor found compatible with {t.Name}({typeof(QuantityValue).Name}, {quantityInfo!.UnitType.Name})")
+                ? throw new InvalidOperationException($"Unable to create quantity. No constructor found compatible with {type.Name}({typeof(QuantityValue).Name}, {quantityInfo!.UnitType.Name})")
                 : ctor;
         })!;
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });

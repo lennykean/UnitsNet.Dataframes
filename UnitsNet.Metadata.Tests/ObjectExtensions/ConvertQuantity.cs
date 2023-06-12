@@ -120,7 +120,7 @@ public class ConvertQuantity
             Data = "1"
         };
 
-        Assert.That(() => obj.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+        Assert.That(() => obj.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
     }
 
     [TestCase(TestName = "{c} (with missing property)")]

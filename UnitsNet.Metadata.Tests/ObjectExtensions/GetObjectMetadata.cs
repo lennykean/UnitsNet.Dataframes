@@ -47,7 +47,7 @@ public class GetObjectMetadata
             Data = "1"
         };
 
-        Assert.That(() => blob.GetObjectMetadata(), Throws.InvalidOperationException.With.Message.Match("Type of (.*) \\((.*)\\) is not a valid quantity type"));
+        Assert.That(() => blob.GetObjectMetadata(), Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
     }
 
     [TestCase(TestName = "{c} (with invalid attribute)")]

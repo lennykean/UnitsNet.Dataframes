@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 using UnitsNet.Metadata.Annotations;
 using UnitsNet.Metadata.Reflection;
@@ -71,9 +70,11 @@ public class MetadataBuilder<TObject, TMetadataAttribute, TMetadata> : MetadataB
 
         foreach (var (property, metadataAttribute) in MetadataAttributes)
         {
-            var allowedConversions = AllowedConversionAttributes.TryGetValue(metadataAttribute, out var allowUnitConversionAttributes)
-                ? metadataAttribute.BuildAllowedConversionsMetadata(allowUnitConversionAttributes)
-                : Enumerable.Empty<UnitMetadataBasic>();
+            var allowedConversionAttributes = AllowedConversionAttributes.TryGetValue(metadataAttribute, out var attributes)
+                ? attributes
+                : Enumerable.Empty<AllowUnitConversionAttribute>();
+
+            var allowedConversions = metadataAttribute.BuildAllowedConversionsMetadata(allowedConversionAttributes);
 
             provider.AddMetadata(property, metadataAttribute.ToMetadata(property, allowedConversions, culture: culture));
         }
