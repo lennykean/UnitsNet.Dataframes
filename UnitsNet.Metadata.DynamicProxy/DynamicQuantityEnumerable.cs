@@ -40,8 +40,8 @@ internal class DynamicQuantityEnumerable<TObject, TMetadataAttribute, TMetadata>
             ? proxyObj => (TObject)proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TObject), proxyObj, options, interceptor)
             : proxyObj => (TObject)proxyGenerator.CreateClassProxyWithTarget(typeof(TObject), proxyObj, options, interceptor);
 
-        foreach (TObject @object in _objects)
-            yield return _proxyCache.GetOrAdd(@object, _ => createProxy(@object));
+        foreach (TObject obj in _objects)
+            yield return _proxyCache.GetOrAdd(obj, _ => createProxy(obj));
     }
 
     public bool TryGetMetadata(PropertyInfo property, [NotNullWhen(true)] out TMetadata? metadata, CultureInfo? culture = null)
