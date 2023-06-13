@@ -17,11 +17,10 @@ jobs:
     - name: Set version and suffix
       run: |
         VERSION=$(echo ${GITHUB_REF#refs/tags/v})"."${GITHUB_RUN_NUMBER}
-        SUFFIX=""
         if [[ "${{ env.BRANCH_NAME }}" != "main" ]]; then
-          SUFFIX="prerelease"
+          VERSION=${VERSION}-prerelease
         fi
         echo "VERSION_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-    - run: dotnet pack --configuration Release /p:VersionPrefix=${{ env.VERSION }} --version-suffix ${{ env.VERSION_SUFFIX }}
+    - run: dotnet pack --configuration Release /p:Version=${{ env.VERSION }}
     - run: dotnet nuget push "**/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
