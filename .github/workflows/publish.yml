@@ -21,7 +21,8 @@ jobs:
         echo "VERSION_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
     - run: dotnet pack --configuration Release /p:PackageVersion=${{ env.VERSION }} /p:VersionSuffix=${{ env.VERSION_SUFFIX }}
-    - run: dotnet nuget push "**/*.(nupkg|snupkg)" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - run: dotnet nuget push "**/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - run: dotnet nuget push "**/*.snupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/create-release@v1
       with:
         tag_name: ${{ env.VERSION }}
