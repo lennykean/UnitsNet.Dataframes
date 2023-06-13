@@ -75,18 +75,6 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         return new MetadataDictionary<TMetadata>(GetMetadata(typeof(TObject), culture));
     }
 
-    public IQuantity GetQuantity<TObject>(TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression, CultureInfo? culture = null)
-        where TObject : class
-    {
-        if (obj is null)
-            throw new ArgumentNullException(nameof(obj));
-
-        var propertyName = propertySelectorExpression.ExtractPropertyName();
-        var property = typeof(TObject).GetProperty(propertyName);
-
-        return GetQuantity(obj, property, culture);
-    }
-
     public IQuantity GetQuantity<TObject>(TObject obj, string propertyName, CultureInfo? culture = null)
         where TObject : class
     {
@@ -99,22 +87,64 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         return GetQuantity(obj, property, culture);
     }
 
-    public IQuantity ConvertQuantity<TObject>(TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression, Enum to)
+    public IQuantity GetQuantity<TObject>(TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression, CultureInfo? culture = null)
         where TObject : class
     {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+
         var propertyName = propertySelectorExpression.ExtractPropertyName();
         var property = typeof(TObject).GetProperty(propertyName);
 
-        return ConvertQuantity(obj, property, to);
+        return GetQuantity(obj, property, culture);
     }
 
-    public IQuantity ConvertQuantity<TObject>(TObject obj, string propertyName, Enum to)
+    public IQuantity ConvertQuantity<TObject>(TObject obj, string propertyName, Enum to, CultureInfo? culture = null)
         where TObject : class
     {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+
         var property = typeof(TObject).GetProperty(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
 
-        return ConvertQuantity(obj, property, to);
+        return ConvertQuantity(obj, property, to, culture);
+    }
+
+    public IQuantity ConvertQuantity<TObject>(TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression, Enum to, CultureInfo? culture = null)
+        where TObject : class
+    {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+
+        var propertyName = propertySelectorExpression.ExtractPropertyName();
+        var property = typeof(TObject).GetProperty(propertyName);
+
+        return ConvertQuantity(obj, property, to, culture);
+    }
+
+    public IQuantity SetQuantity<TObject>(TObject obj, string propertyName, IQuantity quantity, CultureInfo? culture = null)
+        where TObject : class
+    {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+
+        var property = typeof(TObject).GetProperty(propertyName) ??
+            throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
+
+        return SetQuantity(obj, property, quantity, culture);
+    }
+
+    public IQuantity SetQuantity<TObject>(TObject obj, Expression<Func<TObject, QuantityValue>> propertySelectorExpression, IQuantity quantity, CultureInfo? culture = null)
+        where TObject : class
+    {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+
+        var propertyName = propertySelectorExpression.ExtractPropertyName();
+        var property = typeof(TObject).GetProperty(propertyName);
+
+        return SetQuantity(obj, property, quantity, culture);
     }
 
     private IQuantity GetQuantity<TObject>(TObject obj, PropertyInfo property, CultureInfo? culture = null)
@@ -122,7 +152,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
     {
         if (TryGetMetadata(property, out var metadata, culture) is not true || metadata.Unit is null)
             throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
-        
+
         metadata.Validate();
 
         var value = obj.GetQuantityValueFromProperty(property);
@@ -133,18 +163,37 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         return value.AsQuantity(unitMetadata.UnitInfo.Value, quantityTypeMetadata.QuantityInfo.ValueType);
     }
 
-    private IQuantity ConvertQuantity<TObject>(TObject obj, PropertyInfo property, Enum to)
+    private IQuantity ConvertQuantity<TObject>(TObject obj, PropertyInfo property, Enum to, CultureInfo? culture = null)
         where TObject : class
     {
         if (obj is null)
             throw new ArgumentNullException(nameof(obj));
 
-        var (fromMetadata, toMetadata) = property.GetConversionMetadatas(to, this);
+        var (propertyMetadata, conversionMetadata) = property.GetConversionMetadatas(to, this, culture);
         var value = obj.GetQuantityValueFromProperty(property);
 
-        if (!fromMetadata.TryConvertQuantity(value, toMetadata, out var quantity))
-            throw new InvalidOperationException($"Invalid conversion from {fromMetadata.QuantityType.Name} to {toMetadata.QuantityType.Name}.");
+        if (!propertyMetadata.TryConvertQuantity(value, conversionMetadata, out var quantity))
+            throw new InvalidOperationException($"Invalid conversion from {propertyMetadata.QuantityType.Name} to {conversionMetadata.QuantityType.Name}.");
 
         return quantity;
+    }
+
+    private IQuantity SetQuantity<TObject>(TObject obj, PropertyInfo property, IQuantity quantity, CultureInfo? culture)
+        where TObject : class
+    {
+        if (obj is null)
+            throw new ArgumentNullException(nameof(obj));
+        if (TryGetMetadata(property, out var metadata, culture) is not true || metadata.Unit is null)
+            throw new InvalidOperationException($"Unit metadata does not exist for {property.DeclaringType.Name}.{property.Name}.");
+
+        metadata.Validate();
+
+        var (propertyMetadata, conversionMetadata) = property.GetConversionMetadatas(quantity.Unit, this);
+        if (!conversionMetadata.TryConvertQuantity(quantity.Value, propertyMetadata, out var convertedQuantity))
+            throw new InvalidOperationException($"Invalid conversion from {conversionMetadata.QuantityType.Name} to {propertyMetadata.QuantityType.Name}.");
+
+        property.SetMethod.Invoke(obj, new[] { Convert.ChangeType(convertedQuantity.Value, property.PropertyType) });
+
+        return convertedQuantity;
     }
 }

@@ -1,4 +1,6 @@
-﻿using UnitsNet.Metadata.Annotations;
+﻿using System;
+
+using UnitsNet.Metadata.Annotations;
 using UnitsNet.Units;
 
 namespace UnitsNet.Metadata.Tests.TestData;

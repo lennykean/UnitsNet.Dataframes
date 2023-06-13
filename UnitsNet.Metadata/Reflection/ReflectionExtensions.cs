@@ -27,7 +27,7 @@ internal static class ReflectionExtensions
             throw new InvalidOperationException($"{type} is not compatible with {typeof(QuantityValue)}.");
     }
 
-    public static string ExtractPropertyName<TObject, TPropertyValue>(this Expression<Func<TObject, TPropertyValue>> propertySelectorExpression)
+    public static string ExtractPropertyName<TObject, TValue>(this Expression<Func<TObject, TValue>> propertySelectorExpression)
     {
         var expression = propertySelectorExpression.Body;
 
@@ -124,7 +124,7 @@ internal static class ReflectionExtensions
         return (IQuantity)quantityCtor.Invoke(new object[] { Convert.ChangeType(value, quantityCtor.GetParameters().First().ParameterType), unit });
     }
 
-    public static (UnitMetadata fromMetadata, UnitMetadata toMetadata) GetConversionMetadatas<TMetadataAttribute, TMetadata>(
+    public static (UnitMetadata propertyMetadata, UnitMetadata conversionMetadata) GetConversionMetadatas<TMetadataAttribute, TMetadata>(
         this PropertyInfo property,
         Enum to,
         IMetadataProvider<TMetadataAttribute, TMetadata>? metadataProvider = null,
@@ -135,6 +135,8 @@ internal static class ReflectionExtensions
         metadataProvider ??= GlobalMetadataProvider<TMetadataAttribute, TMetadata>.Instance;
 
         var metadata = property.GetQuantityMetadata(metadataProvider, culture);
+        metadata.Validate();
+
         var conversionMetadata = metadata.Conversions.FirstOrDefault(c => c.UnitInfo.Value.Equals(to))
             ?? throw new InvalidOperationException($"{property.DeclaringType.Name}.{property.Name} ({metadata.Unit!.UnitInfo.Value}) cannot be converted to {to}.");
         var toMetadata = UnitMetadata.FromUnitInfo(conversionMetadata.UnitInfo, conversionMetadata.QuantityType.QuantityInfo, culture);

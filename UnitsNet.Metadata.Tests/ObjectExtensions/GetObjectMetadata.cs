@@ -47,7 +47,8 @@ public class GetObjectMetadata
             Data = "1"
         };
 
-        Assert.That(() => blob.GetObjectMetadata(), Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
+        Assert.That(() => blob.GetObjectMetadata(),
+            Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
     }
 
     [TestCase(TestName = "{c} (with invalid attribute)")]
@@ -55,7 +56,8 @@ public class GetObjectMetadata
     {
         var garbage = new Garbage();
 
-        Assert.That(() => garbage.GetObjectMetadata(), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
+        Assert.That(() => garbage.GetObjectMetadata(),
+            Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
     [TestCase(TestName = "{c} (with custom unit)")]
@@ -81,7 +83,8 @@ public class GetObjectMetadata
             Coolness = 40
         };
 
-        Assert.That(() => rubbish.GetObjectMetadata(), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+        Assert.That(() => rubbish.GetObjectMetadata(),
+            Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
     }
 
     [TestCase(TestName = "{c} (with custom attribute)")]

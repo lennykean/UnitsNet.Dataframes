@@ -1,3 +1,7 @@
+﻿using System.Runtime.Intrinsics.Arm;
+
+using FizzWare.NBuilder;
+
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 using NUnit.Framework;
@@ -8,64 +12,54 @@ using UnitsNet.Units;
 namespace UnitsNet.Metadata.Tests.ObjectExtensions;
 
 [TestFixture]
-public class GetQuantity
+public class SetQuantity
 {
     [TestCase(TestName = "{c} (with valid metadata)")]
     public void WithValidMetadataTest()
     {
-        var obj = new Box
-        {
-            Width = 1,
-            Height = 2,
-            Depth = 3,
-            Weight = 4,
-            Items = 5
-        };
+        var obj = new Box();
 
-        var width = obj.GetQuantity("Width");
-        var height = obj.GetQuantity(b => b.Height);
-        var depth = obj.GetQuantity("Depth");
-        var weight = obj.GetQuantity(b => b.Weight);
-        var volume = obj.GetQuantity(b => b.Volume);
-        var items = obj.GetQuantity(b => b.Items);
+        var width = obj.SetQuantity("Width", Length.FromCentimeters(100));
+        var height = obj.SetQuantity(b => b.Height, Length.FromCentimeters(200));
+        var depth = obj.SetQuantity("Depth", Length.FromCentimeters(300));
+        var weight = obj.SetQuantity(b => b.Weight, Mass.FromGrams(4000));
+        var items = obj.SetQuantity(b => b.Items, Scalar.FromAmount(5));
 
         Assert.Multiple(() =>
         {
+            Assert.That(obj, Has.Property(nameof(Box.Width)).EqualTo(1));
             Assert.That(width, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(1).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(LengthUnit.Meter));
+            Assert.That(obj, Has.Property(nameof(Box.Height)).EqualTo(2));
             Assert.That(height, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(2).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(LengthUnit.Meter));
+            Assert.That(obj, Has.Property(nameof(Box.Depth)).EqualTo(3));
             Assert.That(depth, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(3).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(LengthUnit.Meter));
+            Assert.That(obj, Has.Property(nameof(Box.Weight)).EqualTo(4));
             Assert.That(weight, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(4).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(MassUnit.Kilogram));
+            Assert.That(obj, Has.Property(nameof(Box.Items)).EqualTo(5));
             Assert.That(items, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(5).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(ScalarUnit.Amount));
-            Assert.That(volume, Has
-                .Property(nameof(IQuantity.Value)).EqualTo(6).And
-                .Property(nameof(IQuantity.Unit)).EqualTo(VolumeUnit.CubicMeter));
         });
     }
 
     [TestCase(TestName = "{c} (with missing metadata)")]
     public void WithMissingMetadataTest()
     {
-        var obj = new Box
-        {
-            SerialNumber = 1,
-            Priority = 2,
-        };
+        var obj = new Box();
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => obj.GetQuantity(b => b.SerialNumber),
+            Assert.That(() => obj.SetQuantity(b => b.SerialNumber, Length.FromCentimeters(10)),
                 Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)."));
-            Assert.That(() => obj.GetQuantity("Priority"),
+            Assert.That(() => obj.SetQuantity("Priority", Length.FromCentimeters(10)),
                 Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)."));
         });
     }
@@ -75,7 +69,7 @@ public class GetQuantity
     {
         var obj = new Blob();
 
-        Assert.That(() => obj.GetQuantity("Data"),
+        Assert.That(() => obj.SetQuantity("Data", Information.FromBytes(42)),
             Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
     }
 
@@ -84,7 +78,7 @@ public class GetQuantity
     {
         var obj = new Blob();
 
-        Assert.That(() => obj.GetQuantity("FakeProperty"),
+        Assert.That(() => obj.SetQuantity("FakeProperty", Length.FromCentimeters(10)),
             Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 
@@ -93,25 +87,21 @@ public class GetQuantity
     {
         var obj = new Garbage();
 
-        Assert.That(() => obj.GetQuantity(r => r.Odor),
+        Assert.That(() => obj.SetQuantity(r => r.Odor, Scalar.FromAmount(200)),
             Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
     [TestCase(TestName = "{c} (with custom unit)")]
     public void WithCustomUnitTest()
     {
-        var obj = new Employee
-        {
-            Name = "Cubert",
-            Coolness = 40
-        };
+        var obj = new Employee();
+
+        var coolness = obj.SetQuantity(e => e.Coolness, new Coolness(40000000, CoolnessUnit.Fonzie));
 
         Assert.Multiple(() =>
         {
-            Assert.That(obj.GetQuantity(e => e.Coolness), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(40).And
-                .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.MegaFonzie));
-            Assert.That(obj.GetQuantity("Coolness"), Has
+            Assert.That(obj, Has.Property(nameof(Employee.Coolness)).EqualTo(40));
+            Assert.That(coolness, Has
                 .Property(nameof(IQuantity.Value)).EqualTo(40).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(CoolnessUnit.MegaFonzie));
         });
@@ -120,40 +110,39 @@ public class GetQuantity
     [TestCase(TestName = "{c} (with invalid custom unit)")]
     public void WithInvalidCustomUnitTest()
     {
-        var obj = new Rubbish
-        {
-            Coolness = 40
-        };
+        var obj = new Rubbish();
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => obj.GetQuantity(r => r.Coolness),
-                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
-            Assert.That(() => obj.GetQuantity("Coolness"),
-                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+            Assert.That(() => obj.SetQuantity(r => r.Coolness, new Coolness(40000000, CoolnessUnit.Fonzie)),
+                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit type"));
+            Assert.That(() => obj.SetQuantity("Coolness", new Coolness(40000000, CoolnessUnit.Fonzie)),
+                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit type"));
         });
     }
 
     [TestCase(TestName = "{c} (with custom attribute)")]
     public void WithCustomAttributeTest()
     {
-        var obj = new DynoData
-        {
-            Horsepower = 300,
-            Torque = 200,
-            Rpm = 6000
-        };
+        var obj = new DynoData();
+
+        var horsepower = obj.SetQuantity(d => d.Horsepower, Power.FromKilowatts(400));
+        var torque = obj.SetQuantity(d => d.Torque, Torque.FromNewtonMeters(300));
+        var rpm = obj.SetQuantity(d => d.Rpm, RotationalSpeed.FromRadiansPerSecond(500));
 
         Assert.Multiple(() =>
         {
-            Assert.That(obj.GetQuantity(d => d.Horsepower), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(300).And
+            Assert.That(obj, Has.Property(nameof(DynoData.Horsepower)).EqualTo(536.41).Within(0.01));
+            Assert.That(horsepower, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(536.41).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.MechanicalHorsepower));
-            Assert.That(obj.GetQuantity("Torque"), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(200).And
+            Assert.That(obj, Has.Property(nameof(DynoData.Torque)).EqualTo(221.27).Within(0.01));
+            Assert.That(torque, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(221.27).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.PoundForceFoot));
-            Assert.That(obj.GetQuantity(d => d.Rpm), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(6000).And
+            Assert.That(obj, Has.Property(nameof(DynoData.Rpm)).EqualTo(4774.65).Within(0.01));
+            Assert.That(rpm, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(4774.65).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(RotationalSpeedUnit.RevolutionPerMinute));
         });
     }

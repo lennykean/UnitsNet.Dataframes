@@ -89,8 +89,10 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => obj.ConvertQuantity(b => b.Width, to: AngleUnit.Degree), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
-            Assert.That(() => obj.ConvertQuantity("Height", to: SpeedUnit.Mach), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => obj.ConvertQuantity(b => b.Width, to: AngleUnit.Degree),
+                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => obj.ConvertQuantity("Height", to: SpeedUnit.Mach),
+                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
         });
     }
 
@@ -107,8 +109,10 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => obj.ConvertQuantity(b => b.Volume, to: VolumeUnit.CubicFoot), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
-            Assert.That(() => obj.ConvertQuantity("Height", to: MassUnit.Pound), Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => obj.ConvertQuantity(b => b.Volume, to: VolumeUnit.CubicFoot),
+                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
+            Assert.That(() => obj.ConvertQuantity("Height", to: MassUnit.Pound),
+                Throws.InvalidOperationException.With.Message.Match("(.*) cannot be converted to (.*)"));
         });
     }
 
@@ -120,7 +124,8 @@ public class ConvertQuantity
             Data = "1"
         };
 
-        Assert.That(() => obj.ConvertQuantity("Data", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
+        Assert.That(() => obj.ConvertQuantity("Data", to: InformationUnit.Gibibit),
+            Throws.InvalidOperationException.With.Message.Match("(.*) is not compatible with UnitsNet.QuantityValue"));
     }
 
     [TestCase(TestName = "{c} (with missing property)")]
@@ -128,7 +133,8 @@ public class ConvertQuantity
     {
         var obj = new Blob();
 
-        Assert.That(() => obj.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit), Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
+        Assert.That(() => obj.ConvertQuantity("FakeProperty", to: InformationUnit.Gibibit),
+            Throws.InvalidOperationException.With.Message.Match("(.*) is not a property of (.*)"));
     }
 
     [TestCase(TestName = "{c} (with invalid attribute)")]
@@ -136,7 +142,8 @@ public class ConvertQuantity
     {
         var obj = new Garbage();
 
-        Assert.That(() => obj.ConvertQuantity(r => r.Odor, to: PowerUnit.MechanicalHorsepower), Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
+        Assert.That(() => obj.ConvertQuantity(r => r.Odor, to: PowerUnit.MechanicalHorsepower),
+            Throws.ArgumentException.With.Message.EqualTo("Unit must be an enum value"));
     }
 
     [TestCase(TestName = "{c} (with custom unit)")]
@@ -169,8 +176,10 @@ public class ConvertQuantity
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => obj.ConvertQuantity(r => r.Coolness, to: CoolnessUnit.Fonzie), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
-            Assert.That(() => obj.ConvertQuantity("Coolness", to: CoolnessUnit.Fonzie), Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+            Assert.That(() => obj.ConvertQuantity(r => r.Coolness, to: CoolnessUnit.Fonzie),
+                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
+            Assert.That(() => obj.ConvertQuantity("Coolness", to: CoolnessUnit.Fonzie),
+                Throws.ArgumentException.With.Message.Match("(.*) is not a known unit value"));
         });
     }
 
@@ -190,27 +199,6 @@ public class ConvertQuantity
                 .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
             Assert.That(obj.ConvertQuantity("Torque", to: TorqueUnit.NewtonMeter), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
-                .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
-        });
-    }
-
-    [TestCase(TestName = "{c} (typed with custom attribute)")]
-    public void TypedWithCustomAttributeTest()
-    {
-        var obj = new DynoData
-        {
-            Horsepower = 300,
-            Torque = 200,
-            Rpm = 6000
-        };
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(obj.ConvertQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>(d => d.Horsepower, to: PowerUnit.Kilowatt), Has
-                .Property(nameof(IQuantity.Value)).EqualTo(223.7).Within(0.01).And
-                .Property(nameof(IQuantity.Unit)).EqualTo(PowerUnit.Kilowatt));
-            Assert.That(obj.ConvertQuantity<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>("Torque", to: TorqueUnit.NewtonMeter), Has
                 .Property(nameof(IQuantity.Value)).EqualTo(271.16).Within(0.01).And
                 .Property(nameof(IQuantity.Unit)).EqualTo(TorqueUnit.NewtonMeter));
         });
