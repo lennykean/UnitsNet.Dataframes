@@ -256,5 +256,6 @@ This method call will return the following metadata:
 
 In the example above, each field of the `Box` class (like `Width`, `Height`, and `Weight`) is annotated with metadata that defines the `Unit` it is measured in, the `FieldName` (which is the name of the field itself), and the allowed `Conversions`. The `Conversions` field lists the units that the value of the field can be converted into. For example, for the `Weight` field, only conversions to "Kilogram" and "Gram" are explicitly defined, therefore only these conversions are listed.
 
-License
+## License
+
 UnitsNet.Metadata is released under the [MIT License](LICENSE).
