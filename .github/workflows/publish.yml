@@ -1,27 +1,27 @@
 on:
   push:
     tags:
-      - v*
+    - v*
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 7.0.x
-      - run: |
-          BRANCH_NAME=$(git branch -r --contains tags/${{ github.ref }} | sed -e "s/.*\///" | xargs)
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-      - name: Set version and suffix
-        run: |
-          VERSION=$(echo ${GITHUB_REF#refs/tags/v})"."${GITHUB_RUN_NUMBER}
-          SUFFIX=""
-          if [[ "${{ env.BRANCH_NAME }}" != "main" ]]; then
-            SUFFIX="prerelease"
-          fi
-          echo "VERSION_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-      - run: dotnet pack --configuration Release /p:VersionPrefix=${{ env.VERSION }} /p:VersionSuffix=${{ env.VERSION_SUFFIX }}
-      - run: dotnet nuget push "**/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - uses: actions/checkout@v3
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - run: |
+        BRANCH_NAME=$(git branch -r --contains tags/${{ github.ref }} | sed -e "s/.*\///" | xargs)
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+    - name: Set version and suffix
+      run: |
+        VERSION=$(echo ${GITHUB_REF#refs/tags/v})"."${GITHUB_RUN_NUMBER}
+        SUFFIX=""
+        if [[ "${{ env.BRANCH_NAME }}" != "main" ]]; then
+          SUFFIX="prerelease"
+        fi
+        echo "VERSION_SUFFIX=${SUFFIX}" >> $GITHUB_ENV
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
+    - run: dotnet pack --configuration Release /p:VersionPrefix=${{ env.VERSION }} --version-suffix ${{ env.VERSION_SUFFIX }}
+    - run: dotnet nuget push "**/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
