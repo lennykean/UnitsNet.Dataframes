@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/lennykean/UnitsNet.Metadata</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lennykean/UnitsNet.Metadata</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Lenny Kean</Authors>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>
