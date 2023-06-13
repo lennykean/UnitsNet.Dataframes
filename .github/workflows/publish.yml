@@ -13,7 +13,7 @@ jobs:
         dotnet-version: 7.0.x
     - name: Set version and suffix
       run: |
-        VERSION=$(echo ${GITHUB_REF#refs/tags/})"."${GITHUB_RUN_NUMBER}
+        VERSION=$(echo ${GITHUB_REF#refs/tags/v})"."${GITHUB_RUN_NUMBER}
         SUFFIX=""
         if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
           SUFFIX="prerelease"
