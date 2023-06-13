@@ -1,4 +1,4 @@
-# UnitsNet.Metadata Documentation
+# UnitsNet.Metadata
 
 UnitsNet.Metadata is an extension of [UnitsNet](https://github.com/angularsen/UnitsNet) that is designed to streamline the handling of units and quantities in applications. It allows for the provision of metadata through annotations, fluent syntax, and dynamic proxies. This enables developers to manage units in a declarative manner, simplifying interactions with quantities by seamlessly performing conversions and retrieving quantities.
 
