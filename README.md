@@ -92,9 +92,9 @@ using UnitsNet.Units;
 
 var obj = new Box();
 
-obj.SetQuantity("Width", Length.FromCentimeter(45));        // obj.Weight == 4.5
+obj.SetQuantity("Width", Length.FromCentimeter(450));       // obj.Weight == 4.5
 obj.SetQuantity(b => b.Height, Length.FromCentimeter(625)); // obj.Height == 6.25
-obj.SetQuantity(b => b.Weight, Mass.FromGrams(7000));       // obj.Weight == 7
+obj.SetQuantity(b => b.Weight, Mass.FromGrams(7800));       // obj.Weight == 7.8
 ```
 
 In the above example, Width and Height are set in centimeters and are automatically converted to meters, while Weight is set in grams and converted to kilograms.
@@ -158,7 +158,7 @@ var boxes = new[]
 };
 
 // Create dynamic proxies
-var proxies = boxes.AsDynamicQuantities()
+var proxies = boxes.AsDynamicProxies()
     .WithConversion(b => b.Width, LengthUnit.Centimeter)
     .WithConversion(b => b.Height, LengthUnit.Centimeter)
     .WithConversion(b => b.Weight, MassUnit.Gram)

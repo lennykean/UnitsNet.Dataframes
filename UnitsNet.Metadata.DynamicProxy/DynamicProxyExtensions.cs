@@ -4,7 +4,7 @@ namespace UnitsNet.Metadata.DynamicProxy;
 
 public static class DynamicProxyExtensions
 {
-    public static DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata> AsDynamicQuantities<TObject, TMetadataAttribute, TMetadata>(this IEnumerable<TObject> objects)
+    public static DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata> AsDynamicProxies<TObject, TMetadataAttribute, TMetadata>(this IEnumerable<TObject> objects)
         where TMetadataAttribute : QuantityAttribute, IMetadataAttribute<TMetadataAttribute, TMetadata>
         where TMetadata : QuantityMetadata, IMetadata<TMetadata>
         where TObject : class
@@ -16,9 +16,9 @@ public static class DynamicProxyExtensions
         return new(objects, baseMetadataProvider);
     }
 
-    public static DynamicProxyBuilder<TObject, QuantityAttribute, QuantityMetadata> AsDynamicQuantities<TObject>(this IEnumerable<TObject> objects)
+    public static DynamicProxyBuilder<TObject, QuantityAttribute, QuantityMetadata> AsDynamicProxies<TObject>(this IEnumerable<TObject> objects)
         where TObject : class
     {
-        return objects.AsDynamicQuantities<TObject, QuantityAttribute, QuantityMetadata>();
+        return objects.AsDynamicProxies<TObject, QuantityAttribute, QuantityMetadata>();
     }
 }

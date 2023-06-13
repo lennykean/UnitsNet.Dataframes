@@ -11,7 +11,7 @@ using UnitsNet.Units;
 namespace UnitsNet.Metadata.Tests.DynamicProxies;
 
 [TestFixture]
-public class AsDynamicQuantities
+public class AsDynamicProxies
 {
     [TestCase(TestName = "{c} (with conversions)")]
     public void WithConversionsTest()
@@ -24,7 +24,7 @@ public class AsDynamicQuantities
             Weight = 4
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities()
+        var proxies = new[] { obj }.AsDynamicProxies()
             .WithConversion(b => b.Width, LengthUnit.Centimeter)
             .WithConversion(b => b.Height, LengthUnit.Centimeter)
             .WithConversion(b => b.Depth, LengthUnit.Centimeter)
@@ -70,7 +70,7 @@ public class AsDynamicQuantities
             Weight = 4
         };
 
-        var proxy = new[] { obj }.AsDynamicQuantities()
+        var proxy = new[] { obj }.AsDynamicProxies()
             .WithConversion(b => b.Width, LengthUnit.Centimeter)
             .WithConversion(b => b.Height, LengthUnit.Centimeter)
             .WithConversion(b => b.Depth, LengthUnit.Centimeter)
@@ -103,7 +103,7 @@ public class AsDynamicQuantities
     public void WithMissingMetadataTest()
     {
         Assert.That(() =>
-            Builder<Star>.CreateListOfSize(100).Build().AsDynamicQuantities()
+            Builder<Star>.CreateListOfSize(100).Build().AsDynamicProxies()
                 .WithConversion(s => s.Number, ScalarUnit.Amount)
                 .Build(),
             Throws.InvalidOperationException.With.Message.Match("Unit metadata does not exist for (.*)"));
@@ -115,7 +115,7 @@ public class AsDynamicQuantities
         Assert.Multiple(() =>
         {
             Assert.That(() =>
-                Builder<Star>.CreateListOfSize(100).Build().AsDynamicQuantities()
+                Builder<Star>.CreateListOfSize(100).Build().AsDynamicProxies()
                     .WithConversion(s => s.Mass, MassUnit.SolarMass)
                     .WithConversion(b => b.Radius, LengthUnit.SolarRadius)
                     .WithConversion(b => b.Distance, LengthUnit.AstronomicalUnit)
@@ -124,7 +124,7 @@ public class AsDynamicQuantities
                 Throws.InvalidOperationException.With.Message.Match("(.*) is non-virtual and cannot be converted to (.*)"));
 
             Assert.That(() =>
-                Builder<TransmitterData>.CreateListOfSize(100).Build().AsDynamicQuantities()
+                Builder<TransmitterData>.CreateListOfSize(100).Build().AsDynamicProxies()
                     .WithConversion(b => b.Power, PowerUnit.Milliwatt)
                     .WithConversion(b => b.Frequency, FrequencyUnit.Kilohertz)
                     .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
@@ -143,7 +143,7 @@ public class AsDynamicQuantities
             Temperature = 100
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities()
+        var proxies = new[] { obj }.AsDynamicProxies()
             .WithConversion(b => b.Power, PowerUnit.Milliwatt)
             .WithConversion(b => b.Frequency, FrequencyUnit.Megahertz)
             .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
@@ -179,7 +179,7 @@ public class AsDynamicQuantities
             Speed = 10
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities()
+        var proxies = new[] { obj }.AsDynamicProxies()
             .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
             .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
             .As<VehicleTelemetry>()
@@ -211,7 +211,7 @@ public class AsDynamicQuantities
             Speed = 10
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities()
+        var proxies = new[] { obj }.AsDynamicProxies()
             .WithConversion(t => t.Efficency, FuelEfficiencyUnit.MilePerUsGallon)
             .WithConversion(t => t.Speed, SpeedUnit.MilePerHour)
             .Build();
@@ -243,7 +243,7 @@ public class AsDynamicQuantities
             Rpm = 6000
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities()
+        var proxies = new[] { obj }.AsDynamicProxies()
             .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
             .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
             .Build();
@@ -281,7 +281,7 @@ public class AsDynamicQuantities
             Rpm = 6000
         };
 
-        var proxies = new[] { obj }.AsDynamicQuantities<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>()
+        var proxies = new[] { obj }.AsDynamicProxies<DynoData, DisplayMeasurementAttribute, DisplayMeasurementMetadata>()
             .WithConversion(t => t.Horsepower, PowerUnit.Kilowatt)
             .WithConversion(t => t.Torque, TorqueUnit.NewtonMeter)
             .Build();
