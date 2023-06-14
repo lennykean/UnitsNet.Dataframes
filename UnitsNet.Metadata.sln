@@ -6,7 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4F9558F6-DF7A-4AF6-B002-346C5EEF1BFA}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.github\workflows\build.yml = .github\workflows\build.yml
 		LICENSE = LICENSE
+		PackageProperties.props = PackageProperties.props
+		.github\workflows\publish.yml = .github\workflows\publish.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -16,7 +19,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.DynamicPr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.Tests", "UnitsNet.Metadata.Tests\UnitsNet.Metadata.Tests.csproj", "{16CFFAF8-DEAF-412F-89EC-A32E43B5DAE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitsNet.Metadata.Fluent", "UnitsNet.Metadata.Fluent\UnitsNet.Metadata.Fluent.csproj", "{F2390507-A9B8-4C05-A91D-CED969FEF052}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitsNet.Metadata.Fluent", "UnitsNet.Metadata.Fluent\UnitsNet.Metadata.Fluent.csproj", "{F2390507-A9B8-4C05-A91D-CED969FEF052}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{04BE5A01-E6E8-4DC7-9868-76BB9BA5624C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{A4327C47-0DDA-4A71-888C-E1C86EAFFFAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +54,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{04BE5A01-E6E8-4DC7-9868-76BB9BA5624C} = {A4327C47-0DDA-4A71-888C-E1C86EAFFFAE}
+		{A4327C47-0DDA-4A71-888C-E1C86EAFFFAE} = {4F9558F6-DF7A-4AF6-B002-346C5EEF1BFA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6DE38500-EF66-4F24-8D9B-8A18630ADC7F}
