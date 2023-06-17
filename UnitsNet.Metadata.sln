@@ -6,10 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4F9558F6-DF7A-4AF6-B002-346C5EEF1BFA}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		.github\workflows\build.yml = .github\workflows\build.yml
 		LICENSE = LICENSE
 		PackageProperties.props = PackageProperties.props
-		.github\workflows\publish.yml = .github\workflows\publish.yml
 		README.md = README.md
 	EndProjectSection
 EndProject

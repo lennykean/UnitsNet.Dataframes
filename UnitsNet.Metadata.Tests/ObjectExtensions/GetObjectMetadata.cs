@@ -39,6 +39,26 @@ public class GetObjectMetadata
         });
     }
 
+
+    [TestCase(TestName = "{c} (with interface metadata)")]
+    public void WithInterfaceMetadata()
+    {
+        var obj = new HardDrive() as IHardDrive;
+
+        var metadata = obj.GetObjectMetadata();
+        var collectionMetadata = new List<IHardDrive> { obj }.GetObjectMetadata();
+
+        Assert.Multiple(() =>
+        {
+            CollectionAssert.AreEquivalent(metadata, collectionMetadata);
+            Assert.That(metadata, Has.Count.EqualTo(2));
+            Assert.That(metadata, Has.ItemAt(nameof(IHardDrive.Capacity))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(InformationUnit.Gigabyte));
+            Assert.That(metadata, Has.ItemAt(nameof(IHardDrive.FreeSpace))
+                .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(InformationUnit.Gigabyte));
+        });
+    }
+
     [TestCase(TestName = "{c} (with invalid quantity)")]
     public void WithInvalidQuantityTest()
     {

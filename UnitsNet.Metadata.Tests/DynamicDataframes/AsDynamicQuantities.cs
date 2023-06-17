@@ -147,7 +147,7 @@ public class AsDynamicProxies
             .WithConversion(b => b.Power, PowerUnit.Milliwatt)
             .WithConversion(b => b.Frequency, FrequencyUnit.Megahertz)
             .WithConversion(b => b.Temperature, TemperatureUnit.DegreeCelsius)
-            .As<ITransmitterData>()
+            .As<ITransmitterThermalData>()
             .Build();
 
         var proxy = proxies.First();
@@ -157,11 +157,11 @@ public class AsDynamicProxies
         Assert.Multiple(() =>
         {
             CollectionAssert.AreEquivalent(metadata, collectionMetadata);
-            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Power))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterThermalData.Power))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(PowerUnit.Milliwatt));
-            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Frequency))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterThermalData.Frequency))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(FrequencyUnit.Megahertz));
-            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterData.Temperature))
+            Assert.That(metadata, Has.ItemAt(nameof(ITransmitterThermalData.Temperature))
                 .Property(nameof(QuantityMetadata.Unit)).Property(nameof(UnitMetadata.UnitInfo)).Property(nameof(UnitInfo.Value)).EqualTo(TemperatureUnit.DegreeCelsius));
 
             Assert.That(proxy, Has.Property(nameof(TransmitterData.Power)).EqualTo(2000).Within(0.01));

@@ -50,6 +50,25 @@ public class SetQuantity
         });
     }
 
+    [TestCase(TestName = "{c} (with interface metadata)")]
+    public void WithInterfaceMetadata()
+    {
+        var obj = new HardDrive() as IHardDrive;
+
+        var capacity = obj.SetQuantity("Capacity", Information.FromTerabytes(1));
+        var freespace = obj.SetQuantity(b => b.FreeSpace, Information.FromTerabytes(0.5));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(capacity, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(1000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(InformationUnit.Gigabyte));
+            Assert.That(freespace, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(500).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(InformationUnit.Gigabyte));
+        });
+    }
+
     [TestCase(TestName = "{c} (with missing metadata)")]
     public void WithMissingMetadataTest()
     {

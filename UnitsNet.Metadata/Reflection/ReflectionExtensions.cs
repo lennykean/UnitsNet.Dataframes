@@ -27,6 +27,18 @@ internal static class ReflectionExtensions
             throw new InvalidOperationException($"{type} is not compatible with {typeof(QuantityValue)}.");
     }
 
+    public static PropertyInfo? GetPropertyFlat(this Type type, string propertyName)
+    {
+        return EphemeralValueCache<(Type type, string propertyName), PropertyInfo?>.GlobalInstance.GetOrAdd((type, propertyName), key =>
+        {
+            var property = type.GetProperty(propertyName);
+            if (property is null && key.type.IsInterface)
+                property = key.type.GetInterfaces().SelectMany(i => i.GetProperties()).SingleOrDefault(p => p.Name == propertyName);
+
+            return property;
+        });
+    }
+ 
     public static string ExtractPropertyName<TObject, TValue>(this Expression<Func<TObject, TValue>> propertySelectorExpression)
     {
         var expression = propertySelectorExpression.Body;

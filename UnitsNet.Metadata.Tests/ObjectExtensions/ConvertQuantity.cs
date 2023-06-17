@@ -78,6 +78,28 @@ public class ConvertQuantity
         });
     }
 
+    [TestCase(TestName = "{c} (with interface metadata)")]
+    public void WithInterfaceMetadata()
+    {
+        var obj = new HardDrive() as IHardDrive;
+        
+        obj.Capacity = 128;
+        obj.FreeSpace = 64;
+
+        var capacityKb = obj.ConvertQuantity("Capacity", InformationUnit.Kilobyte);
+        var freespaceKb = obj.ConvertQuantity(b => b.FreeSpace, InformationUnit.Kilobyte);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(capacityKb, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(128_000_000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(InformationUnit.Kilobyte));
+            Assert.That(freespaceKb, Has
+                .Property(nameof(IQuantity.Value)).EqualTo(64_000_000).And
+                .Property(nameof(IQuantity.Unit)).EqualTo(InformationUnit.Kilobyte));
+        });
+    }
+
     [TestCase(TestName = "{c} (to invalid unit)")]
     public void ToInvalidUnitTest()
     {

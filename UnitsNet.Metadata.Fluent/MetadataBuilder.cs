@@ -49,7 +49,7 @@ public class MetadataBuilder<TObject, TMetadataAttribute, TMetadata> : MetadataB
 
     public QuantityMetadataBuilder<TObject, TMetadataAttribute, TMetadata> With(string propertyName, TMetadataAttribute attribute)
     {
-        var property = typeof(TObject).GetProperty(propertyName) ??
+        var property = typeof(TObject).GetPropertyFlat(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
 
         MetadataAttributes.AddOrUpdate(property, attribute, (_, _) => attribute);

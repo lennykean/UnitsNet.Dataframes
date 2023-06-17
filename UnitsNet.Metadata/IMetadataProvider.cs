@@ -26,7 +26,9 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         return cache.GetOrAdd((this, type), key =>
         {
             IEnumerable<TMetadata> get(Type type) => (
-                from property in type.GetProperties()
+                from property in type.IsInterface 
+                    ? type.GetInterfaces().Append(type).SelectMany(i => i.GetProperties())
+                    : type.GetProperties()
                 let m = (hasMetadata: TryGetMetadata(property, out var metadata, culture), metadata)
                 where m.hasMetadata
                 select m.metadata)
@@ -81,7 +83,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         if (obj is null)
             throw new ArgumentNullException(nameof(obj));
 
-        var property = typeof(TObject).GetProperty(propertyName) ??
+        var property = typeof(TObject).GetPropertyFlat(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
 
         return GetQuantity(obj, property, culture);
@@ -94,7 +96,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
             throw new ArgumentNullException(nameof(obj));
 
         var propertyName = propertySelectorExpression.ExtractPropertyName();
-        var property = typeof(TObject).GetProperty(propertyName);
+        var property = typeof(TObject).GetPropertyFlat(propertyName)!;
 
         return GetQuantity(obj, property, culture);
     }
@@ -105,7 +107,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         if (obj is null)
             throw new ArgumentNullException(nameof(obj));
 
-        var property = typeof(TObject).GetProperty(propertyName) ??
+        var property = typeof(TObject).GetPropertyFlat(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
 
         return ConvertQuantity(obj, property, to, culture);
@@ -118,7 +120,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
             throw new ArgumentNullException(nameof(obj));
 
         var propertyName = propertySelectorExpression.ExtractPropertyName();
-        var property = typeof(TObject).GetProperty(propertyName);
+        var property = typeof(TObject).GetPropertyFlat(propertyName)!;
 
         return ConvertQuantity(obj, property, to, culture);
     }
@@ -129,7 +131,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
         if (obj is null)
             throw new ArgumentNullException(nameof(obj));
 
-        var property = typeof(TObject).GetProperty(propertyName) ??
+        var property = typeof(TObject).GetPropertyFlat(propertyName) ??
             throw new InvalidOperationException($"{propertyName} is not a property of {typeof(TObject).Name}");
 
         return SetQuantity(obj, property, quantity, culture);
@@ -142,7 +144,7 @@ public interface IMetadataProvider<TMetadataAttribue, TMetadata>
             throw new ArgumentNullException(nameof(obj));
 
         var propertyName = propertySelectorExpression.ExtractPropertyName();
-        var property = typeof(TObject).GetProperty(propertyName);
+        var property = typeof(TObject).GetPropertyFlat(propertyName)!;
 
         return SetQuantity(obj, property, quantity, culture);
     }

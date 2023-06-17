@@ -31,7 +31,7 @@ public class DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata>
 
     public DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata> WithConversion(string propertyName, Enum to)
     {
-        var property = typeof(TObject).GetProperty(propertyName);
+        var property = typeof(TObject).GetPropertyFlat(propertyName);
         _metadataProvider.AddConversion(property, to, _culture);
 
         return this;
@@ -40,7 +40,7 @@ public class DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata>
     public DynamicProxyBuilder<TObject, TMetadataAttribute, TMetadata> WithConversion(Expression<Func<TObject, QuantityValue>> propertySelectorExpression, Enum to)
     {
         var propertyName = propertySelectorExpression.ExtractPropertyName();
-        var property = typeof(TObject).GetProperty(propertyName);
+        var property = typeof(TObject).GetPropertyFlat(propertyName);
 
         _metadataProvider.AddConversion(property, to, _culture);
 

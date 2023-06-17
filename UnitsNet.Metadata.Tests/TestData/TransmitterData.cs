@@ -5,7 +5,7 @@ using UnitsNet.Units;
 
 namespace UnitsNet.Metadata.Tests.TestData;
 
-public class TransmitterData : ITransmitterData
+public class TransmitterData : ITransmitterThermalData
 {
     public DateTime TimeStamp { get; set; }
     [Quantity(PowerUnit.Watt)]
