@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <Description>Provide Units.Net metadata for your types.</Description>
     <PackageProjectUrl>https://github.com/lennykean/UnitsNet.Metadata</PackageProjectUrl>
     <RepositoryUrl>https://github.com/lennykean/UnitsNet.Metadata</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
